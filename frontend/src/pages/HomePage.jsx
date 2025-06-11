@@ -10,6 +10,7 @@ const HomePage = () => {
       const response = await axios.get("http://localhost:3000/api/tasks/");
       console.log(response.data);
       setPosts(response.data);
+      setIsLoading(false);
     } catch (error) {
       console.log(error);
     }
@@ -20,7 +21,24 @@ const HomePage = () => {
 
   return (
     <div>
-      <h1>This is Home Page</h1>
+      <div className="mt-5">
+        {isloading ? (
+          "Loading..."
+        ) : (
+          <>
+            {posts.length > 0 ? (
+              posts.map((post) => (
+                <div key={post._id}>
+                  <h1>{post.title}</h1>
+                  <p>{post.content}</p>
+                </div>
+              ))
+            ) : (
+              <p>No posts found</p>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 };
