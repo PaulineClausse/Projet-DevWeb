@@ -1,19 +1,31 @@
-version: "3.8"
-
 services:
-  backend:
-    build: ./backend
-    container_name: backend
+  comment-service:
+    build: ./comment-service
+    container_name: comment-service
     restart: unless-stopped
+    ports:
+      - "4001:4001"
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/social-app
     depends_on:
       - mongo
-    volumes:
-      - ./backend:/app
+      - post-service
+    networks:
+      - backend
+
+  post-service:
+    build: ./post-service
+    container_name: post-service
+    restart: unless-stopped
     ports:
       - "3000:3000"
     environment:
-      - NODE_ENV=development
-      - MONGO_URI=mongodb://mongo:27017/todo-api
+      - MONGO_URI=mongodb://mongo:27017/social-app
+    depends_on:
+      - mongo
+    networks:
+      - backend
+
   mongo:
     image: mongo
     container_name: mongo
@@ -22,6 +34,12 @@ services:
       - mongodb_data:/data/db
     ports:
       - "27017:27017"
+    networks:
+      - backend
 
 volumes:
   mongodb_data:
+
+networks:
+  backend:
+    driver: bridge
