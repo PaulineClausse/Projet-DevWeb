@@ -1,24 +1,24 @@
 // src/app.js
 const express = require("express");
 const mongoose = require("mongoose");
-const commentRoutes = require("./routes/comment.routes");
-require("dotenv").config();
+const likeRoutes = require("./routes/like.routes");
+require("dotenv").config(); // Charger les variables d'environnement
 
 const app = express();
-const port = 4001; // Port pour l'API des commentaires
+const port = 4002; // Port pour le service des likes
 
 // Middleware
 app.use(express.json());
-app.use("/api/comments", commentRoutes); // Routes pour les commentaires
+app.use("/api/likes", likeRoutes);  // Définir les routes pour les likes
 
 // Connexion à MongoDB
 mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => {
     console.log("MongoDB connecté !");
     app.listen(port, () => {
-      console.log(`Serveur des commentaires en cours sur le port ${port}`);
+      console.log(`Serveur des likes en cours sur le port ${port}`);
     });
   })
   .catch((err) => {
-    console.error("Erreur de connexion à MongoDB:", err);
+    console.log("Erreur de connexion à MongoDB :", err);
   });
