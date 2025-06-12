@@ -1,14 +1,14 @@
 version: "3.8"
 
 services:
-  backend:
-    build: ./backend
-    container_name: backend
+  posts:
+    build: ./Posts
+    container_name: posts
     restart: unless-stopped
     depends_on:
       - mongo
     volumes:
-      - ./backend:/app
+      - ./Posts:/app
     ports:
       - "3000:3000"
     environment:
