@@ -19,6 +19,8 @@ app.use(express.json());
 
 app.use("/api/tasks", require("./routes/tasks.routes"));
 
+app.use("/api/posts", require("./routes/posts.routes"));
+
 mongoose
   .connect(
     "mongodb://" +

@@ -1,0 +1,13 @@
+const express = require("express");
+
+const router = express.Router();
+
+const postsController = require("../controllers/posts.controller.js");
+
+router.get("/", postsController.getAllPosts);
+
+router.get("/:id", postsController.getOnePost);
+
+router.post("/", postsController.createPost);
+
+module.exports = router;
