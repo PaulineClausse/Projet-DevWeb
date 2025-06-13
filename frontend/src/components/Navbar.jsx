@@ -1,14 +1,11 @@
 // App.jsx
-import { Component } from 'react';
+import { Component } from "react";
 import { Route, Routes, Link } from "react-router-dom";
-import {
-  AiOutlineUser,
-} from "react-icons/ai";
+import { AiOutlineUser } from "react-icons/ai";
 
 const Navbar = () => {
   return (
     <div className="relative min-h-screen bg-[rgb(38,38,38)]">
-
       {/* Top Right User Icon */}
       <div className="absolute top-4 right-4  text-white">
         <button className="p-2 rounded-full bg-[rgb(38,38,38)] shadow-md hover:text-blue-500 transition">
@@ -19,29 +16,36 @@ const Navbar = () => {
       </div>
 
       {/* Image Bottom Top Left */}
-      <div className='Image_Top_Left'>
-        <img src="../public/images/logo.png" className="w-20 h-20 fixed md:w-15 md:h-15 md:fixed md:top-4 md:left-20 md:z-50"/>
-        <img src="../public/images/logo.png" className="w-20 h-20 left-3 fixed md:w-15 md:h-15 md:fixed md:top-4 md:left-20 md:z-50 opacity-30"/>
+      <div className="Image_Top_Left">
+        <img
+          src="../public/images/logo.png"
+          className="w-20 h-20 fixed md:w-15 md:h-15 md:fixed md:top-4 md:left-20 md:z-50"
+        />
+        <img
+          src="../public/images/logo.png"
+          className="w-20 h-20 left-3 fixed md:w-15 md:h-15 md:fixed md:top-4 md:left-20 md:z-50 opacity-30"
+        />
       </div>
-
 
       {/* Mobile Bottom Navigation */}
       <div className="fixed bottom-5 left-1/2 transform -translate-x-1/2 flex gap-8 bg-[rgb(38,38,38)] p-4 rounded-2xl shadow-lg md:hidden">
         <button className="mt-1 ">
-          <a><svg
-            className="w-7 h-7 hover:fill-white"
-            xmlns="http://www.w3.org/2000/svg"
-            height="20"
-            width="22.5"
-            viewBox="0 0 576 512"
-            fill="rgb(38, 38, 38)"
-          >
-            <path
-              d="M575.8 255.5c0 18-15 32.1-32 32.1l-32 0 .7 160.2c0 2.7-.2 5.4-.5 8.1l0 16.2c0 22.1-17.9 40-40 40l-16 0c-1.1 0-2.2 0-3.3-.1c-1.4 .1-2.8 .1-4.2 .1L416 512l-24 0c-22.1 0-40-17.9-40-40l0-24 0-64c0-17.7-14.3-32-32-32l-64 0c-17.7 0-32 14.3-32 32l0 64 0 24c0 22.1-17.9 40-40 40l-24 0-31.9 0c-1.5 0-3-.1-4.5-.2c-1.2 .1-2.4 .2-3.6 .2l-16 0c-22.1 0-40-17.9-40-40l0-112c0-.9 0-1.9 .1-2.8l0-69.7-32 0c-18 0-32-14-32-32.1c0-9 3-17 10-24L266.4 8c7-7 15-8 22-8s15 2 21 7L564.8 231.5c8 7 12 15 11 24z"
-              stroke="rgb(191, 191, 199)"
-              stroke-width="40"
-            />
-          </svg></a>
+          <a>
+            <svg
+              className="w-7 h-7 hover:fill-white"
+              xmlns="http://www.w3.org/2000/svg"
+              height="20"
+              width="22.5"
+              viewBox="0 0 576 512"
+              fill="rgb(38, 38, 38)"
+            >
+              <path
+                d="M575.8 255.5c0 18-15 32.1-32 32.1l-32 0 .7 160.2c0 2.7-.2 5.4-.5 8.1l0 16.2c0 22.1-17.9 40-40 40l-16 0c-1.1 0-2.2 0-3.3-.1c-1.4 .1-2.8 .1-4.2 .1L416 512l-24 0c-22.1 0-40-17.9-40-40l0-24 0-64c0-17.7-14.3-32-32-32l-64 0c-17.7 0-32 14.3-32 32l0 64 0 24c0 22.1-17.9 40-40 40l-24 0-31.9 0c-1.5 0-3-.1-4.5-.2c-1.2 .1-2.4 .2-3.6 .2l-16 0c-22.1 0-40-17.9-40-40l0-112c0-.9 0-1.9 .1-2.8l0-69.7-32 0c-18 0-32-14-32-32.1c0-9 3-17 10-24L266.4 8c7-7 15-8 22-8s15 2 21 7L564.8 231.5c8 7 12 15 11 24z"
+                stroke="rgb(191, 191, 199)"
+                stroke-width="40"
+              />
+            </svg>
+          </a>
         </button>
 
         <button className="mt-1 ">
@@ -75,10 +79,12 @@ const Navbar = () => {
         </button>
       </div>
 
-
-        {/* Desktop vertical menu */}
+      {/* Desktop vertical menu */}
       <nav className="hidden md:flex flex-col fixed top-16 left-4 text-white bg-[rgb(38,38,38)] rounded-2xl shadow-md w-40 p-4 space-y-7">
-        <a href="/pages" className="hover:text-blue-400 flex items-center space-x-2">
+        <a
+          href="/pages"
+          className="hover:text-blue-400 flex items-center space-x-2"
+        >
           <svg
             className="w-7 h-7"
             xmlns="http://www.w3.org/2000/svg"
@@ -93,9 +99,14 @@ const Navbar = () => {
               stroke-width="40"
             />
           </svg>
-          <span>Home</span>
+          <Link to="/home">
+            <span> Home</span>
+          </Link>
         </a>
-        <a href="/pages" className="hover:text-blue-400 flex items-center space-x-2">
+        <a
+          href="/pages"
+          className="hover:text-blue-400 flex items-center space-x-2"
+        >
           <svg
             className="w-7 h-7"
             xmlns="http://www.w3.org/2000/svg"
@@ -108,7 +119,10 @@ const Navbar = () => {
           </svg>
           <span>Alerts</span>
         </a>
-        <a href="/pages" className="hover:text-blue-400 flex items-center space-x-2">
+        <a
+          href="/pages"
+          className="hover:text-blue-400 flex items-center space-x-2"
+        >
           <svg
             className="w-7 h-6"
             xmlns="http://www.w3.org/2000/svg"
@@ -127,8 +141,6 @@ const Navbar = () => {
         </a>
       </nav>
     </div>
-
-    
   );
 };
 
