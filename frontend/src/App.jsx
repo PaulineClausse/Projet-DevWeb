@@ -1,12 +1,14 @@
-import { Route, Routes, Link } from "react-router-dom";
-import HomePage from "./pages/HomePage";
-import CreatePage from "./pages/CreatePage";
 import Navbar from './components/Navbar';
+import Authentication from './pages/Authentication';
+import { Route, Routes, Link } from "react-router-dom";
 
 const App = () => {
-   
   return (
-    < Navbar />
+     
+      <Routes>
+        <Route path="/" element={<Navbar />} />
+        <Route path="/auth" element={<Authentication />} />
+      </Routes>
   );
 };
 

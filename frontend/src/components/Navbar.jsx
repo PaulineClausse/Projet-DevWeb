@@ -1,19 +1,20 @@
 // App.jsx
-import React from 'react';
+import { Component } from 'react';
+import { Route, Routes, Link } from "react-router-dom";
 import {
   AiOutlineUser,
 } from "react-icons/ai";
 
-const App = () => {
+const Navbar = () => {
   return (
-
-
     <div className="relative min-h-screen bg-[rgb(38,38,38)]">
 
       {/* Top Right User Icon */}
       <div className="absolute top-4 right-4  text-white">
         <button className="p-2 rounded-full bg-[rgb(38,38,38)] shadow-md hover:text-blue-500 transition">
-          <a href="/"><AiOutlineUser className="text-2xl"/></a>
+          <Link to="/auth">
+            <AiOutlineUser className="text-2xl" />
+          </Link>
         </button>
       </div>
 
@@ -125,15 +126,10 @@ const App = () => {
           <span>Messages</span>
         </a>
       </nav>
-      
-      {/* Main content placeholder */}
-      <main className="flex items-center justify-center h-screen px-4 pt-20 lg:pt-10">
-        <h1 className="text-3xl font-bold text-center text-white">Bienvenido</h1>
-      </main>
     </div>
 
     
   );
 };
 
-export default App;
+export default Navbar;
