@@ -1,31 +1,33 @@
-const express = require("express");
+const express = require('express')
+const app = express()
+const pool = require('./config/database');
 
-const mongoose = require("mongoose");
-
-require("dotenv").config();
-const app = express();
-
-const port = 3000;
-
+// parse requests of content-type - application/json
 app.use(express.json());
 
-app.use("/api/tasks", require("./routes/tasks.routes"));
+// parse requests of content-type - application/x-www-form-urlencoded
+app.use(express.urlencoded({ extended: true }));
 
-mongoose
-  .connect(
-    "mongodb://" +
-      process.env.MONGO_HOST +
-      ":" +
-      process.env.MONGO_PORT +
-      "/" +
-      process.env.MONGO_DATABASE_NAME
-  )
-  .then(() => {
-    console.log("MongoDB connected !");
-    app.listen(port, () => {
-      console.log(`Listening on port ${port}`);
-    });
-  })
-  .catch((err) => {
-    console.log(err);
-  });
+require("dotenv").config();
+
+require('../auth-service/routes/auth.routes')(app);
+// app.get('/', (req, res) => {
+//   res.send('Hello World!')
+// })
+
+// app.use(express.json());
+
+// app.post('/register', async (req, res) => {
+//   const { username, password } = req.body;
+
+//   try {
+//     const [rows] = await pool.query(
+//       'INSERT INTO users (username, password) VALUES (?, ?)',
+//       [username, password]
+//     );
+//     res.status(201).json({ id: rows.insertId });
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ error: 'Database error' });
+//   }
+// });

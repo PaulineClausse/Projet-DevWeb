@@ -1,0 +1,81 @@
+version: '3.8'
+
+services:
+  nginx:
+    image: nginx:latest
+    container_name: gateway
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    networks:
+      - app-network
+    depends_on:
+      - auth
+      - app
+
+  auth:
+    build:
+      context: ./auth-service
+    container_name: auth-service
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./auth-service:/app
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=mysql-db
+      - DB_PORT=3306
+      - DB_USER=authuser
+      - DB_PASSWORD=authpassword
+      - DB_NAME=authdb
+    depends_on:
+      - mysql
+    networks:
+      - app-network
+
+  app:
+    build:
+      context: ./src
+    container_name: main-app
+    ports:
+      - "3001:3000" # ← Corrigé ici
+    volumes:
+      - ./src:/app
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=mysql-db
+      - DB_PORT=3306
+      - DB_USER=authuser
+      - DB_PASSWORD=authpassword
+      - DB_NAME=authdb
+    depends_on:
+      - mysql
+    networks:
+      - app-network
+
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: authdb
+      MYSQL_USER: authuser
+      MYSQL_PASSWORD: authpassword
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - app-network
+
+volumes:
+  mysql-data:
+    name: mysql-data
+
+networks:
+  app-network:
+    driver: bridge

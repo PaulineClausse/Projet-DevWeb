@@ -1,5 +1,6 @@
 const tasksList = [];
 const Task = require("../models/task.model");
+const pool = require('../config/database');
 
 module.exports = {
   createTask: async (req, res) => {
@@ -46,6 +47,8 @@ module.exports = {
     }
   },
 
+  //----------------------------------------------
+
   getAllTasks: async (req, res) => {
     try {
       const tasks = await Task.find();
@@ -54,6 +57,22 @@ module.exports = {
       res.status(500).json({ message: err.message });
     }
   },
+
+
+  getAllUsers: async (req, res) => {
+    try {
+      const [rows] = await pool.query('SELECT * FROM users');
+      res.json(rows);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Erreur lors de la récupération des tâches' });
+    }
+  },
+
+
+
+
+//--------------------------------------------------
 
   getOneTask: async (req, res) => {
     try {

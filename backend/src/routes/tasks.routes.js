@@ -2,9 +2,9 @@ const express = require("express");
 
 const router = express.Router();
 
-const tasksController = require("../controllers/tasks.controller.js");
+const tasksController = require("../../../src/controllers/tasks.controller.js");
 
-const requiredFields = require("../middlewares/requiredFields.middleware.js");
+const requiredFields = require("../../../src/middlewares/requiredFields.middleware.js");
 
 router.post(
   "/",
