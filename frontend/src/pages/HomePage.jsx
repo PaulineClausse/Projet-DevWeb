@@ -1,10 +1,15 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import Header from "../components/Header";
+
 const HomePage = () => {
   const [posts, setPosts] = useState([]);
   const [isloading, setIsLoading] = useState(false);
   const [isInputVisible, setIsInputVisible] = useState(false);
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [image, setImage] = useState("");
+  const [editingPostId, setEditingPostId] = useState(null);
 
   const getPosts = async () => {
     try {
@@ -22,9 +27,75 @@ const HomePage = () => {
   }, []);
 
   const handleClose = () => {
-    setIsInputVisible(false); // ou autre logique pour "débloquer" le fond
+    setIsInputVisible(false);
   };
 
+  const handleEditClick = (post) => {
+    setEditingPostId(post._id);
+    setTitle(post.title);
+    setContent(post.content);
+    setImage(post.image);
+    setIsInputVisible(true);
+  };
+  const handleClick = async () => {
+    const data = {
+      title,
+      content,
+      image,
+    };
+
+    try {
+      if (editingPostId) {
+        putPost(editingPostId);
+        setTitle("");
+        setContent("");
+        setImage("");
+        setEditingPostId(null);
+        setIsInputVisible(false);
+        return;
+      }
+      const res = await axios.post("http://localhost:3000/api/posts/", data);
+      console.log("Résultat de la requête POST :", res);
+      getPosts();
+      setIsInputVisible(false);
+      setTitle("");
+      setContent("");
+      setImage("");
+    } catch (error) {
+      console.error("Erreur lors de la création :", error.message);
+    }
+  };
+  const deletePost = async (id) => {
+    try {
+      const res = await axios.delete(`http://localhost:3000/api/posts/${id}`);
+      console.log("Résultat de la requête DELETE :", res);
+      getPosts();
+    } catch (error) {
+      console.error("Erreur lors de la suppression :", error.message);
+    }
+  };
+
+  const putPost = async (id) => {
+    const data = {
+      title,
+      content,
+      image,
+    };
+    try {
+      const res = await axios.put(
+        `http://localhost:3000/api/posts/${id}`,
+        data
+      );
+      console.log("Résultat de la requête PUT :", res);
+      getPosts();
+      setIsInputVisible(false);
+      setTitle("");
+      setContent("");
+      setImage("");
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour :", error.message);
+    }
+  };
   return (
     <div id="" className="min-h-screen flex flex-col mx-auto px-4 gap-5 ">
       <Header />
@@ -35,7 +106,7 @@ const HomePage = () => {
         <section></section>
       </div>
 
-      <div className=" flex-grow px-4 py-2">
+      <div className=" flex-grow  pb-32 px-4 py-2">
         <section className="text-white text-xl font-bold fonts">Feed</section>
         {isloading ? (
           "Loading..."
@@ -45,44 +116,96 @@ const HomePage = () => {
               posts.map((post) => (
                 <div
                   key={post._id}
-                  className="relative mt-8 border px-3  rounded-[3vw] shadow-[2px_1px_20px_rgba(0,0,0,0.3)] shadow-[rgb(100,98,98)]"
+                  className="relative mt-8 border-[2px]  border-[rgba(119,191,199,0.5)] bg-opacity-80 rounded-lg p-5 shadow-[2px_1px_8px_rgba(255,255,255,0.15)]  max-w-md mx-auto"
                 >
-                  <img
-                    src="./images/pdp_test.jpg"
-                    alt="Avatar"
-                    className="absolute -top-5 -left-5 w-12 h-12 rounded-full border-2 border-white object-cover"
-                  />
-                  <section className="text-white text-right">Pseudo</section>
-                  <section className="text-white text-sm">
+                  {/* En-tête : avatar + pseudo + date */}
+                  <header className="flex items-center justify-between mb-4">
+                    <div className="flex items-center space-x-3">
+                      <img
+                        src="./images/pdp_test.jpg"
+                        alt="Avatar"
+                        className="w-12 h-12 rounded-full border-2 border-white object-cover"
+                      />
+                      <div className="flex flex-col">
+                        <div className="flex items-center justify-between space-x-3">
+                          <div>
+                            <h3 className=" text-[rgba(119,191,199,0.5)] font-semibold text-lg">
+                              {post.pseudo || "Pseudo"}
+                            </h3>
+                            <time className="text-gray-400 text-xs">
+                              {new Date(post.date).toLocaleString("fr-FR")}
+                            </time>
+                            <svg
+                              onClick={handleEditClick.bind(null, post)}
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 512 512"
+                              fill="rgb(38, 38, 38)"
+                              className="absolute top-3 right-12 w-6 h-6   cursor-pointer"
+                            >
+                              <path
+                                d="M362.7 19.3L314.3 67.7 444.3 197.7l48.4-48.4c25-25 25-65.5 0-90.5L453.3 19.3c-25-25-65.5-25-90.5 0zm-71 71L58.6 323.5c-10.4 10.4-18 23.3-22.2 37.4L1 481.2C-1.5 489.7 .8 498.8 7 505s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L421.7 220.3 291.7 90.3z"
+                                stroke="rgb(191, 191, 199)"
+                                stroke-width="40"
+                              />
+                            </svg>
+                          </div>
+                          <svg
+                            onClick={() => deletePost(post._id)}
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 448 512"
+                            fill="rgb(38, 38, 38)"
+                            className="absolute top-3 right-3 w-5 h-6   cursor-pointer"
+                          >
+                            <path
+                              d="M135.2 17.7L128 32 32 32C14.3 32 0 46.3 0 64S14.3 96 32 96l384 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0-7.2-14.3C307.4 6.8 296.3 0 284.2 0L163.8 0c-12.1 0-23.2 6.8-28.6 17.7zM416 128L32 128 53.2 467c1.6 25.3 22.6 45 47.9 45l245.8 0c25.3 0 46.3-19.7 47.9-45L416 128z"
+                              stroke="rgb(191, 191, 199)"
+                              stroke-width="40"
+                            />
+                          </svg>
+                        </div>
+                      </div>
+                    </div>
+                  </header>
+
+                  {post.title && (
+                    <h2 className="text-white text-xl font-bold mb-2">
+                      {post.title}
+                    </h2>
+                  )}
+
+                  <p className="text-gray-200 text-base leading-relaxed mb-4">
                     {post.content}
-                  </section>
-                  <section className="flex justify-between mt-1">
-                    <div>
-                      <button className="text-white">
+                  </p>
+
+                  <section className="flex items-center justify-between text-gray-300">
+                    <div className="flex space-x-6">
+                      <button className="flex items-center space-x-1 hover:text-blue-400 transition-colors duration-200">
                         <img
-                          className="w-5 sm:w-7"
+                          className="w-6 h-6"
                           src="/icons/like.png"
-                          alt=""
+                          alt="Like"
                         />
+                        <span>Like</span>
                       </button>
 
-                      <button className=" px-3">
+                      <button className="flex items-center space-x-1 hover:text-green-400 transition-colors duration-200">
                         <img
-                          className="w-5 sm:w-7"
+                          className="w-6 h-6"
                           src="/icons/comment.png"
-                          alt=""
+                          alt="Comment"
                         />
+                        <span>Comment</span>
                       </button>
 
-                      <button>
+                      <button className="flex items-center space-x-1 hover:text-purple-400 transition-colors duration-200">
                         <img
-                          className="w-5 sm:w-7"
+                          className="w-6 h-6"
                           src="/icons/share.png"
-                          alt=""
+                          alt="Share"
                         />
+                        <span>Share</span>
                       </button>
                     </div>
-                    <div className="text-white text-xs">{post.date}</div>
                   </section>
                 </div>
               ))
@@ -100,46 +223,69 @@ const HomePage = () => {
           ></div>
 
           <div
-            className="relative fixed bottom-28 left-1/2 transform -translate-x-1/2 w-5/6 px-4 py-3 gap-2 flex items-center bg-[rgb(50,50,50)] rounded-3xl shadow-2xl z-20"
+            className="
+    relative fixed bottom-8 left-1/2 transform -translate-x-1/2 
+    w-5/6 max-w-md px-4 py-3 gap-4 flex flex-col 
+    bg-[rgb(50,50,50)] rounded-3xl shadow-2xl z-20
+    sm:flex-row sm:items-center
+  "
             onClick={(e) => e.stopPropagation()}
           >
             <img
               src="./images/pdp_test.jpg"
               alt="Avatar"
-              className="absolute -top-5 -left-5 w-12 h-12 rounded-full border-2 border-white object-cover"
+              className="absolute -top-5 -left-3 w-12 h-12 rounded-full border-2 border-white object-cover"
             />
 
             <input
               type="text"
-              placeholder="Écris quelque chose..."
-              autoFocus
-              className="flex-1 px-4 py-3 rounded-3xl text-white placeholder-gray-400 outline-none bg-transparent"
+              placeholder="Titre"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="w-full px-6 text-2xl sm:text-4xl font-bold outline-none placeholder-gray-400 bg-transparent mb-2 sm:mb-0"
             />
-            <button className="ml-3">
-              <img
-                className="w-5 sm:w-7"
-                src="/icons/publish.png"
-                alt="Publish icon"
+
+            <div className="flex items-center bg-black/10 backdrop-blur-sm rounded-3xl px-4 py-3 flex-1">
+              <input
+                type="text"
+                id="content"
+                placeholder="Écris quelque chose..."
+                autoFocus
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                className="flex-1 text-white placeholder-gray-400 outline-none bg-transparent"
               />
-            </button>
+              <button
+                className="ml-3 p-2 hover:bg-white/20 rounded-full transition flex-shrink-0"
+                onClick={handleClick}
+              >
+                <img
+                  className="w-6 h-6"
+                  src="/icons/publish.png"
+                  alt="Publish icon"
+                />
+              </button>
+            </div>
           </div>
         </>
       )}
-
-      <div className="fixed bottom-5 left-1/2 transform -translate-x-1/2 flex gap-8 bg-[rgb(38,38,38)] p-4 rounded-2xl shadow-lg">
+      <div className=" fixed shadow-lg border border-gray-600  bg-black/30 rounded-full w-11 text-center h-11 right-8 bottom-24">
         <button
           onClick={() => setIsInputVisible(!isInputVisible)}
           className="mt-3"
         >
           <svg
-            className="w-7 h-7"
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 448 512"
-            fill="white"
+            className="w-6 h-6"
+            fill="rgb(191, 191, 199)"
           >
-            <path d="M224 256c17.7 0 32-14.3 32-32V96c0-17.7-14.3-32-32-32s-32 14.3-32 32v128c0 17.7 14.3 32 32 32zm0 64c-17.7 0-32 14.3-32 32v64c0 17.7 14.3 32 32 32s32-14.3 32-32v-64c0-17.7-14.3-32-32-32z" />
+            <path d="M0 216C0 149.7 53.7 96 120 96l8 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-8 0c-30.9 0-56 25.1-56 56l0 8 64 0c35.3 0 64 28.7 64 64l0 64c0 35.3-28.7 64-64 64l-64 0c-35.3 0-64-28.7-64-64l0-32 0-32 0-72zm256 0c0-66.3 53.7-120 120-120l8 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-8 0c-30.9 0-56 25.1-56 56l0 8 64 0c35.3 0 64 28.7 64 64l0 64c0 35.3-28.7 64-64 64l-64 0c-35.3 0-64-28.7-64-64l0-32 0-32 0-72z" />
           </svg>
         </button>
+      </div>
+
+      <div className="fixed bottom-5 left-1/2 transform -translate-x-1/2 flex gap-8 bg-[rgb(38,38,38)] p-4 rounded-2xl shadow-lg">
         <button className="mt-3 ">
           <svg
             className="w-7 h-7"
@@ -187,25 +333,6 @@ const HomePage = () => {
           </svg>
         </button>
       </div>
-
-      {/* <div className="md:flex text-red-600">
-        {isloading ? (
-          "Loading..."
-        ) : (
-          <>
-            {posts.length > 0 ? (
-              posts.map((post) => (
-                <div key={post._id}>
-                  <h1>{post.title}</h1>
-                  <p>{post.content}</p>
-                </div>
-              ))
-            ) : (
-              <p>No posts found</p>
-            )}
-          </>
-        )}
-      </div> */}
     </div>
   );
 };
