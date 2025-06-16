@@ -47,9 +47,20 @@ User.init({
   password: {
     type: DataTypes.STRING,
   },
+  username: {
+    type: DataTypes.STRING,
+    unique: true,
+  },
+  name: {
+    type: DataTypes.STRING,
+  },
+  first_name: {
+    type: DataTypes.STRING,
+  },
 }, {
   sequelize,
   modelName: 'User',
+  timestamps: false
 });
 
 module.exports = User;

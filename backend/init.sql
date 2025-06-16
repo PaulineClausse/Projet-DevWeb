@@ -1,3 +1,16 @@
+CREATE SCHEMA IF NOT EXISTS authdb;
+DEFAULT CHARACTER SET utf8mb4
+COLLATE utf8mb4_general_ci;
+
+-- Crée un utilisateur MySQL avec un mot de passe
+CREATE USER IF NOT EXISTS 'authuser'@'localhost' IDENTIFIED BY 'authpassword';
+
+-- Donne les droits nécessaires à l'utilisateur sur la base
+GRANT ALL PRIVILEGES ON authdb.* TO 'authuser'@'localhost';
+
+-- Applique les modifications de privilèges
+FLUSH PRIVILEGES;
+
 USE authdb;
 
 CREATE TABLE IF NOT EXISTS users (
