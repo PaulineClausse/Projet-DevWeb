@@ -2,29 +2,38 @@
 import { Component } from "react";
 import { Route, Routes, Link } from "react-router-dom";
 import { AiOutlineUser } from "react-icons/ai";
+import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 
 const Navbar = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const hidePdpOn = "/profil";
+
   return (
-    <div className="relative min-h-screen bg-[rgb(38,38,38)]">
+    <div className=" relative bg-[rgb(38,38,38)]">
       {/* Top Right User Icon */}
-      <div className="absolute top-4 right-4  text-white">
-        <button className="p-2 rounded-full bg-[rgb(38,38,38)] shadow-md hover:text-blue-500 transition">
-          <Link to="/auth">
-            <AiOutlineUser className="text-2xl" />
-          </Link>
-        </button>
-      </div>
+      <div className="absolute top-4 right-4  text-white"></div>
 
       {/* Image Bottom Top Left */}
       <div className="Image_Top_Left">
         <img
           src="../public/images/logo.png"
-          className="w-20 h-20 fixed md:w-15 md:h-15 md:fixed md:top-4 md:left-20 md:z-50"
+          className="w-20 h-20 fixed md:w-15 md:h-15 md:fixed md:top-4 md:left-14 md:z-50"
         />
-        <img
-          src="../public/images/logo.png"
-          className="w-20 h-20 left-3 fixed md:w-15 md:h-15 md:fixed md:top-4 md:left-20 md:z-50 opacity-30"
-        />
+        {location.pathname !== hidePdpOn && (
+          <button
+            onClick={() => navigate("/profil")}
+            className="left-40 fixed mx-auto block md:hidden"
+            style={{ width: "64px", height: "64px" }}
+          >
+            <img
+              className=" rounded-full w-full h-full object-cover border-2 border-white"
+              src="/images/pdp_test.jpg"
+              alt="Profile"
+            />
+          </button>
+        )}
       </div>
 
       {/* Mobile Bottom Navigation */}
@@ -80,9 +89,9 @@ const Navbar = () => {
       </div>
 
       {/* Desktop vertical menu */}
-      <nav className="hidden md:flex flex-col fixed top-16 left-4 text-white bg-[rgb(38,38,38)] rounded-2xl shadow-md w-40 p-4 space-y-7">
+      <nav className="hidden md:flex flex-col fixed top-60 left-3 xl:left-16 text-white bg-[rgb(38,38,38)] rounded-2xl shadow-2xl w-40 p-4 space-y-7">
         <a
-          href="/pages"
+          href="/home"
           className="hover:text-blue-400 flex items-center space-x-2"
         >
           <svg
@@ -139,6 +148,18 @@ const Navbar = () => {
           </svg>
           <span>Messages</span>
         </a>
+        {/* className="left-40 fixed mx-auto block md:absolute md:top-96 md:left-14 md:z-50" */}
+        <Link
+          to="/profil"
+          className="flex px-2 items-center gap-x-4 hover:text-blue-400"
+        >
+          <img
+            className="w-10 h-10 rounded-full object-cover border-2 border-white"
+            src="/images/pdp_test.jpg"
+            alt="Profile"
+          />
+          <span className="text-white hover:text-blue-400">Profil</span>
+        </Link>
       </nav>
     </div>
   );

@@ -1,41 +1,47 @@
+import Navbar from "../components/Navbar";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import Navbar from "../components/Navbar";
 
-const HomePage = () => {
+const ProfilPage = () => {
   const [posts, setPosts] = useState([]);
   const [isloading, setIsLoading] = useState(false);
   const [isInputVisible, setIsInputVisible] = useState(false);
-  const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [image, setImage] = useState("");
   const [editingPostId, setEditingPostId] = useState(null);
-
-  const getPosts = async () => {
-    try {
-      setIsLoading(true);
-      const response = await axios.get("http://localhost:3000/api/posts/");
-      console.log(response.data);
-      setPosts(response.data);
-      setIsLoading(false);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-  useEffect(() => {
-    getPosts();
-  }, []);
-
+  const [title, setTitle] = useState("");
   const handleClose = () => {
     setIsInputVisible(false);
   };
-
-  const handleEditClick = (post) => {
-    setEditingPostId(post._id);
-    setTitle(post.title);
-    setContent(post.content);
-    setImage(post.image);
-    setIsInputVisible(true);
+  const deletePost = async (id) => {
+    try {
+      const res = await axios.delete(`http://localhost:3000/api/posts/${id}`);
+      console.log("Résultat de la requête DELETE :", res);
+      getPosts();
+    } catch (error) {
+      console.error("Erreur lors de la suppression :", error.message);
+    }
+  };
+  const putPost = async (id) => {
+    const data = {
+      title,
+      content,
+      image,
+    };
+    try {
+      const res = await axios.put(
+        `http://localhost:3000/api/posts/${id}`,
+        data
+      );
+      console.log("Résultat de la requête PUT :", res);
+      getPosts();
+      setIsInputVisible(false);
+      setTitle("");
+      setContent("");
+      setImage("");
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour :", error.message);
+    }
   };
   const handleClick = async () => {
     const data = {
@@ -43,10 +49,6 @@ const HomePage = () => {
       content,
       image,
     };
-
-    if (!title || !content) {
-      return alert("Title and content are required");
-    }
 
     try {
       if (editingPostId) {
@@ -69,66 +71,55 @@ const HomePage = () => {
       console.error("Erreur lors de la création :", error.message);
     }
   };
-  const deletePost = async (id) => {
-    try {
-      const res = await axios.delete(`http://localhost:3000/api/posts/${id}`);
-      console.log("Résultat de la requête DELETE :", res);
-      getPosts();
-    } catch (error) {
-      console.error("Erreur lors de la suppression :", error.message);
-    }
-  };
 
-  const putPost = async (id) => {
-    const data = {
-      title,
-      content,
-      image,
-    };
+  const handleEditClick = (post) => {
+    setEditingPostId(post._id);
+    setTitle(post.title);
+    setContent(post.content);
+    setImage(post.image);
+    setIsInputVisible(true);
+  };
+  const getPosts = async () => {
     try {
-      const res = await axios.put(
-        `http://localhost:3000/api/posts/${id}`,
-        data
-      );
-      console.log("Résultat de la requête PUT :", res);
-      getPosts();
-      setIsInputVisible(false);
-      setTitle("");
-      setContent("");
-      setImage("");
+      setIsLoading(true);
+      const response = await axios.get("http://localhost:3000/api/posts/");
+      console.log(response.data);
+      setPosts(response.data);
+      setIsLoading(false);
     } catch (error) {
-      console.error("Erreur lors de la mise à jour :", error.message);
+      console.log(error);
     }
   };
+  useEffect(() => {
+    getPosts();
+  }, []);
+
   return (
-    <div id="" className="min-h-screen  flex flex-col mx-auto px-4 gap-5 ">
+    <div>
       <Navbar />
-      <div className="mt-16 md:mt-4 md:flex flex-col items-center">
-        <div id="Message" className="h-16 ">
-          <section className="text-white text-xl font-bold fonts md:mt-">
-            Messages
-          </section>
-          <div className="flex gap-2 py-3 ">
-            <img
-              src="./images/pdp_test.jpg"
-              alt="Avatar"
-              className="w-12 h-12 rounded-full shadow-2xl border-2 border-white object-cover"
-            />
-            <img
-              src="./images/pdp_test.jpg"
-              alt="Avatar"
-              className="w-12 h-12 rounded-full  shadow-2xl border-2 border-white object-cover"
-            />
-            <img
-              src="./images/pdp_test.jpg"
-              alt="Avatar"
-              className="w-12 h-12 rounded-full  shadow-2xl border-2 border-white object-cover"
-            />
+      <div className="flex flex-col">
+        <div className="relative top-20">
+          <div className=" shadow-2xl bg-gradient-to-r from-[#7BE9E49E] to-[#0A3C5B] text-white p-14 w-9/12 right-14 top-12 absolute rounded-lg">
+            <h1 className="absolute -top-10 left-0 text-3xl font-bold text-white">
+              Profil
+            </h1>
+            <div className="flex flex-col ">
+              <div className="absolute  top-4 left-4 flex flex-row ">
+                <p className="font-bold text-xl ">Pseudo</p>
+                <p className="px-3 text-gray-300 text-xl ">@username</p>
+              </div>
+              <div>
+                <p className="absolute left-4">Ceci est la biographie</p>
+              </div>
+            </div>
           </div>
+          <img
+            className=" absolute lg:w-1/12 md:w-2/12 right-1  rounded-full w-3/12  object-cover border-2 border-white"
+            src="./images/pdp_test.jpg"
+            alt="Profile"
+          />
         </div>
-
-        <div className=" flex-grow  pb-32 px-4 py-9">
-          <section className="text-white text-xl font-bold fonts">Feed</section>
+        <div className=" flex-grow  pb-32 px-4 py-60">
           {isloading ? (
             "Loading..."
           ) : (
@@ -137,7 +128,7 @@ const HomePage = () => {
                 posts.map((post) => (
                   <div
                     key={post._id}
-                    className=" relative mt-8 border-[2px] border-[rgba(119,191,199,0.5)] bg-opacity-80 rounded-lg p-5 shadow-[2px_1px_8px_rgba(255,255,255,0.15)]  max-w-md mx-auto"
+                    className=" relative mt-8 border-[2px]  border-[rgba(119,191,199,0.5)] bg-opacity-80 rounded-lg p-5 shadow-[2px_1px_8px_rgba(255,255,255,0.15)]  max-w-md mx-auto"
                   >
                     {/* En-tête : avatar + pseudo + date */}
                     <header className="flex items-center justify-between mb-4">
@@ -231,7 +222,7 @@ const HomePage = () => {
                   </div>
                 ))
               ) : (
-                <p className="text-justify text-gray-400 text-lg font-bold  md:left-72">
+                <p className="text-justify text-gray-400 text-lg font-bold  px-64 py-20">
                   {" "}
                   You don't have any posts to view.
                 </p>
@@ -239,79 +230,63 @@ const HomePage = () => {
             </>
           )}
         </div>
-        {isInputVisible && (
-          <>
-            <div
-              className="fixed inset-0 bg-black/30 backdrop-blur-sm z-10"
-              onClick={handleClose}
-            ></div>
+      </div>
+      {isInputVisible && (
+        <>
+          <div
+            className="fixed inset-0 bg-black/30 backdrop-blur-sm z-10"
+            onClick={handleClose}
+          ></div>
 
-            <div
-              className="
-              md:top-96 md:left-64
-    relative bottom-8 left-1/2 transform -translate-x-1/2 
+          <div
+            className="
+    relative fixed bottom-8 left-1/2 transform -translate-x-1/2 
     w-5/6 max-w-md px-4 py-3 gap-4 flex flex-col 
     bg-[rgb(50,50,50)] rounded-3xl shadow-2xl z-20
     sm:flex-row sm:items-center
   "
-              onClick={(e) => e.stopPropagation()}
-            >
-              <img
-                src="./images/pdp_test.jpg"
-                alt="Avatar"
-                className="absolute -top-5 -left-3 w-12 h-12 rounded-full border-2 border-white object-cover"
-              />
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src="./images/pdp_test.jpg"
+              alt="Avatar"
+              className="absolute -top-5 -left-3 w-12 h-12 rounded-full border-2 border-white object-cover"
+            />
 
+            <input
+              type="text"
+              placeholder="Titre"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="w-full px-6 text-2xl sm:text-4xl font-bold outline-none placeholder-gray-400 bg-transparent mb-2 sm:mb-0"
+            />
+
+            <div className="flex items-center bg-black/10 backdrop-blur-sm rounded-3xl px-4 py-3 flex-1">
               <input
                 type="text"
-                placeholder="Titre"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="w-full px-6 text-2xl sm:text-4xl font-bold outline-none placeholder-gray-400 bg-transparent mb-2 sm:mb-0"
+                id="content"
+                placeholder="Écris quelque chose..."
+                autoFocus
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                className="flex-1 text-white placeholder-gray-400 outline-none bg-transparent"
               />
-
-              <div className="flex items-center bg-black/10 backdrop-blur-sm rounded-3xl px-4 py-3 flex-1">
-                <input
-                  type="text"
-                  id="content"
-                  placeholder="Écris quelque chose..."
-                  autoFocus
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  className="flex-1 text-white placeholder-gray-400 outline-none bg-transparent"
+              <button
+                className="ml-3 p-2 hover:bg-white/20 rounded-full transition flex-shrink-0"
+                onClick={handleClick}
+              >
+                <img
+                  className="w-6 h-6"
+                  src="/icons/publish.png"
+                  alt="Publish icon"
                 />
-                <button
-                  className="ml-3 p-2 md:px-6 hover:bg-white/20 rounded-full transition flex-shrink-0"
-                  onClick={handleClick}
-                >
-                  <img
-                    className="w-6 h-6"
-                    src="/icons/publish.png"
-                    alt="Publish icon"
-                  />
-                </button>
-              </div>
+              </button>
             </div>
-          </>
-        )}
-        <div className=" fixed shadow-lg border border-gray-600  bg-black/30 rounded-full w-11 text-center h-11 right-8 bottom-24">
-          <button
-            onClick={() => setIsInputVisible(!isInputVisible)}
-            className="mt-3"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 448 512"
-              className="w-6 h-6"
-              fill="rgb(191, 191, 199)"
-            >
-              <path d="M0 216C0 149.7 53.7 96 120 96l8 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-8 0c-30.9 0-56 25.1-56 56l0 8 64 0c35.3 0 64 28.7 64 64l0 64c0 35.3-28.7 64-64 64l-64 0c-35.3 0-64-28.7-64-64l0-32 0-32 0-72zm256 0c0-66.3 53.7-120 120-120l8 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-8 0c-30.9 0-56 25.1-56 56l0 8 64 0c35.3 0 64 28.7 64 64l0 64c0 35.3-28.7 64-64 64l-64 0c-35.3 0-64-28.7-64-64l0-32 0-32 0-72z" />
-            </svg>
-          </button>
-        </div>
-      </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };
 
-export default HomePage;
+export default ProfilPage;
