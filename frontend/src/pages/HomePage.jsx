@@ -15,6 +15,7 @@ const HomePage = () => {
     try {
       setIsLoading(true);
       const response = await axios.get("http://localhost:3000/api/posts/");
+
       console.log(response.data);
       setPosts(response.data);
       setIsLoading(false);
