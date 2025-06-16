@@ -29,11 +29,27 @@
 
 // module.exports = User;
 
-const { Sequelize } = require('sequelize');
+const { Model, DataTypes } = require('sequelize');
+const sequelize = require('../config/database');
 
-const sequelize = new Sequelize('authdb', 'authuser', 'authpassword', {
-  host: 'mysql-db',
-  dialect: 'mysql'
+class User extends Model {}
+
+User.init({
+  user_id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
+  },
+  email: {
+    type: DataTypes.STRING,
+    unique: true,
+  },
+  password: {
+    type: DataTypes.STRING,
+  },
+}, {
+  sequelize,
+  modelName: 'User',
 });
 
-module.exports = sequelize;
+module.exports = User;
