@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const taskSchema = new mongoose.Schema({
+const postSchema = new mongoose.Schema({
   title: {
     type: String,
     required: true,
@@ -9,15 +9,15 @@ const taskSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  createdAt: {
+  date: {
     type: Date,
     default: Date.now,
   },
-  completed: {
-    type: Boolean,
+  image: {
+    type: String,
     default: false,
   },
 });
 
-const Task = mongoose.model("Task", taskSchema);
-module.exports = Task;
+const Post = mongoose.model("Post", postSchema);
+module.exports = Post;
