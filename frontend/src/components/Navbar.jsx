@@ -12,14 +12,12 @@ const Navbar = () => {
 
   return (
     <div className=" relative bg-[rgb(38,38,38)]">
-      {/* Top Right User Icon */}
-      <div className="absolute top-4 right-4  text-white"></div>
 
       {/* Image Bottom Top Left */}
       <div className="Image_Top_Left">
         <img
           src="../public/images/logo.png"
-          className="w-20 h-20 fixed md:w-15 md:h-15 md:fixed md:top-4 md:left-14 md:z-50"
+          className="w-20 h-20 fixed md:w-15 md:h-15 md:fixed md:top-4 md:left-20 md: md:z-50"
         />
         {location.pathname !== hidePdpOn && (
           <button
