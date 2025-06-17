@@ -2,9 +2,15 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import Navbar from "../components/Navbar";
 
+const currentUserId = "currentUserId";
+const currentUsername = "CurrentUser";
+const BASE_REPLY_ROWS = 1;
+
 const HomePage = () => {
   const [posts, setPosts] = useState([]);
   const [comments, setComments] = useState({});
+  const [likes, setLikes] = useState({});
+  const [showLikesList, setShowLikesList] = useState(null);
   const [isloading, setIsLoading] = useState(false);
   const [isInputVisible, setIsInputVisible] = useState(false);
   const [title, setTitle] = useState("");
@@ -13,6 +19,9 @@ const HomePage = () => {
   const [editingPostId, setEditingPostId] = useState(null);
   const [newComment, setNewComment] = useState("");
   const [activePostId, setActivePostId] = useState(null);
+
+  // Pour la gestion d'une seule zone de réponse ouverte à la fois
+  const [replyTarget, setReplyTarget] = useState(null); // {commentId, value, rows}
 
   const getPosts = async () => {
     try {
@@ -44,11 +53,27 @@ const HomePage = () => {
     }
   };
 
+  const getLikes = async (postId) => {
+    try {
+      const response = await axios.get(`http://localhost:4002/api/likes/post/${postId}`);
+      setLikes((prev) => ({
+        ...prev,
+        [postId]: response.data,
+      }));
+    } catch (error) {
+      setLikes((prev) => ({
+        ...prev,
+        [postId]: [],
+      }));
+    }
+  };
+
+  // Ajout d'un commentaire racine
   const addComment = async (postId) => {
     if (!newComment) return alert("Le commentaire ne peut pas être vide");
     const commentData = {
       post_id: postId,
-      user_id: "currentUserId",
+      user_id: currentUserId,
       content: newComment,
     };
     try {
@@ -60,12 +85,48 @@ const HomePage = () => {
     }
   };
 
-  const deleteComment = async (commentId, postId) => {
+  // Ajout d'une réponse à un commentaire
+  const addReply = async (postId, commentId) => {
+    if (!replyTarget?.value) return alert("La réponse ne peut pas être vide");
     try {
-      await axios.delete(`http://localhost:4001/api/comments/${commentId}`);
+      await axios.post(`http://localhost:4001/api/comments/${commentId}/reply`, {
+        post_id: postId,
+        user_id: currentUserId,
+        content: replyTarget.value,
+      });
+      setReplyTarget(null);
+      getComments(postId);
+    } catch (error) {
+      console.error("Erreur lors de la réponse :", error);
+    }
+  };
+
+  // Suppression d'un commentaire ou d'une réponse
+  const deleteComment = async (commentId, postId, parentId = null) => {
+    try {
+      if (parentId) {
+        // Suppression d'une réponse à un commentaire
+        await axios.delete(`http://localhost:4001/api/comments/${parentId}/replies/${commentId}`);
+      } else {
+        // Suppression d'un commentaire racine
+        await axios.delete(`http://localhost:4001/api/comments/${commentId}`);
+      }
       getComments(postId);
     } catch (error) {
       console.error("Erreur lors de la suppression du commentaire :", error);
+    }
+  };
+
+  const toggleLike = async (postId) => {
+    try {
+      await axios.post("http://localhost:4002/api/likes/", {
+        post_id: postId,
+        user_id: currentUserId,
+        username: currentUsername,
+      });
+      getLikes(postId);
+    } catch (error) {
+      console.error("Erreur lors du like :", error);
     }
   };
 
@@ -130,42 +191,100 @@ const HomePage = () => {
     }
   };
 
+  // Affiche un commentaire et ses réponses dans le même bloc
+  const renderCommentWithReplies = (comment, postId, allComments, level = 0) => {
+    const replies = allComments.filter((c) => c.parent_id === comment._id);
+
+    return (
+      <div
+        key={comment._id}
+        className={`my-2 ${level === 0 ? "p-3 bg-gradient-to-r from-[rgba(38,38,38,0.95)] to-[rgba(119,191,199,0.15)] border-l-4 border-[rgba(119,191,199,0.7)] rounded-md shadow-sm" : ""}`}
+      >
+        <div className="flex justify-between items-center mb-1" style={level > 0 ? { marginLeft: `${level * 2}rem` } : {}}>
+          <div className="flex items-center gap-2">
+            <img
+              src={comment.avatar || "/images/pdp_test.jpg"}
+              alt="Avatar"
+              className={`rounded-full border-2 border-white object-cover ${level === 0 ? "w-7 h-7" : "w-5 h-5"}`}
+            />
+            <span className={`font-semibold ${level === 0 ? "text-[rgba(119,191,199,0.9)]" : "text-cyan-300 text-sm"}`}>
+              {comment.pseudo || comment.username || "Utilisateur"}
+            </span>
+          </div>
+          <span className="text-xs text-gray-400">
+            {comment.date ? new Date(comment.date).toLocaleString("fr-FR") : ""}
+          </span>
+        </div>
+        <div className="flex justify-between items-center" style={level > 0 ? { marginLeft: `${level * 2}rem` } : {}}>
+          <p className={`text-gray-100 ${level > 0 ? "text-sm" : ""}`}>{comment.content}</p>
+          <button
+            onClick={() => deleteComment(comment._id, postId, comment.parent_id)}
+            className="ml-4 text-red-400 hover:text-red-600 transition"
+            title="Supprimer le commentaire"
+          >
+            <img src="/icons/delete.png" alt="Supprimer" className={level === 0 ? "w-5 h-5" : "w-4 h-4"} />
+          </button>
+        </div>
+        <button
+          className="text-xs text-blue-400 mt-1"
+          style={level > 0 ? { marginLeft: `${level * 2}rem` } : {}}
+          onClick={() => setReplyTarget({ commentId: comment._id, value: "", rows: BASE_REPLY_ROWS })}
+        >
+          Répondre
+        </button>
+        {/* Affiche la zone de réponse juste sous le commentaire ciblé */}
+        {replyTarget && replyTarget.commentId === comment._id && (
+          <div className="mt-2 flex flex-col gap-1" style={level > 0 ? { marginLeft: `${level * 2}rem` } : {}}>
+            <textarea
+              value={replyTarget.value}
+              onChange={e => {
+                const lines = e.target.value.split("\n").length;
+                setReplyTarget(rt => ({
+                  ...rt,
+                  value: e.target.value,
+                  rows: Math.max(BASE_REPLY_ROWS, lines)
+                }));
+              }}
+              placeholder="Votre réponse..."
+              className="w-full p-2 rounded border bg-gray-800 text-gray-100"
+              rows={replyTarget.rows}
+              style={{ resize: "none" }}
+            />
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={() => addReply(postId, comment._id)}
+                className="px-3 py-1 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded text-xs"
+              >
+                Répondre
+              </button>
+              <button
+                onClick={() => setReplyTarget(null)}
+                className="px-2 py-1 text-xs text-gray-400 hover:text-red-400"
+              >
+                Annuler
+              </button>
+            </div>
+          </div>
+        )}
+        {/* Affiche les réponses dans le même bloc, indentées */}
+        {replies.length > 0 && (
+          <div>
+            {replies.map((reply) =>
+              renderCommentWithReplies(reply, postId, allComments, level + 1)
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const displayComments = (postId) => {
     const postComments = comments[postId] || [];
     return (
       <div className="pt-4">
-        {postComments.map((comment) => (
-          <div
-            key={comment._id}
-            className="p-3 my-2 bg-gradient-to-r from-[rgba(38,38,38,0.95)] to-[rgba(119,191,199,0.15)] border-l-4 border-[rgba(119,191,199,0.7)] rounded-md shadow-sm"
-          >
-            <div className="flex justify-between items-center mb-1">
-              <div className="flex items-center gap-2">
-                <img
-                  src={comment.avatar || "/images/pdp_test.jpg"}
-                  alt="Avatar"
-                  className="w-7 h-7 rounded-full border-2 border-white object-cover"
-                />
-                <span className="text-[rgba(119,191,199,0.9)] font-semibold">
-                  {comment.pseudo || comment.username || "Utilisateur"}
-                </span>
-              </div>
-              <span className="text-xs text-gray-400">
-                {comment.date ? new Date(comment.date).toLocaleString("fr-FR") : ""}
-              </span>
-            </div>
-            <div className="flex justify-between items-center">
-              <p className="text-gray-100">{comment.content}</p>
-              <button
-                onClick={() => deleteComment(comment._id, postId)}
-                className="ml-4 text-red-400 hover:text-red-600 transition"
-                title="Supprimer le commentaire"
-              >
-                <img src="/icons/delete.png" alt="Supprimer" className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-        ))}
+        {postComments
+          .filter((c) => !c.parent_id)
+          .map((comment) => renderCommentWithReplies(comment, postId, postComments))}
       </div>
     );
   };
@@ -174,6 +293,10 @@ const HomePage = () => {
     getPosts();
   }, []);
 
+  useEffect(() => {
+    posts.forEach((post) => getLikes(post._id));
+  }, [posts]);
+
   return (
     <div className="min-h-screen flex flex-col mx-auto px-4 gap-5">
       <Navbar />
@@ -181,7 +304,6 @@ const HomePage = () => {
         <div id="Message" className="h-16">
           <section className="text-white text-xl font-bold">Messages</section>
         </div>
-        {/* 3 photos de profil sous le titre "Messages" */}
         <div className="flex justify-center items-center gap-4 mb-2">
           <img
             src="./images/pdp_test.jpg"
@@ -269,13 +391,29 @@ const HomePage = () => {
                     </p>
                     <section className="flex items-center justify-between text-gray-300">
                       <div className="flex space-x-6">
-                        <button className="flex items-center space-x-1 hover:text-blue-400 transition-colors duration-200">
+                        <button
+                          className={`flex items-center space-x-1 hover:text-blue-400 transition-colors duration-200 ${
+                            likes[post._id]?.some((l) => l.user_id === currentUserId)
+                              ? "text-blue-400"
+                              : ""
+                          }`}
+                          onClick={() => toggleLike(post._id)}
+                        >
                           <img
                             className="w-6 h-6"
                             src="/icons/like.png"
                             alt="Like"
                           />
                           <span>Like</span>
+                          <span
+                            className="ml-2 cursor-pointer"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setShowLikesList(showLikesList === post._id ? null : post._id);
+                            }}
+                          >
+                            {likes[post._id]?.length || 0}
+                          </span>
                         </button>
                         <button
                           onClick={() => toggleComments(post._id)}
@@ -298,6 +436,29 @@ const HomePage = () => {
                         </button>
                       </div>
                     </section>
+                    {showLikesList === post._id && (
+                      <div className="absolute bg-gray-800 text-white rounded p-2 z-50 mt-2 left-0 right-0 max-w-xs mx-auto">
+                        <h4 className="font-bold mb-2">Likes</h4>
+                        <ul>
+                          {likes[post._id]?.map((like) => (
+                            <li key={like._id} className="flex items-center gap-2 py-1">
+                              <img
+                                src={like.avatar || "/images/pdp_test.jpg"}
+                                alt="Avatar"
+                                className="w-6 h-6 rounded-full border-2 border-white object-cover"
+                              />
+                              <span>{like.username || like.user_id}</span>
+                            </li>
+                          ))}
+                        </ul>
+                        <button
+                          className="mt-2 text-sm text-blue-400"
+                          onClick={() => setShowLikesList(null)}
+                        >
+                          Fermer
+                        </button>
+                      </div>
+                    )}
                     {activePostId === post._id && (
                       <div className="comments-section">
                         {displayComments(post._id)}
