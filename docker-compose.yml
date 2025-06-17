@@ -1,33 +1,31 @@
 services:
-  # Service pour le microservice Likes
   like-service:
-    build: ./like-service  # Spécifie le dossier pour construire l'image
+    build: ./like-service
     container_name: like-service
     restart: unless-stopped
     ports:
-      - "4002:4002"  # Expose le port 4002 pour le microservice Likes
+      - "4002:4002"
     environment:
-      - MONGO_URI=mongodb://mongo:27019/like-service  
+      - MONGO_URI=mongodb://mongo-like:27017/like-service
     depends_on:
-      - mongo3  
+      - mongo-like
     networks:
-      - backend
+      - microservices-network
 
-  # Service MongoDB
-  mongo3:
+  mongo-like:
     image: mongo
-    container_name: mongo3
+    container_name: mongo-like
     restart: unless-stopped
     volumes:
-      - mongo3_data:/data/db
+      - mongo-like_data:/data/db
     ports:
-      - "27019:27017"  
+      - "27019:27017"
     networks:
-      - backend
+      - microservices-network
 
 volumes:
-  mongo3_data:
+  mongo-like_data:
 
 networks:
-  backend:
+  microservices-network:
     driver: bridge

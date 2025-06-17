@@ -9,4 +9,6 @@ router.post("/", likeController.addLike);
 // Route pour récupérer le nombre de likes d'un post
 router.get("/:post_id", likeController.getLikesCount);
 
+router.get("/:post_id/users", likeController.getUsersWhoLiked);
+
 module.exports = router;
