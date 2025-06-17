@@ -5,7 +5,7 @@ FROM node:16
 WORKDIR /app
 
 # Copier package.json et package-lock.json dans le conteneur
-COPY package.json package-lock.json ./
+COPY package.json package-lock.json ./ 
 
 # Installer les dépendances
 RUN npm install

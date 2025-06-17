@@ -1,4 +1,3 @@
-// src/controllers/comment.controller.js
 const Comment = require("../models/comment.model");
 
 // Fonction pour créer un commentaire
@@ -39,5 +38,17 @@ exports.getCommentsByPost = async (req, res) => {
     res.status(200).json(comments); // Retourne les commentaires du post
   } catch (err) {
     res.status(500).json({ message: "Erreur lors de la récupération des commentaires", error: err });
+  }
+};
+exports.deleteComment = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const deleted = await Comment.findByIdAndDelete(id);
+    if (!deleted) {
+      return res.status(404).json({ message: "Commentaire non trouvé" });
+    }
+    res.status(200).json({ message: "Commentaire supprimé" });
+  } catch (err) {
+    res.status(500).json({ message: "Erreur lors de la suppression du commentaire", error: err });
   }
 };

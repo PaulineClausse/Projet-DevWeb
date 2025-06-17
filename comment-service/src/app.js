@@ -1,6 +1,6 @@
-// src/app.js
 const express = require("express");
 const mongoose = require("mongoose");
+const cors = require("cors");
 const commentRoutes = require("./routes/comment.routes");
 require("dotenv").config();
 
@@ -8,6 +8,10 @@ const app = express();
 const port = 4001; // Port pour l'API des commentaires
 
 // Middleware
+app.use(cors({
+  origin: "http://localhost:5173", 
+  credentials: true,
+}));
 app.use(express.json());
 app.use("/api/comments", commentRoutes); // Routes pour les commentaires
 

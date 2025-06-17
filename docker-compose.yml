@@ -12,7 +12,7 @@ services:
     depends_on:
       - mongo
     networks:
-      - backend
+      - microservices-network
 
   mongo:
     image: mongo
@@ -23,11 +23,11 @@ services:
     ports:
       - "27017:27017"
     networks:
-      - backend
+      - microservices-network
+
+networks:
+  microservices-network:
+    external: true
 
 volumes:
   mongodb_data:
-
-networks:
-  backend:
-    driver: bridge
