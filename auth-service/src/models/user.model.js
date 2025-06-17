@@ -57,6 +57,12 @@ users.init({
   first_name: {
     type: DataTypes.STRING,
   },
+  Biographie: {
+    type: DataTypes.STRING,
+  },
+  Image: {
+  type: DataTypes.STRING, // contient le chemin vers l'image
+},
 }, {
   sequelize,
   modelName: 'users',

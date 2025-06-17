@@ -1,42 +1,3 @@
-// const http = require('http');
-// const jwt = require('jsonwebtoken');
-// const bcrypt = require('bcrypt');
-// const db = require('../config/database');
-// const User = require("../models/user.model");
-// const fs = require('fs');
-// const { log } = require('console');
-// require('dotenv').config();
-
-// const PORT = 5000;
-
-// exports.login = (req, res) => {
-//   const { email, password } = req.body;
-//   console.log("PUTO");
-//   if (!email || !password) {
-//     return res.status(400).json({ message: 'Champs manquants' });
-//   }
-
-  
-//   const sql = 'SELECT * FROM users WHERE email = ?';
-//   db.query(sql, [email], (err, results) => {
-    
-//     if (err) return res.status(500).json({ message: 'Erreur serveur', error: err });
-
-//     if (results.length === 0) {
-//       return res.status(401).json({ message: 'Utilisateur non trouvé' });
-//     }
-    
-
-//     const user = results[0];
-
-//     if (password !== user.password) {
-//       return res.status(401).json({ message: 'Mot de passe incorrect' });
-//     }
-
-//     return res.status(200).json({ message: 'Connexion réussie', token });
-//   });
-// };
-
 const http = require('http');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
@@ -162,3 +123,73 @@ exports.authenticate = async (req, res) => {
     return res.status(401).json({ message: "Token invalide ou expiré", error: err.message });
   }
 };
+
+exports.update = async (req, res) => {
+  const authHeader = req.headers["authorization"];
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ message: "Token manquant ou mal formaté" });
+  }
+
+  const token = authHeader.split(" ")[1];
+
+  try {
+    
+    // On va décoder le TOKEN pour avoir les informations (ID)
+    const decoded = jwt.verify(token, process.env.ACCESS_JWT_KEY);
+    const userId = decoded.user_id;
+
+  
+    const { email, username, name, first_name, password } = req.body;
+
+    // L'objet qui va recevoir les nouvelles valeurs
+    const updateFields = {};
+    if (email) updateFields.email = email;
+    if (username) updateFields.username = username;
+    if (name) updateFields.name = name;
+    if (first_name) updateFields.first_name = first_name;
+    if (password) updateFields.password = await bcrypt.hash(password, 10);
+
+    const [updatedRows] = await User.update(updateFields, {
+      where: { user_id: userId }
+    });
+
+    if (updatedRows === 0) {
+      return res.status(404).json({ message: "Aucune mise à jour effectuée ou utilisateur non trouvé." });
+    }
+
+    return res.status(200).json({ message: "Utilisateur mis à jour avec succès." });
+
+  } catch (err) {
+    console.error(err);
+    return res.status(401).json({ message: "Token invalide ou erreur de mise à jour.", error: err.message });
+  }
+};
+
+exports.getUser = async (req, res) => {
+  const authHeader = req.headers["authorization"];
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ message: "Token manquant ou mal formaté" });
+  }
+
+  const token = authHeader.split(" ")[1];
+
+  try {
+    const decoded = jwt.verify(token, process.env.ACCESS_JWT_KEY);
+    const userId = decoded.user_id;
+
+    const user = await User.findOne({
+      where: { user_id: userId },
+      attributes: ['user_id', 'email', 'username', 'name', 'first_name', 'Biographie', 'Image'] // Tu peux ajouter ou enlever les champs visibles
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "Utilisateur non trouvé" });
+    }
+
+    return res.status(200).json({ user });
+  } catch (err) {
+    console.error(err);
+    return res.status(401).json({ message: "Token invalide ou expiré", error: err.message });
+  }
+};
+
