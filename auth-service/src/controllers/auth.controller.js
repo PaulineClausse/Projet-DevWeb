@@ -1,9 +1,10 @@
+require('dotenv').config();
 const http = require('http');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const User = require('../models/user.model');
 const sequelize = require('../config/database');
-require('dotenv').config();
+
 
 const PORT = 5000;
 
@@ -16,7 +17,7 @@ exports.login = async (req, res) => {
   try {
     const user = await User.findOne({
       where: { email },
-      attributes: ['email', 'password', 'username', 'user_id']
+      attributes: ['email', 'password', 'username', 'user_id', 'first_name']//'image'
     });
     if (!user) {
       return res.status(401).json({ message: 'Utilisateur non trouvé' });
@@ -31,6 +32,8 @@ exports.login = async (req, res) => {
       user_id: user.user_id,
       username: user.username,
       email: user.email,
+      image: user.image,
+      first_name: user.first_name,
       exp: Math.floor(Date.now() / 1000) + 60 * 60
     }
 
@@ -100,18 +103,12 @@ exports.authenticate = async (req, res) => {
     // Vérification du token
     const decoded = jwt.verify(token, process.env.ACCESS_JWT_KEY);
 
-    const { email, password } = req.body;
     const user = await User.findOne({
-      where: { email },
-      attributes: ['email', 'password']
+      where: { user_id: decoded.user_id },
+      attributes: ['user_id', 'email', 'username', 'name', 'first_name']
     });
     if (!user) {
       return res.status(404).json({ message: "Utilisateur non trouvé" });
-    }
-
-    const isValidPassword = await bcrypt.compare(password, user.password);
-    if (!isValidPassword) {
-      return res.status(401).json({ message: 'Mot de passe incorrect' });
     }
 
     // Authentification réussie
@@ -179,7 +176,7 @@ exports.getUser = async (req, res) => {
 
     const user = await User.findOne({
       where: { user_id: userId },
-      attributes: ['user_id', 'email', 'username', 'name', 'first_name', 'Biographie', 'Image'] // Tu peux ajouter ou enlever les champs visibles
+      attributes: ['user_id', 'email', 'username', 'name', 'first_name'] //, 'biography' Tu peux ajouter ou enlever les champs visibles
     });
 
     if (!user) {
@@ -193,3 +190,27 @@ exports.getUser = async (req, res) => {
   }
 };
 
+exports.deleteUser = async (req, res) => {
+  try {
+    const { user_id, email } = req.query;
+
+    if (!user_id || !email) {
+      return res.status(400).json({ message: "user_id et email sont requis." });
+    }
+
+    const deletedCount = await User.destroy({
+      where: { user_id, email }
+    });
+
+    if (deletedCount === 0) {
+      return res.status(404).json({ message: "Utilisateur non trouvé ou déjà supprimé." });
+    }
+
+    return res.status(200).json({ message: "Utilisateur supprimé avec succès." });
+
+  } catch (error) {
+    console.error("Erreur suppression :", error);
+    return res.status(500).json({ message: "Erreur serveur", error: error.message });
+  }
+};
+// get / delete / roles
