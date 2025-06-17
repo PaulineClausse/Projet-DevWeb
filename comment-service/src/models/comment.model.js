@@ -18,6 +18,11 @@ const commentSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,  // Date de création du commentaire
   },
+  parent_id: {
+    type: mongoose.Schema.Types.ObjectId,  // Référence au commentaire parent (pour les réponses)
+    ref: "Comment",
+    default: null,
+  },
 });
 
 const Comment = mongoose.model("Comment", commentSchema);

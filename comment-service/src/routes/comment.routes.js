@@ -10,6 +10,13 @@ router.post(
   commentController.createComment
 );
 
+// Route pour créer une réponse à un commentaire
+router.post(
+  "/:commentId/reply",
+  requiredFields(["user_id", "content"]),
+  commentController.replyToComment
+);
+
 // Route pour récupérer tous les commentaires
 router.get("/", commentController.getAllComments);
 
@@ -17,5 +24,8 @@ router.get("/", commentController.getAllComments);
 router.get("/post/:postId", commentController.getCommentsByPost);
 
 router.delete("/:id", commentController.deleteComment);
+
+// Route pour supprimer une réponse à un commentaire
+router.delete("/:commentId/reply/:replyId", commentController.deleteReply);
 
 module.exports = router;
