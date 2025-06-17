@@ -1,29 +1,33 @@
+version: '3.8'
+
 services:
   posts:
     build: .
     container_name: posts
     restart: unless-stopped
     depends_on:
-      - mongo
+      - mongo-profil-page
     volumes:
       - .:/app
     ports:
       - "3000:3000"
     environment:
       - NODE_ENV=development
-      - MONGO_URI=mongodb://mongo:27017/todo-api
+      - MONGO_URI=mongodb://mongo-profil-page:27018/todo-api  
     networks:
       - microservices-network
-  mongo:
+
+  mongo-profil-page:  
     image: mongo
-    container_name: mongo
+    container_name: mongo-profil-page
     restart: unless-stopped
     volumes:
       - mongodb_data:/data/db
     ports:
-      - "27017:27017"
+      - "27018:27017"
     networks:
       - microservices-network
+
 networks:
   microservices-network:
     external: true
