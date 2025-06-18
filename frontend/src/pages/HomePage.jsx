@@ -12,6 +12,7 @@ const HomePage = () => {
   const [image, setImage] = useState("");
   const [editingPostId, setEditingPostId] = useState(null);
   const [user, setUser] = useState({});
+  const selfId = user?.user_id;
 
   const getPosts = async () => {
     try {
@@ -180,7 +181,6 @@ const HomePage = () => {
                     key={post._id}
                     className=" relative mt-8 border-[2px] border-[rgba(119,191,199,0.5)] bg-opacity-80 rounded-lg p-5 shadow-[2px_1px_8px_rgba(255,255,255,0.15)]  max-w-md mx-auto"
                   >
-                    {/* En-tête : avatar + pseudo + date */}
                     <header className="flex items-center justify-between mb-4">
                       <div className="flex items-center space-x-3">
                         <img
@@ -197,33 +197,37 @@ const HomePage = () => {
                               <time className="text-gray-400 text-xs">
                                 {new Date(post.date).toLocaleString("fr-FR")}
                               </time>
+                              {user.user_id === post.userId && (
+                                <svg
+                                  onClick={handleEditClick.bind(null, post)}
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  viewBox="0 0 512 512"
+                                  fill="rgb(38, 38, 38)"
+                                  className="absolute top-3 right-12 w-6 h-6   cursor-pointer"
+                                >
+                                  <path
+                                    d="M362.7 19.3L314.3 67.7 444.3 197.7l48.4-48.4c25-25 25-65.5 0-90.5L453.3 19.3c-25-25-65.5-25-90.5 0zm-71 71L58.6 323.5c-10.4 10.4-18 23.3-22.2 37.4L1 481.2C-1.5 489.7 .8 498.8 7 505s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L421.7 220.3 291.7 90.3z"
+                                    stroke="rgb(191, 191, 199)"
+                                    stroke-width="40"
+                                  />
+                                </svg>
+                              )}
+                            </div>
+                            {user.user_id === post.userId && (
                               <svg
-                                onClick={handleEditClick.bind(null, post)}
+                                onClick={() => deletePost(post._id)}
                                 xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 512 512"
+                                viewBox="0 0 448 512"
                                 fill="rgb(38, 38, 38)"
-                                className="absolute top-3 right-12 w-6 h-6   cursor-pointer"
+                                className="absolute top-3 right-3 w-5 h-6   cursor-pointer"
                               >
                                 <path
-                                  d="M362.7 19.3L314.3 67.7 444.3 197.7l48.4-48.4c25-25 25-65.5 0-90.5L453.3 19.3c-25-25-65.5-25-90.5 0zm-71 71L58.6 323.5c-10.4 10.4-18 23.3-22.2 37.4L1 481.2C-1.5 489.7 .8 498.8 7 505s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L421.7 220.3 291.7 90.3z"
+                                  d="M135.2 17.7L128 32 32 32C14.3 32 0 46.3 0 64S14.3 96 32 96l384 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0-7.2-14.3C307.4 6.8 296.3 0 284.2 0L163.8 0c-12.1 0-23.2 6.8-28.6 17.7zM416 128L32 128 53.2 467c1.6 25.3 22.6 45 47.9 45l245.8 0c25.3 0 46.3-19.7 47.9-45L416 128z"
                                   stroke="rgb(191, 191, 199)"
                                   stroke-width="40"
                                 />
                               </svg>
-                            </div>
-                            <svg
-                              onClick={() => deletePost(post._id)}
-                              xmlns="http://www.w3.org/2000/svg"
-                              viewBox="0 0 448 512"
-                              fill="rgb(38, 38, 38)"
-                              className="absolute top-3 right-3 w-5 h-6   cursor-pointer"
-                            >
-                              <path
-                                d="M135.2 17.7L128 32 32 32C14.3 32 0 46.3 0 64S14.3 96 32 96l384 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0-7.2-14.3C307.4 6.8 296.3 0 284.2 0L163.8 0c-12.1 0-23.2 6.8-28.6 17.7zM416 128L32 128 53.2 467c1.6 25.3 22.6 45 47.9 45l245.8 0c25.3 0 46.3-19.7 47.9-45L416 128z"
-                                stroke="rgb(191, 191, 199)"
-                                stroke-width="40"
-                              />
-                            </svg>
+                            )}
                           </div>
                         </div>
                       </div>
