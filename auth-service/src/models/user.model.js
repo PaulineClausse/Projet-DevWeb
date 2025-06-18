@@ -62,7 +62,8 @@ users.init(
       type: DataTypes.STRING,
     },
     image: {
-      type: DataTypes.STRING, // contient le chemin vers l'image
+      type: DataTypes.STRING,
+      allowNull: true, // contient le chemin vers l'image
     },
   },
   {

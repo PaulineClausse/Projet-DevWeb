@@ -32,6 +32,7 @@ exports.login = async (req, res) => {
       username: user.username,
       email: user.email,
       biography: user.biography,
+      image: user.image,
       exp: Math.floor(Date.now() / 1000) + 60 * 60,
     };
 
@@ -52,7 +53,8 @@ exports.login = async (req, res) => {
 };
 
 exports.register = async (req, res) => {
-  const { email, password, username, name, first_name, biography } = req.body;
+  const { email, password, username, name, first_name, biography, image } =
+    req.body;
 
   // Vérifie que les champs sont bien remplis
   if (!email || !password || !username || !name || !first_name) {
@@ -80,6 +82,7 @@ exports.register = async (req, res) => {
       name,
       first_name,
       biography,
+      image,
     });
 
     return res
@@ -111,6 +114,7 @@ exports.authenticate = async (req, res) => {
         "name",
         "first_name",
         "biography",
+        "image",
       ],
     });
     if (!user) {
@@ -128,6 +132,7 @@ exports.authenticate = async (req, res) => {
         name: user.name,
         first_name: user.first_name,
         biography: user.biography,
+        image: user.image,
       },
     });
   } catch (err) {
@@ -157,6 +162,8 @@ exports.update = async (req, res) => {
     if (username) updateFields.username = username;
     if (name) updateFields.name = name;
     if (first_name) updateFields.first_name = first_name;
+    if (biography) updateFields.biography = biography;
+    if (image) updateFields.image = image;
     if (password) updateFields.password = await bcrypt.hash(password, 10);
 
     const [updatedRows] = await User.update(updateFields, {
@@ -185,7 +192,7 @@ exports.getUser = async (req, res) => {
   try {
     const { id } = req.params;
     const user = await User.findByPk(id);
-    
+
     res.status(200).json({ user });
   } catch (err) {
     res.status(500).json({ message: err.message });

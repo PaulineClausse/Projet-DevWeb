@@ -19,7 +19,8 @@ CREATE TABLE IF NOT EXISTS users (
     phone VARCHAR(15),
     biography TEXT,
     password VARCHAR(255) NOT NULL,
-    date_naissance DATE
+    date_naissance DATE,
+    image VARCHAR(255)
 );
 
 CREATE TABLE IF NOT EXISTS roles (

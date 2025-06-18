@@ -20,6 +20,22 @@ const HomePage = () => {
 
       console.log(response.data);
       setPosts(response.data);
+      const post = response.data;
+      const postsWithUsernames = await Promise.all(
+        post.map(async (post) => {
+          try {
+            const userResponse = await axios.get(
+              `http://localhost:5000/user/${post.userId}`
+            );
+            const username = userResponse.data.user.username;
+            return { ...post, username };
+          } catch (error) {
+            console.error(`Erreur pour l'user ${post.userId} :`, error.message);
+            return { ...post, username: "Utilisateur inconnu" };
+          }
+        })
+      );
+      setPosts(postsWithUsernames);
       setIsLoading(false);
     } catch (error) {
       console.log(error);
@@ -116,18 +132,6 @@ const HomePage = () => {
     }
   };
 
-  const getUsername = async () => {
-    try {
-      const response = await axios.get("http://localhost:5000/user", {
-        withCredentials: true,
-      });
-      console.log("Information utilisateur :", response.data.user);
-      setUser(response.data.user);
-    } catch (error) {
-      console.log("Pas connecté", error);
-    }
-  };
-
   useEffect(() => {
     getUsers();
   }, []);
@@ -188,7 +192,7 @@ const HomePage = () => {
                           <div className="flex items-center justify-between space-x-3">
                             <div>
                               <h3 className=" text-[rgba(119,191,199,0.5)] font-semibold text-lg">
-                                {post.userId || "Pseudo"}
+                                {post.username || "Pseudo"}
                               </h3>
                               <time className="text-gray-400 text-xs">
                                 {new Date(post.date).toLocaleString("fr-FR")}
