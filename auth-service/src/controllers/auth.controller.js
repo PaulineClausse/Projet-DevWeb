@@ -1,9 +1,10 @@
 const http = require("http");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
-const User = require("../models/user.model");
 const sequelize = require("../config/database");
 require("dotenv").config();
+
+const { User, Roles } = require("../models"); // Assure-toi que tu as bien les imports
 
 const PORT = 5000;
 
@@ -16,7 +17,7 @@ exports.login = async (req, res) => {
   try {
     const user = await User.findOne({
       where: { email },
-      attributes: ["email", "password", "username", "user_id"],
+      attributes: ["email", "password", "username", "user_id", "first_name"], //'image'
     });
     if (!user) {
       return res.status(401).json({ message: "Utilisateur non trouvé" });
@@ -33,6 +34,8 @@ exports.login = async (req, res) => {
       email: user.email,
       biography: user.biography,
       image: user.image,
+
+      first_name: user.first_name,
       exp: Math.floor(Date.now() / 1000) + 60 * 60,
     };
 
@@ -56,25 +59,18 @@ exports.register = async (req, res) => {
   const { email, password, username, name, first_name, biography, image } =
     req.body;
 
-  // Vérifie que les champs sont bien remplis
   if (!email || !password || !username || !name || !first_name) {
     return res.status(400).json({ message: "Champs manquants" });
   }
 
   try {
-    // Vérifie si l'utilisateur existe déjà
-    const user = await User.findOne({
-      where: { email },
-      attributes: ["email", "username"], // récupérer uniquement les colonnes email et password
-    });
-    if (user) {
+    const existingUser = await User.findOne({ where: { email } });
+    if (existingUser) {
       return res.status(409).json({ message: "Utilisateur déjà existant" });
     }
 
-    // Hash du mot de passe
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Création de l'utilisateur
     const newUser = await User.create({
       email,
       password: hashedPassword,
@@ -85,12 +81,30 @@ exports.register = async (req, res) => {
       image,
     });
 
+    // Recherche du rôle "user"
+    const userRole = await Roles.findOne({ where: { role_name: "user" } });
+
+    if (!userRole) {
+      return res
+        .status(500)
+        .json({ message: 'Rôle par défaut "user" introuvable' });
+    }
+
+    // Association via la méthode Sequelize générée par la relation belongsToMany
+    await newUser.addRole(userRole);
+
     return res
       .status(201)
-      .json({ message: "Utilisateur créé avec succès", userId: newUser.id });
+      .json({
+        message: "Utilisateur créé avec succès",
+        userId: newUser.user_id,
+        user_role: userRole.role_name,
+      });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: "Erreur serveur", error: err });
+    return res
+      .status(500)
+      .json({ message: "Erreur serveur", error: err.message });
   }
 };
 
@@ -201,25 +215,29 @@ exports.getUser = async (req, res) => {
 
 exports.deleteUser = async (req, res) => {
   try {
-    const { user_id, email } = req.query;
+    const { user_id } = req.body;
 
-    if (!user_id || !email) {
-      return res.status(400).json({ message: "user_id et email sont requis." });
+    if (!user_id) {
+      return res.status(400).json({ message: "user_id est requis." });
     }
 
-    const deletedCount = await User.destroy({
-      where: { user_id, email },
-    });
+    const user = await User.findByPk(user_id);
 
-    if (deletedCount === 0) {
-      return res
-        .status(404)
-        .json({ message: "Utilisateur non trouvé ou déjà supprimé." });
+    if (!user) {
+      return res.status(404).json({ message: "Utilisateur non trouvé." });
     }
+
+    // Supprimer les associations user <-> roles
+    await user.setRoles([]); // supprime les liens dans la table pivot
+
+    // Supprimer l'utilisateur
+    await user.destroy();
 
     return res
       .status(200)
-      .json({ message: "Utilisateur supprimé avec succès." });
+      .json({
+        message: "Utilisateur et associations rôles supprimés avec succès.",
+      });
   } catch (error) {
     console.error("Erreur suppression :", error);
     return res
@@ -227,3 +245,15 @@ exports.deleteUser = async (req, res) => {
       .json({ message: "Erreur serveur", error: error.message });
   }
 };
+
+// A GARDER EN COMMENTAIRES POUR UTILISATION FUTUR POUR RETOURNER LE ROLE
+
+// const user = await User.findOne({
+//       where: { user_id: userId },
+//       attributes: ['user_id', 'email', 'username', 'name', 'first_name'],
+//       include: [{
+//         model: Roles,
+//         attributes: ['role_name'], // On ne veut que le nom du rôle
+//         through: { attributes: [] } // Supprime les métadonnées de la table intermédiaire
+//       }]
+//     });

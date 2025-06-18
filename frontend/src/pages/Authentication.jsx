@@ -1,50 +1,46 @@
+import Navbar from "../components/Navbar";
 import { useState } from "react";
 import axios from "axios";
-import Navbar from "../components/Navbar";
 
 const Authentication = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
 
-  const handleLogin = async (e) => {
-    console.log("PUTOpd");
-    e.preventDefault();
-
-    try {
-      console.log("PUTOpd");
-      const response = await axios.post(
-        "http://localhost:5000/login",
-        {
-          email,
-          password,
-        },
-        { withCredentials: true }
-      );
-
-      console.log("Login successful:", response.data);
-      alert("Connexion réussie !");
-    } catch (err) {
-      console.error("Login failed:", err.response?.data || err.message);
-      alert("Échec de connexion.");
-    }
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
   };
 
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await axios.post("http://localhost:5000/login", formData);
+      window.location.href = "/home";
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.message || "Erreur lors de l’enregistrement");
+    }
+  };
   return (
     <div>
-      <Navbar />
       <div className="min-h-screen bg-[rgb(38,38,38)] flex flex-col items-center justify-center px-4">
         <div className="bg-white rounded-2xl shadow-lg p-8 w-full max-w-md mt-8">
           <h2 className="text-2xl font-semibold text-center text-gray-800 mb-6">
             Connexion
           </h2>
 
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form className="space-y-4" onSubmit={handleLogin}>
             <div>
               <label className="block text-gray-700 text-sm mb-1">Email</label>
               <input
                 type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="ex: utilisateur@mail.com"
               />
@@ -56,8 +52,9 @@ const Authentication = () => {
               </label>
               <input
                 type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="••••••••"
               />
@@ -72,7 +69,10 @@ const Authentication = () => {
           </form>
 
           <p className="text-sm text-center text-gray-600 mt-4">
-            Pas encore de compte ?
+            Pas encore de compte ?{" "}
+            <a href="/register" className="text-blue-600 hover:underline">
+              Créer un compte
+            </a>
           </p>
         </div>
       </div>
