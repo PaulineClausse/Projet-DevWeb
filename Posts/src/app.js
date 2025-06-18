@@ -1,5 +1,8 @@
 const express = require("express");
 const cors = require("cors");
+const verifyToken = require('./middlewares/verifyToken');
+const postsRoutes = require("./routes/posts.routes");
+const cookieParser = require("cookie-parser");
 
 const mongoose = require("mongoose");
 
@@ -8,16 +11,15 @@ const app = express();
 
 const port = 3000;
 
-app.use(
-  cors({
-    origin: "http://localhost:5173",
-    credentials: true,
-  })
-);
+app.use(cors({
+  origin: ["http://localhost:5173", "http://zing.com"], // ← ajoute tous les domaines que tu utilises
+  credentials: true
+}));
 
+app.use(cookieParser());
 app.use(express.json());
 
-app.use("/api/posts", require("./routes/posts.routes"));
+app.use("/api/posts",verifyToken, postsRoutes);
 
 mongoose
   .connect(

@@ -8,17 +8,16 @@ const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const AuthRouter = require("./routes/auth.routes");
 
-app.use(
-  cors({
-    origin: "http://localhost:5173",
-    credentials: true,
-  })
-);
+app.use(cors({
+  origin: ["http://localhost:5173", "http://Zing.com"], // ← ajoute tous les domaines que tu utilises
+  credentials: true
+}));
 
+app.use(cookieParser());
 // parse requests of content-type - application/json
 app.use(express.json());
 
-app.use(cookieParser());
+
 
 // parse requests of content-type - application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: true }));

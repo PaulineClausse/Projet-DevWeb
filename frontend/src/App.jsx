@@ -9,7 +9,7 @@ const App = () => {
   return (
     <Routes>
       <Route path="/" element={<Navbar />} />
-      <Route path="/auth" element={<Authentication />} />
+      <Route path="/identificate" element={<Authentication />} />
       <Route path="/home" element={<Home />} />
       <Route path="/profil" element={<Profil />} />
       <Route path="/followers" element={<Followers />} />

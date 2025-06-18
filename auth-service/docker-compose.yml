@@ -24,7 +24,7 @@ services:
     container_name: mysql
     restart: unless-stopped
     environment:
-      - MYSQL_ROOT_PASSWORD=
+      - MYSQL_ROOT_PASSWORD=rootpassword
       - MYSQL_HOST=mysql
       - MYSQL_NAME=authdb
       - MYSQL_USER=authuser

@@ -48,7 +48,9 @@ module.exports = {
   },
 
   createPost: async (req, res) => {
-    const { title, content, userId } = req.body;
+    const { title, content } = req.body;
+    const userId = req.user.user_id; // <-- ici user_id du token
+    
     if (!title || !content)
       return res.status(400).send("Title and content are required");
 
