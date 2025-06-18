@@ -29,9 +29,6 @@ users.init({
   biography: {
     type: DataTypes.STRING,
   },
-  image: {
-  type: DataTypes.STRING, // contient le chemin vers l'image
-},
 }, {
   sequelize,
   modelName: 'users',

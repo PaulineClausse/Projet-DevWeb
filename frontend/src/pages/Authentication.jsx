@@ -1,6 +1,30 @@
 import Navbar from '../components/Navbar';
+import { useState } from 'react';
+import axios from 'axios';
 
 const Authentication = () => {
+  const [formData, setFormData] = useState({
+      email: '',
+      password: '',
+    });
+  
+    const handleChange = (e) => {
+      setFormData({
+        ...formData,
+        [e.target.name]: e.target.value
+      });
+    };
+  
+    const handleLogin = async (e) => {
+      e.preventDefault();
+      try {
+          const res = await axios.post('http://localhost:5000/login', formData);
+          window.location.href = '/home';
+      } catch (err) {
+        console.error(err);
+        alert(err.response?.data?.message || 'Erreur lors de l’enregistrement');
+      }
+    };
   return (
     <div>
       <Navbar />
@@ -12,11 +36,14 @@ const Authentication = () => {
           Connexion
         </h2>
 
-        <form className="space-y-4">
+        <form className="space-y-4" onSubmit={handleLogin}>
           <div>
             <label className="block text-gray-700 text-sm mb-1">Email</label>
             <input
               type="email"
+              name="email"
+              value={formData.email}
+                onChange={handleChange}
               className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="ex: utilisateur@mail.com"
             />
@@ -26,6 +53,9 @@ const Authentication = () => {
             <label className="block text-gray-700 text-sm mb-1">Mot de passe</label>
             <input
               type="password"
+              name="password"
+              value={formData.password}
+                onChange={handleChange}
               className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="••••••••"
             />

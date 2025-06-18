@@ -1,3 +1,4 @@
+DROP DATABASE IF EXISTS authdb;
 CREATE DATABASE IF NOT EXISTS authdb;
 USE authdb;
 -- Crée un utilisateur MySQL avec un mot de passe
@@ -19,7 +20,6 @@ CREATE TABLE IF NOT EXISTS users (
     phone VARCHAR(15),
     biography TEXT,
     password VARCHAR(255) NOT NULL,
-    iamge VARCHAR(255),
     date_naissance DATE
 );
 

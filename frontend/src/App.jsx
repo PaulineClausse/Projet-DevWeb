@@ -2,6 +2,7 @@ import Navbar from "./components/Navbar";
 import Authentication from "./pages/Authentication";
 import Home from "./pages/HomePage";
 import Profil from "./pages/ProfilPage";
+import NewAccount from "./pages/NewAccount";
 import { Route, Routes, Link } from "react-router-dom";
 
 const App = () => {
@@ -11,6 +12,7 @@ const App = () => {
       <Route path="/auth" element={<Authentication />} />
       <Route path="/home" element={<Home />} />
       <Route path="/profil" element={<Profil />} />
+      <Route path="/register" element={<NewAccount />} />
     </Routes>
   );
 };
