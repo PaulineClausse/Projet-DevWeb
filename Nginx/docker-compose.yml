@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  nginx:
+    build: .
+    container_name: nginx-gateway
+    ports:
+      - "80:80" 
+    depends_on:
+      - auth
+      - posts
+      - frontend
+    networks:
+      - microservices-network
+
+networks:
+  microservices-network:
+    external: true
