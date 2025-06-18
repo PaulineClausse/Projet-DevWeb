@@ -1,6 +1,7 @@
 import Navbar from "../components/Navbar";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const ProfilPage = () => {
   const [posts, setPosts] = useState([]);
@@ -10,9 +11,14 @@ const ProfilPage = () => {
   const [image, setImage] = useState("");
   const [editingPostId, setEditingPostId] = useState(null);
   const [title, setTitle] = useState("");
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [user, setUser] = useState({});
+  const navigate = useNavigate();
+
   const handleClose = () => {
     setIsInputVisible(false);
   };
+
   const deletePost = async (id) => {
     try {
       const res = await axios.delete(`http://localhost:3000/api/posts/${id}`);
@@ -90,8 +96,22 @@ const ProfilPage = () => {
       console.log(error);
     }
   };
+
+  const getUsers = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/user", {
+        withCredentials: true,
+      });
+      console.log("Utilisateur connecté :", response.data.user);
+      setUser(response.data.user);
+    } catch (error) {
+      console.log("Pas connecté", error);
+    }
+  };
+
   useEffect(() => {
     getPosts();
+    getUsers();
   }, []);
 
   return (
@@ -99,22 +119,102 @@ const ProfilPage = () => {
       <Navbar />
       <div className="flex flex-col">
         <div className="relative top-20">
-          <div className=" shadow-2xl bg-gradient-to-r from-[#7BE9E49E] to-[#0A3C5B] text-white p-14 w-9/12 right-14 top-12 absolute rounded-lg">
+          <div className=" shadow-2xl bg-gradient-to-r from-[#7BE9E49E] to-[#0A3C5B] text-white p-16 w-10/12 right-10 md:w-9/12 top-12 absolute rounded-lg">
             <h1 className="absolute -top-10 left-0 text-3xl font-bold text-white">
               Profil
             </h1>
             <div className="flex flex-col ">
-              <div className="absolute  top-4 left-4 flex flex-row ">
-                <p className="font-bold text-xl ">Pseudo</p>
-                <p className="px-3 text-gray-300 text-xl ">@username</p>
+              <div className="absolute  top-4 left-4 flex flex-row items-center gap-8">
+                <p className="font-bold text-xl ">{user.name} </p>
+
+                <p className=" text-gray-300 text-lg ">@{user.username}</p>
               </div>
               <div>
-                <p className="absolute left-4">Ceci est la biographie</p>
+                <p className="absolute left-4 top-12">{user.biography}</p>
+
+                <div className="absolute flex flex-row  left-12 gap-3 ml-4 mt-5 ">
+                  <button
+                    onClick={() => setIsFollowing(!isFollowing)}
+                    className="text-sm font-medium flex flex-col items-center "
+                  >
+                    {isFollowing ? (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="w-6 h-6 text-green-500"
+                        viewBox="0 0 512 512"
+                      >
+                        <path d="M504 256c0 136.967-111.033 248-248 248S8 392.967 8 256 119.033 8 256 8s248 111.033 248 248zm-277.02 97.941l184-184c4.686-4.686 4.686-12.284 0-16.971l-28.284-28.284c-4.686-4.686-12.284-4.686-16.971 0L216 284.118l-70.745-70.745c-4.686-4.686-12.284-4.686-16.971 0L100 241.657c-4.686 4.686-4.686 12.284 0 16.971l100 100c4.686 4.686 12.284 4.686 16.971.001z" />
+                      </svg>
+                    ) : (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="w-6 h-6"
+                        viewBox="0 0 640 512"
+                      >
+                        <path d="M96 128a128 128 0 1 1 256 0A128 128 0 1 1 96 128zM0 482.3C0 383.8 79.8 304 178.3 304l91.4 0C368.2 304 448 383.8 448 482.3c0 16.4-13.3 29.7-29.7 29.7L29.7 512C13.3 512 0 498.7 0 482.3zM504 312l0-64-64 0c-13.3 0-24-10.7-24-24s10.7-24 24-24l64 0 0-64c0-13.3 10.7-24 24-24s24 10.7 24 24l0 64 64 0c13.3 0 24 10.7 24 24s-10.7 24-24 24l-64 0 0 64c0 13.3-10.7 24-24 24s-24-10.7-24-24z" />
+                      </svg>
+                    )}
+                    <span className="text-xs font-medium">
+                      {isFollowing ? "Following" : "Follow"}
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => navigate("/followers")}
+                    className="text-sm font-medium flex flex-col items-center "
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="w-6 h-6"
+                      viewBox="0 0 448 512"
+                    >
+                      <path d="M224 256A128 128 0 1 0 224 0a128 128 0 1 0 0 256zm-45.7 48C79.8 304 0 383.8 0 482.3C0 498.7 13.3 512 29.7 512l388.6 0c16.4 0 29.7-13.3 29.7-29.7C448 383.8 368.2 304 269.7 304l-91.4 0z" />
+                    </svg>
+                    <span className="text-xs">Followers</span>
+                  </button>
+                  <button
+                    onClick={() => navigate("/home")}
+                    className="text-sm font-medium flex flex-col items-center"
+                  >
+                    <svg
+                      className="w-6 h-6 "
+                      xmlns="http://www.w3.org/2000/svg"
+                      xmlns:xlink="http://www.w3.org/1999/xlink"
+                      viewBox="0 0 310.745 310.745"
+                      xml:space="preserve"
+                    >
+                      <g id="XMLID_341_">
+                        <path
+                          id="XMLID_348_"
+                          d="M77.622,120.372c9.942,0,19.137-3.247,26.593-8.728c11.382,16.007,30.063,26.479,51.157,26.479
+		c21.093,0,39.774-10.472,51.157-26.479c7.456,5.481,16.651,8.728,26.593,8.728c24.813,0,45-20.187,45-44.999
+		c0-24.814-20.187-45.001-45-45.001c-9.943,0-19.138,3.248-26.594,8.729c-11.383-16.006-30.063-26.478-51.156-26.478
+		c-21.093,0-39.773,10.472-51.156,26.478c-7.456-5.481-16.651-8.729-26.594-8.729c-24.813,0-45,20.187-45,45.001
+		C32.622,100.186,52.809,120.372,77.622,120.372z M233.122,60.372c8.271,0,15,6.73,15,15.001c0,8.271-6.729,14.999-15,14.999
+		c-8.271,0-15-6.729-15-14.999C218.122,67.102,224.851,60.372,233.122,60.372z M155.372,42.623c18.059,0,32.75,14.691,32.75,32.75
+		s-14.691,32.75-32.75,32.75c-18.059,0-32.75-14.691-32.75-32.75S137.313,42.623,155.372,42.623z M77.622,60.372
+		c8.271,0,15,6.73,15,15.001c0,8.271-6.729,14.999-15,14.999s-15-6.729-15-14.999C62.622,67.102,69.351,60.372,77.622,60.372z"
+                        />
+                        <path
+                          id="XMLID_440_"
+                          d="M233.122,150.372c-19.643,0-38.329,7.388-52.584,20.532c-8.103-1.816-16.523-2.781-25.166-2.781
+		c-8.643,0-17.063,0.965-25.165,2.781c-14.255-13.144-32.942-20.532-52.585-20.532C34.821,150.372,0,185.194,0,227.995
+		c0,8.284,6.716,15,15,15h32.6c-4.669,12.5-7.228,26.019-7.228,40.127c0,8.284,6.716,15,15,15h200c8.284,0,15-6.716,15-15
+		c0-14.108-2.559-27.627-7.229-40.127h32.602c8.284,0,15-6.716,15-15C310.745,185.194,275.923,150.372,233.122,150.372z
+		 M32.42,212.995c6.298-18.934,24.181-32.623,45.202-32.623c6.617,0,13.052,1.382,18.964,3.95
+		c-12.484,7.456-23.443,17.209-32.29,28.673H32.42z M71.697,268.122c7.106-39.739,41.923-69.999,83.675-69.999
+		c41.751,0,76.569,30.26,83.675,69.999H71.697z M246.449,212.995c-8.848-11.464-19.806-21.217-32.29-28.673
+		c5.912-2.567,12.347-3.95,18.964-3.95c21.021,0,38.905,13.689,45.203,32.623H246.449z"
+                        />
+                      </g>
+                    </svg>
+                    <span className="text-xs">Following</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
           <img
-            className=" absolute lg:w-1/12 md:w-2/12 right-1  rounded-full w-3/12  object-cover border-2 border-white"
+            className=" absolute lg:w-1/12 md:w-2/12 right-0 mt-2  rounded-full w-3/12  object-cover border-2 border-white"
             src="./images/pdp_test.jpg"
             alt="Profile"
           />
@@ -128,10 +228,10 @@ const ProfilPage = () => {
                 posts.map((post) => (
                   <div
                     key={post._id}
-                    className=" relative mt-8 border-[2px]  border-[rgba(119,191,199,0.5)] bg-opacity-80 rounded-lg p-5 shadow-[2px_1px_8px_rgba(255,255,255,0.15)]  max-w-md mx-auto"
+                    className=" relative mt-5 top-16 border-[2px]  border-[rgba(119,191,199,0.5)] bg-opacity-80 rounded-lg p-5 shadow-[2px_1px_8px_rgba(255,255,255,0.15)]  max-w-md mx-auto"
                   >
                     {/* En-tête : avatar + pseudo + date */}
-                    <header className="flex items-center justify-between mb-4">
+                    <header className="flex items-center justify-between mb-1">
                       <div className="flex items-center space-x-3">
                         <img
                           src="./images/pdp_test.jpg"
@@ -222,7 +322,7 @@ const ProfilPage = () => {
                   </div>
                 ))
               ) : (
-                <p className="text-justify text-gray-400 text-lg font-bold  px-64 py-20">
+                <p className="text-justify text-zinc-600 px-8  py-20">
                   {" "}
                   You don't have any posts to view.
                 </p>

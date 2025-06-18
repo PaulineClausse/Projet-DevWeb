@@ -8,8 +8,10 @@ const HomePage = () => {
   const [isInputVisible, setIsInputVisible] = useState(false);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [userPost, setUserPost] = useState("");
   const [image, setImage] = useState("");
   const [editingPostId, setEditingPostId] = useState(null);
+  const [user, setUser] = useState({});
 
   const getPosts = async () => {
     try {
@@ -23,9 +25,6 @@ const HomePage = () => {
       console.log(error);
     }
   };
-  useEffect(() => {
-    getPosts();
-  }, []);
 
   const handleClose = () => {
     setIsInputVisible(false);
@@ -43,6 +42,7 @@ const HomePage = () => {
       title,
       content,
       image,
+      userId: user.user_id,
     };
 
     if (!title || !content) {
@@ -66,6 +66,7 @@ const HomePage = () => {
       setTitle("");
       setContent("");
       setImage("");
+      setUserPost("");
     } catch (error) {
       console.error("Erreur lors de la création :", error.message);
     }
@@ -85,12 +86,14 @@ const HomePage = () => {
       title,
       content,
       image,
+      userId: user.user_id,
     };
     try {
       const res = await axios.put(
         `http://localhost:3000/api/posts/${id}`,
         data
       );
+      console.log("Données envoyées dans le PUT :", data);
       console.log("Résultat de la requête PUT :", res);
       getPosts();
       setIsInputVisible(false);
@@ -101,6 +104,39 @@ const HomePage = () => {
       console.error("Erreur lors de la mise à jour :", error.message);
     }
   };
+  const getUsers = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/auth", {
+        withCredentials: true,
+      });
+      console.log("Utilisateur connecté :", response.data.user);
+      setUser(response.data.user);
+    } catch (error) {
+      console.log("Pas connecté", error);
+    }
+  };
+
+  const getUsername = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/user", {
+        withCredentials: true,
+      });
+      console.log("Information utilisateur :", response.data.user);
+      setUser(response.data.user);
+    } catch (error) {
+      console.log("Pas connecté", error);
+    }
+  };
+
+  useEffect(() => {
+    getUsers();
+  }, []);
+
+  useEffect(() => {
+    if (user.user_id) {
+      getPosts();
+    }
+  }, [user]);
   return (
     <div id="" className="min-h-screen  flex flex-col mx-auto px-4 gap-5 ">
       <Navbar />
@@ -152,7 +188,7 @@ const HomePage = () => {
                           <div className="flex items-center justify-between space-x-3">
                             <div>
                               <h3 className=" text-[rgba(119,191,199,0.5)] font-semibold text-lg">
-                                {post.pseudo || "Pseudo"}
+                                {post.userId || "Pseudo"}
                               </h3>
                               <time className="text-gray-400 text-xs">
                                 {new Date(post.date).toLocaleString("fr-FR")}
@@ -232,7 +268,7 @@ const HomePage = () => {
                   </div>
                 ))
               ) : (
-                <p className="text-justify text-gray-400 text-lg font-bold  md:left-72">
+                <p className=" text-gray-400 text-lg font-bold">
                   {" "}
                   You don't have any posts to view.
                 </p>

@@ -1,7 +1,14 @@
-const router = require('express').Router();
-const loginController = require('../controllers/auth.controller');
+const express = require("express");
 
-router.post('/login', loginController.login);
-router.post('/auth', loginController.authenticate);
-router.post('/register', loginController.register);
-module.exports = router
+const router = express.Router();
+const loginController = require("../controllers/auth.controller");
+const jwt = require("jsonwebtoken");
+
+router.get("/auth", loginController.authenticate);
+router.post("/login", loginController.login);
+router.get("/user/:id", loginController.getUser);
+router.post("/register", loginController.register);
+router.post("/update", loginController.update);
+router.delete("/delete", loginController.deleteUser);
+
+module.exports = router;

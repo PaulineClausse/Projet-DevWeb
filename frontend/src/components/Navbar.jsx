@@ -11,8 +11,7 @@ const Navbar = () => {
   const hidePdpOn = "/profil";
 
   return (
-    <div className=" relative bg-[rgb(38,38,38)]">
-
+    <div className=" relative bg-[rgb(38,38,38)] z-50">
       {/* Image Bottom Top Left */}
       <div className="Image_Top_Left">
         <img
@@ -20,23 +19,24 @@ const Navbar = () => {
           className="w-20 h-20 fixed md:w-15 md:h-15 md:fixed md:top-4 md:left-20 md: md:z-50"
         />
         {location.pathname !== hidePdpOn && (
-          <button
-            onClick={() => navigate("/profil")}
-            className="left-40 fixed mx-auto block md:hidden"
-            style={{ width: "64px", height: "64px" }}
-          >
-            <img
-              className=" rounded-full w-full h-full object-cover border-2 border-white"
-              src="/images/pdp_test.jpg"
-              alt="Profile"
-            />
-          </button>
+          <div className="fixed top-4 left-1/2 transform -translate-x-1/2 md:hidden">
+            <button
+              onClick={() => navigate("/profil")}
+              className="w-20 h-20 mx-auto block md:hidden"
+            >
+              <img
+                className=" rounded-full w-full h-full object-cover border-2 border-white"
+                src="/images/pdp_test.jpg"
+                alt="Profile"
+              />
+            </button>
+          </div>
         )}
       </div>
 
       {/* Mobile Bottom Navigation */}
       <div className="fixed bottom-5 left-1/2 transform -translate-x-1/2 flex gap-8 bg-[rgb(38,38,38)] p-4 rounded-2xl shadow-lg md:hidden">
-        <button className="mt-1 ">
+        <button onClick={() => navigate("/home")} className="mt-1 ">
           <a>
             <svg
               className="w-7 h-7 hover:fill-white"
