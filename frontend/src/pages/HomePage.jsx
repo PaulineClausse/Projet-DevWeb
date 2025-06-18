@@ -3,7 +3,6 @@ import axios from "axios";
 import Navbar from "../components/Navbar";
 
 const currentUserId = "currentUserId";
-const currentUsername = "CurrentUser";
 const BASE_REPLY_ROWS = 1;
 
 const HomePage = () => {
@@ -19,10 +18,9 @@ const HomePage = () => {
   const [editingPostId, setEditingPostId] = useState(null);
   const [newComment, setNewComment] = useState("");
   const [activePostId, setActivePostId] = useState(null);
-
-  // Pour la gestion d'une seule zone de réponse ouverte à la fois
   const [replyTarget, setReplyTarget] = useState(null); // {commentId, value, rows}
 
+  // Utilise localhost pour tous les appels API
   const getPosts = async () => {
     try {
       setIsLoading(true);
@@ -55,20 +53,19 @@ const HomePage = () => {
 
   const getLikes = async (postId) => {
     try {
-      const response = await axios.get(`http://localhost:4002/api/likes/post/${postId}`);
+      const response = await axios.get(`http://localhost:4002/api/likes/${postId}`);
       setLikes((prev) => ({
         ...prev,
-        [postId]: response.data,
+        [postId]: response.data.likes_count,
       }));
     } catch (error) {
       setLikes((prev) => ({
         ...prev,
-        [postId]: [],
+        [postId]: 0,
       }));
     }
   };
 
-  // Ajout d'un commentaire racine
   const addComment = async (postId) => {
     if (!newComment) return alert("Le commentaire ne peut pas être vide");
     const commentData = {
@@ -85,7 +82,6 @@ const HomePage = () => {
     }
   };
 
-  // Ajout d'une réponse à un commentaire
   const addReply = async (postId, commentId) => {
     if (!replyTarget?.value) return alert("La réponse ne peut pas être vide");
     try {
@@ -101,14 +97,11 @@ const HomePage = () => {
     }
   };
 
-  // Suppression d'un commentaire ou d'une réponse
   const deleteComment = async (commentId, postId, parentId = null) => {
     try {
       if (parentId) {
-        // Suppression d'une réponse à un commentaire
-        await axios.delete(`http://localhost:4001/api/comments/${parentId}/replies/${commentId}`);
+        await axios.delete(`http://localhost:4001/api/comments/${parentId}/reply/${commentId}`);
       } else {
-        // Suppression d'un commentaire racine
         await axios.delete(`http://localhost:4001/api/comments/${commentId}`);
       }
       getComments(postId);
@@ -122,7 +115,6 @@ const HomePage = () => {
       await axios.post("http://localhost:4002/api/likes/", {
         post_id: postId,
         user_id: currentUserId,
-        username: currentUsername,
       });
       getLikes(postId);
     } catch (error) {
@@ -191,7 +183,6 @@ const HomePage = () => {
     }
   };
 
-  // Affiche un commentaire et ses réponses dans le même bloc
   const renderCommentWithReplies = (comment, postId, allComments, level = 0) => {
     const replies = allComments.filter((c) => c.parent_id === comment._id);
 
@@ -232,7 +223,6 @@ const HomePage = () => {
         >
           Répondre
         </button>
-        {/* Affiche la zone de réponse juste sous le commentaire ciblé */}
         {replyTarget && replyTarget.commentId === comment._id && (
           <div className="mt-2 flex flex-col gap-1" style={level > 0 ? { marginLeft: `${level * 2}rem` } : {}}>
             <textarea
@@ -266,7 +256,6 @@ const HomePage = () => {
             </div>
           </div>
         )}
-        {/* Affiche les réponses dans le même bloc, indentées */}
         {replies.length > 0 && (
           <div>
             {replies.map((reply) =>
@@ -392,11 +381,7 @@ const HomePage = () => {
                     <section className="flex items-center justify-between text-gray-300">
                       <div className="flex space-x-6">
                         <button
-                          className={`flex items-center space-x-1 hover:text-blue-400 transition-colors duration-200 ${
-                            likes[post._id]?.some((l) => l.user_id === currentUserId)
-                              ? "text-blue-400"
-                              : ""
-                          }`}
+                          className="flex items-center space-x-1 hover:text-blue-400 transition-colors duration-200"
                           onClick={() => toggleLike(post._id)}
                         >
                           <img
@@ -412,7 +397,7 @@ const HomePage = () => {
                               setShowLikesList(showLikesList === post._id ? null : post._id);
                             }}
                           >
-                            {likes[post._id]?.length || 0}
+                            {likes[post._id] || 0}
                           </span>
                         </button>
                         <button
@@ -436,21 +421,11 @@ const HomePage = () => {
                         </button>
                       </div>
                     </section>
+                    {/* Optionnel : liste des utilisateurs ayant liké */}
                     {showLikesList === post._id && (
                       <div className="absolute bg-gray-800 text-white rounded p-2 z-50 mt-2 left-0 right-0 max-w-xs mx-auto">
                         <h4 className="font-bold mb-2">Likes</h4>
-                        <ul>
-                          {likes[post._id]?.map((like) => (
-                            <li key={like._id} className="flex items-center gap-2 py-1">
-                              <img
-                                src={like.avatar || "/images/pdp_test.jpg"}
-                                alt="Avatar"
-                                className="w-6 h-6 rounded-full border-2 border-white object-cover"
-                              />
-                              <span>{like.username || like.user_id}</span>
-                            </li>
-                          ))}
-                        </ul>
+                        <p className="text-gray-400 text-sm">Affichage de la liste à implémenter</p>
                         <button
                           className="mt-2 text-sm text-blue-400"
                           onClick={() => setShowLikesList(null)}
