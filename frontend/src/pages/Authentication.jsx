@@ -11,21 +11,21 @@ const Authentication = () => {
     e.preventDefault();
 
     try {
-      console.log("PUTOpd");
+      console.log("PDDDDD");
       const response = await axios.post(
-        "http://localhost:5000/login",
+        "http://localhost/auth/login",
         {
           email,
           password,
         },
         { withCredentials: true }
       );
-
       console.log("Login successful:", response.data);
       alert("Connexion réussie !");
     } catch (err) {
       console.error("Login failed:", err.response?.data || err.message);
       alert("Échec de connexion.");
+      console.log(response);
     }
   };
 

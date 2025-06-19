@@ -16,8 +16,9 @@ const HomePage = () => {
   const getPosts = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.get("http://localhost:3000/api/posts/");
-
+      const response = await axios.get("http://localhost/posts/", {
+        withCredentials: true
+      });
       console.log(response.data);
       setPosts(response.data);
       setIsLoading(false);
@@ -59,7 +60,10 @@ const HomePage = () => {
         setIsInputVisible(false);
         return;
       }
-      const res = await axios.post("http://localhost:3000/api/posts/", data);
+      const res = await axios.post("http://localhost/posts/create", data, {
+        withCredentials: true
+      });
+
       console.log("Résultat de la requête POST :", res);
       getPosts();
       setIsInputVisible(false);
@@ -73,7 +77,10 @@ const HomePage = () => {
   };
   const deletePost = async (id) => {
     try {
-      const res = await axios.delete(`http://localhost:3000/api/posts/${id}`);
+      const res = await axios.delete(`http://localhost/posts/${id}`, {
+        withCredentials: true
+      });
+
       console.log("Résultat de la requête DELETE :", res);
       getPosts();
     } catch (error) {
@@ -89,10 +96,10 @@ const HomePage = () => {
       userId: user.user_id,
     };
     try {
-      const res = await axios.put(
-        `http://localhost:3000/api/posts/${id}`,
-        data
-      );
+      const res = await axios.put(`http://localhost/posts/${id}`, data, {
+        withCredentials: true
+      });
+
       console.log("Données envoyées dans le PUT :", data);
       console.log("Résultat de la requête PUT :", res);
       getPosts();
