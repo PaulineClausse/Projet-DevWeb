@@ -1,4 +1,3 @@
-import Navbar from '../components/Navbar';
 import { useState } from 'react';
 import axios from 'axios';
 
@@ -27,7 +26,6 @@ const Authentication = () => {
     };
   return (
     <div>
-      <Navbar />
     <div className="min-h-screen bg-[rgb(38,38,38)] flex flex-col items-center justify-center px-4">
       
 

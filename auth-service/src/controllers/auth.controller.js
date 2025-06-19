@@ -115,6 +115,7 @@ exports.authenticate = async (req, res) => {
       return res.status(404).json({ message: "Utilisateur non trouvé" });
     }
 
+    
     // Authentification réussie
     req.user = user;
     return res.status(200).json({ message: "Authentification réussie", user });
