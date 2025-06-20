@@ -7,11 +7,9 @@ const Authentication = () => {
   const [password, setPassword] = useState("");
 
   const handleLogin = async (e) => {
-    console.log("PUTOpd");
     e.preventDefault();
 
     try {
-      console.log("PUTOpd");
       const response = await axios.post(
         "http://localhost:5000/login",
 

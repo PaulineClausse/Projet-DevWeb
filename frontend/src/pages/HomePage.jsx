@@ -2,22 +2,26 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import Navbar from "../components/Navbar";
 
+import { useNavigate } from "react-router-dom";
+
 const HomePage = () => {
   const [posts, setPosts] = useState([]);
   const [isloading, setIsLoading] = useState(false);
   const [isInputVisible, setIsInputVisible] = useState(false);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [userPost, setUserPost] = useState("");
+  const [setUserPost] = useState("");
   const [image, setImage] = useState("");
   const [editingPostId, setEditingPostId] = useState(null);
   const [user, setUser] = useState({});
   const selfId = user?.user_id;
-
+  const navigate = useNavigate();
   const getPosts = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.get("http://localhost:3000/api/posts/");
+      const response = await axios.get("http://localhost:3000/api/posts/", {
+        withCredentials: true,
+      });
 
       console.log(response.data);
       setPosts(response.data);
@@ -26,10 +30,14 @@ const HomePage = () => {
         post.map(async (post) => {
           try {
             const userResponse = await axios.get(
-              `http://localhost:5000/user/${post.userId}`
+              `http://localhost:5000/user/${post.userId}`,
+              {
+                withCredentials: true,
+              }
             );
             const username = userResponse.data.user.username;
-            return { ...post, username };
+            const imageUser = userResponse.data.user.image;
+            return { ...post, username, imageUser };
           } catch (error) {
             console.error(`Erreur pour l'user ${post.userId} :`, error.message);
             return { ...post, username: "Utilisateur inconnu" };
@@ -76,7 +84,10 @@ const HomePage = () => {
         setIsInputVisible(false);
         return;
       }
-      const res = await axios.post("http://localhost:3000/api/posts/", data);
+      const res = await axios.post(
+        "http://localhost:3000/api/posts/create",
+        data
+      );
       console.log("Résultat de la requête POST :", res);
       getPosts();
       setIsInputVisible(false);
@@ -90,7 +101,9 @@ const HomePage = () => {
   };
   const deletePost = async (id) => {
     try {
-      const res = await axios.delete(`http://localhost:3000/api/posts/${id}`);
+      const res = await axios.delete(
+        `http://localhost:3000/api/posts/delete/${id}`
+      );
       console.log("Résultat de la requête DELETE :", res);
       getPosts();
     } catch (error) {
@@ -107,7 +120,7 @@ const HomePage = () => {
     };
     try {
       const res = await axios.put(
-        `http://localhost:3000/api/posts/${id}`,
+        `http://localhost:3000/api/posts/modify/${id}`,
         data
       );
       console.log("Données envoyées dans le PUT :", data);
@@ -133,6 +146,11 @@ const HomePage = () => {
     }
   };
 
+  const follow = async (id) => {
+    try{
+      const res = await axios.post("http://localhost:")
+    }
+  }
   useEffect(() => {
     getUsers();
   }, []);
@@ -143,7 +161,10 @@ const HomePage = () => {
     }
   }, [user]);
   return (
-    <div id="" className="min-h-screen  flex flex-col mx-auto px-4 gap-5 ">
+    <div
+      id=""
+      className="min-h-screen bg-gradient-to-tr from-[#5e5d5d9e] to-[#0a525b] flex flex-col mx-auto px-4 gap-5 "
+    >
       <Navbar />
       <div className="mt-16 md:mt-4 md:flex flex-col items-center">
         <div id="Message" className="h-16 ">
@@ -179,15 +200,23 @@ const HomePage = () => {
                 posts.map((post) => (
                   <div
                     key={post._id}
-                    className=" relative mt-8 border-[2px] border-[rgba(119,191,199,0.5)] bg-opacity-80 rounded-lg p-5 shadow-[2px_1px_8px_rgba(255,255,255,0.15)]  max-w-md mx-auto"
+                    className=" relative mt-8 border-[2px] bg-[rgba(38,38,38,0.5)] border-[rgba(119,191,199,0.5)] bg-opacity-80 rounded-lg p-5 shadow-[2px_1px_8px_rgba(255,255,255,0.15)]  max-w-md mx-auto"
                   >
                     <header className="flex items-center justify-between mb-4">
                       <div className="flex items-center space-x-3">
-                        <img
-                          src="./images/pdp_test.jpg"
-                          alt="Avatar"
-                          className="w-12 h-12 rounded-full border-2 border-white object-cover"
-                        />
+                        <button
+                          onClick={() => navigate("/profil/" + post.userId)}
+                        >
+                          <img
+                            src={
+                              post?.imageUser
+                                ? `http://localhost:5000/uploads/${post.imageUser}`
+                                : "../public/images/pdp_basique.jpeg"
+                            }
+                            alt="Avatar"
+                            className="w-12 h-12 rounded-full border-2 border-white object-cover"
+                          />
+                        </button>
                         <div className="flex flex-col">
                           <div className="flex items-center justify-between space-x-3">
                             <div>
@@ -197,7 +226,7 @@ const HomePage = () => {
                               <time className="text-gray-400 text-xs">
                                 {new Date(post.date).toLocaleString("fr-FR")}
                               </time>
-                              {user.user_id === post.userId && (
+                              {selfId === post.userId && (
                                 <svg
                                   onClick={handleEditClick.bind(null, post)}
                                   xmlns="http://www.w3.org/2000/svg"
@@ -213,7 +242,7 @@ const HomePage = () => {
                                 </svg>
                               )}
                             </div>
-                            {user.user_id === post.userId && (
+                            {selfId === post.userId && (
                               <svg
                                 onClick={() => deletePost(post._id)}
                                 xmlns="http://www.w3.org/2000/svg"
@@ -293,8 +322,8 @@ const HomePage = () => {
 
             <div
               className="
-              md:top-96 md:left-64
-    relative bottom-8 left-1/2 transform -translate-x-1/2 
+               md:left-64
+    relative bottom-24 left-1/2 transform -translate-x-1/2 
     w-5/6 max-w-md px-4 py-3 gap-4 flex flex-col 
     bg-[rgb(50,50,50)] rounded-3xl shadow-2xl z-20
     sm:flex-row sm:items-center
@@ -302,7 +331,11 @@ const HomePage = () => {
               onClick={(e) => e.stopPropagation()}
             >
               <img
-                src="./images/pdp_test.jpg"
+                src={
+                  user?.image
+                    ? `http://localhost:5000/uploads/${user.image}`
+                    : "../public/images/pdp_basique.jpeg"
+                }
                 alt="Avatar"
                 className="absolute -top-5 -left-3 w-12 h-12 rounded-full border-2 border-white object-cover"
               />
@@ -320,6 +353,7 @@ const HomePage = () => {
                   type="text"
                   id="content"
                   placeholder="Écris quelque chose..."
+                  maxLength={280}
                   autoFocus
                   value={content}
                   onChange={(e) => setContent(e.target.value)}

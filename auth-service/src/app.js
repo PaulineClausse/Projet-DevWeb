@@ -1,12 +1,16 @@
-require("dotenv").config();
-
+require("dotenv").conficonst;
+const path = require("path");
 const express = require("express");
 const app = express();
-
+const ImageRouter = require("./routes/image.routes");
 const cookieParser = require("cookie-parser");
 // const pool = require('../auth-service/config/database');
 const cors = require("cors");
 const AuthRouter = require("./routes/auth.routes");
+const errorHandler = require("./middlewares/errorHandler");
+const multer = require("multer");
+
+
 
 app.use(
   cors({
@@ -15,6 +19,9 @@ app.use(
   })
 );
 
+app.use("/uploads", express.static("uploads"));
+
+app.use(errorHandler);
 // parse requests of content-type - application/json
 app.use(express.json());
 
@@ -24,6 +31,7 @@ app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/", AuthRouter);
+app.use("/", ImageRouter);
 
 app.listen(5000, () => {
   console.log("service auth démarré sur le port 5000");

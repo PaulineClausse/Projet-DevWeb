@@ -93,13 +93,11 @@ exports.register = async (req, res) => {
     // Association via la méthode Sequelize générée par la relation belongsToMany
     await newUser.addRole(userRole);
 
-    return res
-      .status(201)
-      .json({
-        message: "Utilisateur créé avec succès",
-        userId: newUser.user_id,
-        user_role: userRole.role_name,
-      });
+    return res.status(201).json({
+      message: "Utilisateur créé avec succès",
+      userId: newUser.user_id,
+      user_role: userRole.role_name,
+    });
   } catch (err) {
     console.error(err);
     return res
@@ -122,7 +120,6 @@ exports.authenticate = async (req, res) => {
       where: { email: decoded.email },
       attributes: [
         "email",
-        "password",
         "username",
         "user_id",
         "name",
@@ -233,11 +230,9 @@ exports.deleteUser = async (req, res) => {
     // Supprimer l'utilisateur
     await user.destroy();
 
-    return res
-      .status(200)
-      .json({
-        message: "Utilisateur et associations rôles supprimés avec succès.",
-      });
+    return res.status(200).json({
+      message: "Utilisateur et associations rôles supprimés avec succès.",
+    });
   } catch (error) {
     console.error("Erreur suppression :", error);
     return res

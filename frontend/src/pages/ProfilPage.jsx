@@ -2,6 +2,8 @@ import Navbar from "../components/Navbar";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import { useRef } from "react";
 
 const ProfilPage = () => {
   const [posts, setPosts] = useState([]);
@@ -14,6 +16,9 @@ const ProfilPage = () => {
   const [isFollowing, setIsFollowing] = useState(false);
   const [user, setUser] = useState({});
   const navigate = useNavigate();
+  const [userActual, setUserActual] = useState({});
+  const { id } = useParams();
+  const fileInputRef = useRef(null);
 
   const handleClose = () => {
     setIsInputVisible(false);
@@ -21,9 +26,11 @@ const ProfilPage = () => {
 
   const deletePost = async (id) => {
     try {
-      const res = await axios.delete(`http://localhost:3000/api/posts/${id}`);
+      const res = await axios.delete(
+        `http://localhost:3000/api/posts/delete/${id}`
+      );
       console.log("Résultat de la requête DELETE :", res);
-      getPosts();
+      getUserPosts();
     } catch (error) {
       console.error("Erreur lors de la suppression :", error.message);
     }
@@ -36,11 +43,11 @@ const ProfilPage = () => {
     };
     try {
       const res = await axios.put(
-        `http://localhost:3000/api/posts/${id}`,
+        `http://localhost:3000/api/posts/modify/${id}`,
         data
       );
       console.log("Résultat de la requête PUT :", res);
-      getPosts();
+      getUserPosts();
       setIsInputVisible(false);
       setTitle("");
       setContent("");
@@ -49,6 +56,27 @@ const ProfilPage = () => {
       console.error("Erreur lors de la mise à jour :", error.message);
     }
   };
+
+  // const handlefollow = async () => {
+  //   try {
+  //     const data = {
+  //       followerId: user.user_id,
+  //       content,
+  //       image,
+  //       userId: user.user_id,
+  //     };
+  //     const res = await axios.post("http://localhost:6000/followers", data);
+  //     console.log("Résultat de la requête POST :", res);
+  //     getUserPosts();
+  //     setIsInputVisible(false);
+  //     setTitle("");
+  //     setContent("");
+  //     setImage("");
+  //   } catch (error) {
+  //     console.error("Erreur lors de la mise à jour :", error.message);
+  //   }
+  // };
+
   const handleClick = async () => {
     const data = {
       title,
@@ -66,9 +94,12 @@ const ProfilPage = () => {
         setIsInputVisible(false);
         return;
       }
-      const res = await axios.post("http://localhost:3000/api/posts/", data);
+      const res = await axios.post(
+        "http://localhost:3000/api/posts/create",
+        data
+      );
       console.log("Résultat de la requête POST :", res);
-      getPosts();
+      getUserPosts();
       setIsInputVisible(false);
       setTitle("");
       setContent("");
@@ -85,44 +116,111 @@ const ProfilPage = () => {
     setImage(post.image);
     setIsInputVisible(true);
   };
-  const getPosts = async () => {
-    try {
-      setIsLoading(true);
-      const response = await axios.get("http://localhost:3000/api/posts/");
-      console.log(response.data);
-      setPosts(response.data);
-      setIsLoading(false);
-    } catch (error) {
-      console.log(error);
-    }
-  };
 
-  const getUsers = async () => {
+  const getUserActual = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/user", {
+      const response = await axios.get("http://localhost:5000/auth", {
         withCredentials: true,
       });
       console.log("Utilisateur connecté :", response.data.user);
-      setUser(response.data.user);
+      setUserActual(response.data.user);
     } catch (error) {
       console.log("Pas connecté", error);
     }
   };
 
+  const getUserPosts = async () => {
+    try {
+      setIsLoading(true);
+      const response = await axios.get(
+        `http://localhost:3000/api/posts/user/${id}`,
+        { withCredentials: true }
+      );
+      console.log(response.data);
+      setPosts(response.data);
+      setIsLoading(false);
+    } catch (error) {
+      console.error(
+        `Erreur lors de la recherche des posts de l'utilisateur : ${error}`
+      );
+    }
+  };
+
+  const getUserInfo = async () => {
+    try {
+      const response = await axios.get(`http://localhost:5000/user/${id}`, {
+        withCredentials: true,
+      });
+
+      console.log("Utilisateur du profil :", response.data.user);
+      setUser(response.data.user);
+    } catch (error) {
+      console.log("Pas d'utilisateur", error);
+    }
+  };
+
+  const handleButtonClick = () => {
+    fileInputRef.current.click(); // Ouvre l’explorateur
+  };
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("image", file);
+    console.log("formdata : " + formData);
+    console.log("file : " + file);
+    for (let pair of formData.entries()) {
+      console.log(pair[0], pair[1]);
+    }
+    try {
+      const res = await axios.post("http://localhost:5000/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+        withCredentials: true,
+      });
+
+      const uploadedImage = res.data.filename || res.data.imageUrl;
+      console.log("Image uploadée:", uploadedImage);
+
+      setImage(uploadedImage);
+      window.location.reload();
+    } catch (err) {
+      console.error("Upload failed:", err);
+      alert("Échec de l'upload");
+    }
+  };
   useEffect(() => {
-    getPosts();
-    getUsers();
+    getUserPosts();
+    getUserActual();
+    getUserInfo();
   }, []);
 
   return (
-    <div>
+    <div className="min-h-screen">
       <Navbar />
       <div className="flex flex-col">
-        <div className="relative top-20">
-          <div className=" shadow-2xl bg-gradient-to-r from-[#7BE9E49E] to-[#0A3C5B] text-white p-16 w-10/12 right-10 md:w-9/12 top-12 absolute rounded-lg">
+        <div className="mt-20 flex justify-center">
+          <div className=" shadow-2xl  bg-[rgb(38,38,38,0.7)] text-white p-16 w-10/12 right-10 md:w-9/12 top-36 absolute rounded-lg">
             <h1 className="absolute -top-10 left-0 text-3xl font-bold text-white">
               Profil
             </h1>
+            {userActual.user_id == user.user_id && (
+              <button
+                onClick={handleButtonClick}
+                className="absolute -top-9 left-24"
+              >
+                <img src="../public/icons/modify.png" className="w-7 h-7"></img>
+              </button>
+            )}
+            <input
+              type="file"
+              accept="image/*"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              style={{ display: "none" }}
+            />
+
             <div className="flex flex-col ">
               <div className="absolute  top-4 left-4 flex flex-row items-center gap-8">
                 <p className="font-bold text-xl ">{user.name} </p>
@@ -132,7 +230,7 @@ const ProfilPage = () => {
               <div>
                 <p className="absolute left-4 top-12">{user.biography}</p>
 
-                <div className="absolute flex flex-row  left-12 gap-3 ml-4 mt-5 ">
+                <div className="absolute flex flex-row  left-3 gap-3 mt-5 ">
                   <button
                     onClick={() => setIsFollowing(!isFollowing)}
                     className="text-sm font-medium flex flex-col items-center "
@@ -214,8 +312,12 @@ const ProfilPage = () => {
             </div>
           </div>
           <img
-            className=" absolute lg:w-1/12 md:w-2/12 right-0 mt-2  rounded-full w-3/12  object-cover border-2 border-white"
-            src="./images/pdp_test.jpg"
+            className=" absolute lg:w-24 lg:h-24/12 md:w-24 md:h-24 right-0 mt-2  rounded-full w-28 h-28  object-cover border-2 border-white"
+            src={
+              user?.image
+                ? `http://localhost:5000/uploads/${user.image}`
+                : "../public/images/pdp_basique.jpeg"
+            }
             alt="Profile"
           />
         </div>
@@ -234,7 +336,7 @@ const ProfilPage = () => {
                     <header className="flex items-center justify-between mb-1">
                       <div className="flex items-center space-x-3">
                         <img
-                          src="./images/pdp_test.jpg"
+                          src={`http://localhost:5000/uploads/${user.image}`}
                           alt="Avatar"
                           className="w-12 h-12 rounded-full border-2 border-white object-cover"
                         />
@@ -242,38 +344,42 @@ const ProfilPage = () => {
                           <div className="flex items-center justify-between space-x-3">
                             <div>
                               <h3 className=" text-[rgba(119,191,199,0.5)] font-semibold text-lg">
-                                {post.pseudo || "Pseudo"}
+                                {user.username || "Pseudo"}
                               </h3>
                               <time className="text-gray-400 text-xs">
                                 {new Date(post.date).toLocaleString("fr-FR")}
                               </time>
+                              {userActual.user_id == post.userId && (
+                                <svg
+                                  onClick={handleEditClick.bind(null, post)}
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  viewBox="0 0 512 512"
+                                  fill="rgb(38, 38, 38)"
+                                  className="absolute top-3 right-12 w-6 h-6   cursor-pointer"
+                                >
+                                  <path
+                                    d="M362.7 19.3L314.3 67.7 444.3 197.7l48.4-48.4c25-25 25-65.5 0-90.5L453.3 19.3c-25-25-65.5-25-90.5 0zm-71 71L58.6 323.5c-10.4 10.4-18 23.3-22.2 37.4L1 481.2C-1.5 489.7 .8 498.8 7 505s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L421.7 220.3 291.7 90.3z"
+                                    stroke="rgb(191, 191, 199)"
+                                    stroke-width="40"
+                                  />
+                                </svg>
+                              )}
+                            </div>
+                            {userActual.user_id == post.userId && (
                               <svg
-                                onClick={handleEditClick.bind(null, post)}
+                                onClick={() => deletePost(post._id)}
                                 xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 512 512"
+                                viewBox="0 0 448 512"
                                 fill="rgb(38, 38, 38)"
-                                className="absolute top-3 right-12 w-6 h-6   cursor-pointer"
+                                className="absolute top-3 right-3 w-5 h-6   cursor-pointer"
                               >
                                 <path
-                                  d="M362.7 19.3L314.3 67.7 444.3 197.7l48.4-48.4c25-25 25-65.5 0-90.5L453.3 19.3c-25-25-65.5-25-90.5 0zm-71 71L58.6 323.5c-10.4 10.4-18 23.3-22.2 37.4L1 481.2C-1.5 489.7 .8 498.8 7 505s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L421.7 220.3 291.7 90.3z"
+                                  d="M135.2 17.7L128 32 32 32C14.3 32 0 46.3 0 64S14.3 96 32 96l384 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0-7.2-14.3C307.4 6.8 296.3 0 284.2 0L163.8 0c-12.1 0-23.2 6.8-28.6 17.7zM416 128L32 128 53.2 467c1.6 25.3 22.6 45 47.9 45l245.8 0c25.3 0 46.3-19.7 47.9-45L416 128z"
                                   stroke="rgb(191, 191, 199)"
                                   stroke-width="40"
                                 />
                               </svg>
-                            </div>
-                            <svg
-                              onClick={() => deletePost(post._id)}
-                              xmlns="http://www.w3.org/2000/svg"
-                              viewBox="0 0 448 512"
-                              fill="rgb(38, 38, 38)"
-                              className="absolute top-3 right-3 w-5 h-6   cursor-pointer"
-                            >
-                              <path
-                                d="M135.2 17.7L128 32 32 32C14.3 32 0 46.3 0 64S14.3 96 32 96l384 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0-7.2-14.3C307.4 6.8 296.3 0 284.2 0L163.8 0c-12.1 0-23.2 6.8-28.6 17.7zM416 128L32 128 53.2 467c1.6 25.3 22.6 45 47.9 45l245.8 0c25.3 0 46.3-19.7 47.9-45L416 128z"
-                                stroke="rgb(191, 191, 199)"
-                                stroke-width="40"
-                              />
-                            </svg>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -322,7 +428,7 @@ const ProfilPage = () => {
                   </div>
                 ))
               ) : (
-                <p className="text-justify text-zinc-600 px-8  py-20">
+                <p className="text-center text-zinc-600 px-10 py-20 min-h-[400px]">
                   {" "}
                   You don't have any posts to view.
                 </p>
