@@ -9,6 +9,8 @@ const HomePage = () => {
   const [posts, setPosts] = useState([]);
   const [comments, setComments] = useState({});
   const [likes, setLikes] = useState({});
+  const [likesUsers, setLikesUsers] = useState({});
+  const [users, setUsers] = useState({});
   const [showLikesList, setShowLikesList] = useState(null);
   const [isloading, setIsLoading] = useState(false);
   const [isInputVisible, setIsInputVisible] = useState(false);
@@ -24,6 +26,21 @@ const HomePage = () => {
   const getAuthHeaders = () => {
     const token = localStorage.getItem("accessToken");
     return token ? { Authorization: `Bearer ${token}` } : {};
+  };
+
+  // Récupère les infos d'un utilisateur et les met en cache
+  const fetchUser = async (userId) => {
+    if (!userId || users[userId]) return;
+    try {
+      const token = localStorage.getItem("accessToken");
+      const res = await axios.get(`http://localhost:5000/user/${userId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true,
+      });
+      setUsers((prev) => ({ ...prev, [userId]: res.data.user }));
+    } catch (e) {
+      setUsers((prev) => ({ ...prev, [userId]: { username: "Utilisateur" } }));
+    }
   };
 
   const getPosts = async () => {
@@ -50,6 +67,8 @@ const HomePage = () => {
         ...prev,
         [postId]: response.data,
       }));
+      // Récupère les utilisateurs pour chaque commentaire
+      response.data.forEach((comment) => fetchUser(comment.user_id));
     } catch (error) {
       if (error.response && error.response.status === 404) {
         setComments((prev) => ({
@@ -62,20 +81,31 @@ const HomePage = () => {
     }
   };
 
+  // Récupère le nombre de likes et la liste des users ayant liké
   const getLikes = async (postId) => {
     try {
+      // Récupère la liste des user_id ayant liké
       const response = await axios.get(
-        `http://localhost:4002/api/likes/${postId}`,
+        `http://localhost:4002/api/likes/${postId}/users`,
         { headers: getAuthHeaders() }
       );
       setLikes((prev) => ({
         ...prev,
-        [postId]: response.data.likes_count,
+        [postId]: response.data.users.length,
       }));
+      setLikesUsers((prev) => ({
+        ...prev,
+        [postId]: response.data.users,
+      }));
+      response.data.users.forEach((userId) => fetchUser(userId));
     } catch (error) {
       setLikes((prev) => ({
         ...prev,
         [postId]: 0,
+      }));
+      setLikesUsers((prev) => ({
+        ...prev,
+        [postId]: [],
       }));
     }
   };
@@ -230,12 +260,12 @@ const HomePage = () => {
         <div className="flex justify-between items-center mb-1" style={level > 0 ? { marginLeft: `${level * 2}rem` } : {}}>
           <div className="flex items-center gap-2">
             <img
-              src={comment.avatar || "/images/pdp_test.jpg"}
+              src={users[comment.user_id]?.image || "/images/pdp_test.jpg"}
               alt="Avatar"
               className={`rounded-full border-2 border-white object-cover ${level === 0 ? "w-7 h-7" : "w-5 h-5"}`}
             />
             <span className={`font-semibold ${level === 0 ? "text-[rgba(119,191,199,0.9)]" : "text-cyan-300 text-sm"}`}>
-              {comment.pseudo || comment.username || "Utilisateur"}
+              {users[comment.user_id]?.username || "Utilisateur"}
             </span>
           </div>
           <span className="text-xs text-gray-400">
@@ -463,11 +493,22 @@ const HomePage = () => {
                         </button>
                       </div>
                     </section>
-                    {/* Optionnel : liste des utilisateurs ayant liké */}
+                    {/* Liste des utilisateurs ayant liké */}
                     {showLikesList === post._id && (
                       <div className="absolute bg-gray-800 text-white rounded p-2 z-50 mt-2 left-0 right-0 max-w-xs mx-auto">
                         <h4 className="font-bold mb-2">Likes</h4>
-                        <p className="text-gray-400 text-sm">Affichage de la liste à implémenter</p>
+                        <ul>
+                          {(likesUsers[post._id] || []).map((userId) => (
+                            <li key={userId} className="flex items-center gap-2 mb-1">
+                              <img
+                                src={users[userId]?.image || "/images/pdp_test.jpg"}
+                                alt="Avatar"
+                                className="w-6 h-6 rounded-full border"
+                              />
+                              <span>{users[userId]?.username || "Utilisateur"}</span>
+                            </li>
+                          ))}
+                        </ul>
                         <button
                           className="mt-2 text-sm text-blue-400"
                           onClick={() => setShowLikesList(null)}

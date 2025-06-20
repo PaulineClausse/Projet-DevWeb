@@ -1,4 +1,5 @@
 const Comment = require("../models/comment.model");
+const axios = require("axios");
 
 // Fonction pour créer un commentaire
 exports.createComment = async (req, res) => {
@@ -27,7 +28,7 @@ exports.getAllComments = async (req, res) => {
   }
 };
 
-// Fonction pour récupérer les commentaires d'un post spécifique
+// Fonction pour récupérer les commentaires d'un post spécifique avec infos utilisateur
 exports.getCommentsByPost = async (req, res) => {
   const { postId } = req.params;
   try {
@@ -35,7 +36,32 @@ exports.getCommentsByPost = async (req, res) => {
     if (comments.length === 0) {
       return res.status(404).json({ message: "Aucun commentaire trouvé pour ce post" });
     }
-    res.status(200).json(comments); // Retourne les commentaires du post
+
+    // Enrichir chaque commentaire avec les infos utilisateur
+    const enrichedComments = await Promise.all(
+      comments.map(async (comment) => {
+        try {
+          // Utilise le nom du service Docker pour auth-service
+          const userRes = await axios.get(
+            `http://auth-service:5000/user/${comment.user_id}`
+          );
+          return {
+            ...comment.toObject(),
+            user: {
+              username: userRes.data.user.username,
+              image: userRes.data.user.image,
+            },
+          };
+        } catch (e) {
+          return {
+            ...comment.toObject(),
+            user: { username: "Utilisateur", image: null },
+          };
+        }
+      })
+    );
+
+    res.status(200).json(enrichedComments);
   } catch (err) {
     res.status(500).json({ message: "Erreur lors de la récupération des commentaires", error: err });
   }
@@ -79,7 +105,6 @@ exports.deleteReply = async (req, res) => {
     res.status(500).json({ message: "Erreur lors de la suppression de la réponse", error: err });
   }
 };
-
 
 exports.deleteComment = async (req, res) => {
   const { id } = req.params;

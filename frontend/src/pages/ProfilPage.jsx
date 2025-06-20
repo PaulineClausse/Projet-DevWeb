@@ -6,6 +6,7 @@ const currentUserId = "currentUserId";
 const BASE_REPLY_ROWS = 1;
 
 const ProfilPage = () => {
+  const [user, setUser] = useState(null);
   const [posts, setPosts] = useState([]);
   const [isloading, setIsLoading] = useState(false);
   const [isInputVisible, setIsInputVisible] = useState(false);
@@ -320,12 +321,20 @@ const ProfilPage = () => {
     );
   };
 
+  // Ajout récupération des infos utilisateur
   useEffect(() => {
-    // Redirige si non authentifié
     const token = localStorage.getItem("accessToken");
     if (!token) {
       window.location.href = "/auth";
     } else {
+      // Récupère les infos utilisateur connecté
+      axios
+        .get("http://localhost:5000/auth", {
+          headers: { Authorization: `Bearer ${token}` },
+          withCredentials: true,
+        })
+        .then((res) => setUser(res.data.user))
+        .catch(() => setUser(null));
       getPosts();
     }
   }, []);
@@ -345,17 +354,23 @@ const ProfilPage = () => {
             </h1>
             <div className="flex flex-col ">
               <div className="absolute  top-4 left-4 flex flex-row ">
-                <p className="font-bold text-xl ">Pseudo</p>
-                <p className="px-3 text-gray-300 text-xl ">@username</p>
+                <p className="font-bold text-xl ">
+                  {user?.username || "Pseudo"}
+                </p>
+                <p className="px-3 text-gray-300 text-xl ">
+                  @{user?.username || "username"}
+                </p>
               </div>
               <div>
-                <p className="absolute left-4">Ceci est la biographie</p>
+                <p className="absolute left-4">
+                  {user?.biography || "Ceci est la biographie"}
+                </p>
               </div>
             </div>
           </div>
           <img
             className=" absolute lg:w-1/12 md:w-2/12 right-1  rounded-full w-3/12  object-cover border-2 border-white"
-            src="./images/pdp_test.jpg"
+            src={user?.image || "./images/pdp_test.jpg"}
             alt="Profile"
           />
         </div>
@@ -373,7 +388,7 @@ const ProfilPage = () => {
                     <header className="flex items-center justify-between mb-4">
                       <div className="flex items-center space-x-3">
                         <img
-                          src="./images/pdp_test.jpg"
+                          src={user?.image || "./images/pdp_test.jpg"}
                           alt="Avatar"
                           className="w-12 h-12 rounded-full border-2 border-white object-cover"
                         />
@@ -381,7 +396,7 @@ const ProfilPage = () => {
                           <div className="flex items-center justify-between space-x-3">
                             <div>
                               <h3 className=" text-[rgba(119,191,199,0.5)] font-semibold text-lg">
-                                {post.pseudo || "Pseudo"}
+                                {post.pseudo || user?.username || "Pseudo"}
                               </h3>
                               <time className="text-gray-400 text-xs">
                                 {new Date(post.date).toLocaleString("fr-FR")}
@@ -527,7 +542,7 @@ const ProfilPage = () => {
             onClick={(e) => e.stopPropagation()}
           >
             <img
-              src="./images/pdp_test.jpg"
+              src={user?.image || "./images/pdp_test.jpg"}
               alt="Avatar"
               className="absolute -top-5 -left-3 w-12 h-12 rounded-full border-2 border-white object-cover"
             />
