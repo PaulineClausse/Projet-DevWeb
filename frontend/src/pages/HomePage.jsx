@@ -18,23 +18,34 @@ const HomePage = () => {
   const [editingPostId, setEditingPostId] = useState(null);
   const [newComment, setNewComment] = useState("");
   const [activePostId, setActivePostId] = useState(null);
-  const [replyTarget, setReplyTarget] = useState(null); // {commentId, value, rows}
+  const [replyTarget, setReplyTarget] = useState(null);
 
-  // Utilise localhost pour tous les appels API
+  // Ajoute le token d'auth à chaque requête protégée
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem("accessToken");
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  };
+
   const getPosts = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.get("http://localhost:3000/api/posts/");
+      const response = await axios.get("http://localhost:3000/api/posts/", {
+        headers: getAuthHeaders(),
+      });
       setPosts(response.data);
       setIsLoading(false);
     } catch (error) {
+      setIsLoading(false);
       console.log(error);
     }
   };
 
   const getComments = async (postId) => {
     try {
-      const response = await axios.get(`http://localhost:4001/api/comments/post/${postId}`);
+      const response = await axios.get(
+        `http://localhost:4001/api/comments/post/${postId}`,
+        { headers: getAuthHeaders() }
+      );
       setComments((prev) => ({
         ...prev,
         [postId]: response.data,
@@ -53,7 +64,10 @@ const HomePage = () => {
 
   const getLikes = async (postId) => {
     try {
-      const response = await axios.get(`http://localhost:4002/api/likes/${postId}`);
+      const response = await axios.get(
+        `http://localhost:4002/api/likes/${postId}`,
+        { headers: getAuthHeaders() }
+      );
       setLikes((prev) => ({
         ...prev,
         [postId]: response.data.likes_count,
@@ -74,7 +88,9 @@ const HomePage = () => {
       content: newComment,
     };
     try {
-      await axios.post("http://localhost:4001/api/comments/", commentData);
+      await axios.post("http://localhost:4001/api/comments/", commentData, {
+        headers: getAuthHeaders(),
+      });
       setNewComment("");
       getComments(postId);
     } catch (error) {
@@ -85,11 +101,15 @@ const HomePage = () => {
   const addReply = async (postId, commentId) => {
     if (!replyTarget?.value) return alert("La réponse ne peut pas être vide");
     try {
-      await axios.post(`http://localhost:4001/api/comments/${commentId}/reply`, {
-        post_id: postId,
-        user_id: currentUserId,
-        content: replyTarget.value,
-      });
+      await axios.post(
+        `http://localhost:4001/api/comments/${commentId}/reply`,
+        {
+          post_id: postId,
+          user_id: currentUserId,
+          content: replyTarget.value,
+        },
+        { headers: getAuthHeaders() }
+      );
       setReplyTarget(null);
       getComments(postId);
     } catch (error) {
@@ -97,12 +117,44 @@ const HomePage = () => {
     }
   };
 
+  const putPost = async (id, data) => {
+    try {
+      await axios.put(`http://localhost:3000/api/posts/${id}`, data, {
+        headers: getAuthHeaders(),
+      });
+      getPosts();
+      setIsInputVisible(false);
+      setTitle("");
+      setContent("");
+      setImage("");
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour du post :", error);
+    }
+  };
+
+  const deletePost = async (id) => {
+    try {
+      await axios.delete(`http://localhost:3000/api/posts/${id}`, {
+        headers: getAuthHeaders(),
+      });
+      getPosts();
+    } catch (error) {
+      console.error("Erreur lors de la suppression du post :", error.message);
+    }
+  };
+
   const deleteComment = async (commentId, postId, parentId = null) => {
     try {
       if (parentId) {
-        await axios.delete(`http://localhost:4001/api/comments/${parentId}/reply/${commentId}`);
+        await axios.delete(
+          `http://localhost:4001/api/comments/${parentId}/reply/${commentId}`,
+          { headers: getAuthHeaders() }
+        );
       } else {
-        await axios.delete(`http://localhost:4001/api/comments/${commentId}`);
+        await axios.delete(
+          `http://localhost:4001/api/comments/${commentId}`,
+          { headers: getAuthHeaders() }
+        );
       }
       getComments(postId);
     } catch (error) {
@@ -112,10 +164,14 @@ const HomePage = () => {
 
   const toggleLike = async (postId) => {
     try {
-      await axios.post("http://localhost:4002/api/likes/", {
-        post_id: postId,
-        user_id: currentUserId,
-      });
+      await axios.post(
+        "http://localhost:4002/api/likes/",
+        {
+          post_id: postId,
+          user_id: currentUserId,
+        },
+        { headers: getAuthHeaders() }
+      );
       getLikes(postId);
     } catch (error) {
       console.error("Erreur lors du like :", error);
@@ -141,7 +197,9 @@ const HomePage = () => {
         setEditingPostId(null);
         return;
       }
-      await axios.post("http://localhost:3000/api/posts/", data);
+      await axios.post("http://localhost:3000/api/posts/", data, {
+        headers: getAuthHeaders(),
+      });
       getPosts();
       setIsInputVisible(false);
       setTitle("");
@@ -149,28 +207,6 @@ const HomePage = () => {
       setImage("");
     } catch (error) {
       console.error("Erreur lors de la création :", error.message);
-    }
-  };
-
-  const putPost = async (id, data) => {
-    try {
-      await axios.put(`http://localhost:3000/api/posts/${id}`, data);
-      getPosts();
-      setIsInputVisible(false);
-      setTitle("");
-      setContent("");
-      setImage("");
-    } catch (error) {
-      console.error("Erreur lors de la mise à jour du post :", error);
-    }
-  };
-
-  const deletePost = async (id) => {
-    try {
-      await axios.delete(`http://localhost:3000/api/posts/${id}`);
-      getPosts();
-    } catch (error) {
-      console.error("Erreur lors de la suppression du post :", error.message);
     }
   };
 
@@ -279,7 +315,13 @@ const HomePage = () => {
   };
 
   useEffect(() => {
-    getPosts();
+    // Redirige si non authentifié
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      window.location.href = "/auth";
+    } else {
+      getPosts();
+    }
   }, []);
 
   useEffect(() => {
@@ -473,7 +515,6 @@ const HomePage = () => {
             ></div>
             <div
               className="
-                md:top-96 md:left-64
                 relative bottom-8 left-1/2 transform -translate-x-1/2 
                 w-5/6 max-w-md px-4 py-3 gap-4 flex flex-col 
                 bg-[rgb(50,50,50)] rounded-3xl shadow-2xl z-20

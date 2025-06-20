@@ -1,0 +1,46 @@
+services:
+  auth:
+    build: .
+    container_name: auth-service
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/app
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=authuser
+      - DB_PASSWORD=Authpassword1!!
+      - DB_NAME=authdb
+    depends_on:
+      - mysql
+    networks:
+      - microservices-network
+
+  mysql:
+    image: mysql:latest
+    container_name: mysql
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=Authpassword1!!
+      - MYSQL_HOST=mysql
+      - MYSQL_NAME=authdb
+      - MYSQL_USER=authuser
+      - MYSQL_PASSWORD=Authpassword1!!
+      - MYSQL_PORT=3306
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - microservices-network
+
+networks:
+  microservices-network:
+    external: true
+
+volumes:
+  mysql-data:
+    name: mysql-data

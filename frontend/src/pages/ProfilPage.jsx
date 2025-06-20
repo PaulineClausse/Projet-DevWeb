@@ -20,13 +20,21 @@ const ProfilPage = () => {
   const [showLikesList, setShowLikesList] = useState(null);
   const [replyTarget, setReplyTarget] = useState(null);
 
+  // Ajoute le token d'auth à chaque requête protégée
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem("accessToken");
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  };
+
   const handleClose = () => {
     setIsInputVisible(false);
   };
 
   const deletePost = async (id) => {
     try {
-      await axios.delete(`http://localhost:3000/api/posts/${id}`);
+      await axios.delete(`http://localhost:3000/api/posts/${id}`, {
+        headers: getAuthHeaders(),
+      });
       getPosts();
     } catch (error) {
       console.error("Erreur lors de la suppression :", error.message);
@@ -36,7 +44,9 @@ const ProfilPage = () => {
   const putPost = async (id) => {
     const data = { title, content, image };
     try {
-      await axios.put(`http://localhost:3000/api/posts/${id}`, data);
+      await axios.put(`http://localhost:3000/api/posts/${id}`, data, {
+        headers: getAuthHeaders(),
+      });
       getPosts();
       setIsInputVisible(false);
       setTitle("");
@@ -51,7 +61,7 @@ const ProfilPage = () => {
     const data = { title, content, image };
     try {
       if (editingPostId) {
-        putPost(editingPostId);
+        await putPost(editingPostId);
         setTitle("");
         setContent("");
         setImage("");
@@ -59,7 +69,9 @@ const ProfilPage = () => {
         setIsInputVisible(false);
         return;
       }
-      await axios.post("http://localhost:3000/api/posts/", data);
+      await axios.post("http://localhost:3000/api/posts/", data, {
+        headers: getAuthHeaders(),
+      });
       getPosts();
       setIsInputVisible(false);
       setTitle("");
@@ -81,7 +93,9 @@ const ProfilPage = () => {
   const getPosts = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.get("http://localhost:3000/api/posts/");
+      const response = await axios.get("http://localhost:3000/api/posts/", {
+        headers: getAuthHeaders(),
+      });
       setPosts(response.data);
       setIsLoading(false);
     } catch (error) {
@@ -92,7 +106,10 @@ const ProfilPage = () => {
   // --- Commentaires & Likes ---
   const getComments = async (postId) => {
     try {
-      const response = await axios.get(`http://localhost:4001/api/comments/post/${postId}`);
+      const response = await axios.get(
+        `http://localhost:4001/api/comments/post/${postId}`,
+        { headers: getAuthHeaders() }
+      );
       setComments((prev) => ({
         ...prev,
         [postId]: response.data,
@@ -111,7 +128,10 @@ const ProfilPage = () => {
 
   const getLikes = async (postId) => {
     try {
-      const response = await axios.get(`http://localhost:4002/api/likes/${postId}`);
+      const response = await axios.get(
+        `http://localhost:4002/api/likes/${postId}`,
+        { headers: getAuthHeaders() }
+      );
       setLikes((prev) => ({
         ...prev,
         [postId]: response.data.likes_count,
@@ -132,7 +152,9 @@ const ProfilPage = () => {
       content: newComment,
     };
     try {
-      await axios.post("http://localhost:4001/api/comments/", commentData);
+      await axios.post("http://localhost:4001/api/comments/", commentData, {
+        headers: getAuthHeaders(),
+      });
       setNewComment("");
       getComments(postId);
     } catch (error) {
@@ -143,11 +165,15 @@ const ProfilPage = () => {
   const addReply = async (postId, commentId) => {
     if (!replyTarget?.value) return alert("La réponse ne peut pas être vide");
     try {
-      await axios.post(`http://localhost:4001/api/comments/${commentId}/reply`, {
-        post_id: postId,
-        user_id: currentUserId,
-        content: replyTarget.value,
-      });
+      await axios.post(
+        `http://localhost:4001/api/comments/${commentId}/reply`,
+        {
+          post_id: postId,
+          user_id: currentUserId,
+          content: replyTarget.value,
+        },
+        { headers: getAuthHeaders() }
+      );
       setReplyTarget(null);
       getComments(postId);
     } catch (error) {
@@ -158,9 +184,15 @@ const ProfilPage = () => {
   const deleteComment = async (commentId, postId, parentId = null) => {
     try {
       if (parentId) {
-        await axios.delete(`http://localhost:4001/api/comments/${parentId}/reply/${commentId}`);
+        await axios.delete(
+          `http://localhost:4001/api/comments/${parentId}/reply/${commentId}`,
+          { headers: getAuthHeaders() }
+        );
       } else {
-        await axios.delete(`http://localhost:4001/api/comments/${commentId}`);
+        await axios.delete(
+          `http://localhost:4001/api/comments/${commentId}`,
+          { headers: getAuthHeaders() }
+        );
       }
       getComments(postId);
     } catch (error) {
@@ -170,10 +202,14 @@ const ProfilPage = () => {
 
   const toggleLike = async (postId) => {
     try {
-      await axios.post("http://localhost:4002/api/likes/", {
-        post_id: postId,
-        user_id: currentUserId,
-      });
+      await axios.post(
+        "http://localhost:4002/api/likes/",
+        {
+          post_id: postId,
+          user_id: currentUserId,
+        },
+        { headers: getAuthHeaders() }
+      );
       getLikes(postId);
     } catch (error) {
       console.error("Erreur lors du like :", error);
@@ -285,7 +321,13 @@ const ProfilPage = () => {
   };
 
   useEffect(() => {
-    getPosts();
+    // Redirige si non authentifié
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      window.location.href = "/auth";
+    } else {
+      getPosts();
+    }
   }, []);
 
   useEffect(() => {
