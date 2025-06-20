@@ -18,8 +18,14 @@ exports.login = async (req, res) => {
   try {
     const user = await User.findOne({
       where: { email },
-      attributes: ['email', 'password', 'username', 'user_id', 'first_name']//'image'
+      attributes: ['email', 'password', 'username', 'user_id', 'first_name'],
+      include: [{
+        model: Roles,
+        attributes: ['role_name'],
+        through: { attributes: [] }
+      }]
     });
+
     if (!user) {
       return res.status(401).json({ message: 'Utilisateur non trouvé' });
     }
@@ -29,13 +35,16 @@ exports.login = async (req, res) => {
       return res.status(401).json({ message: 'Mot de passe incorrect' });
     }
 
+    const roleNames = user.Roles.map(role => role.role_name); // tableau des rôles (ex: ['admin'])
+
     const payload = {
       user_id: user.user_id,
       username: user.username,
       email: user.email,
       first_name: user.first_name,
-      exp: Math.floor(Date.now() / 1000) + 60 * 60
-    }
+      roles: roleNames,
+      exp: Math.floor(Date.now() / 1000) + 60 * 60 // expiration dans 1h
+    };
 
     const accessToken = jwt.sign(
       payload,
@@ -69,6 +78,7 @@ exports.register = async (req, res) => {
     const newUser = await User.create({
       email,
       password: hashedPassword,
+      
       username,
       name,
       first_name,
@@ -226,6 +236,37 @@ exports.deleteUser = async (req, res) => {
   } catch (error) {
     console.error("Erreur suppression :", error);
     return res.status(500).json({ message: "Erreur serveur", error: error.message });
+  }
+};
+
+exports.getAllUsers = async (req, res) => {
+  const authHeader = req.headers["authorization"];
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ message: "Token manquant ou mal formaté" });
+  }
+
+  const token = authHeader.split(" ")[1];
+  try {
+    const decoded = jwt.verify(token, process.env.ACCESS_JWT_KEY);
+    const userId = decoded.user_id;
+
+    const users = await User.findAll({
+      attributes: ['user_id', 'email', 'username', 'name', 'first_name'],
+      include: [{
+        model: Roles,
+        attributes: ['role_name'],
+        through: { attributes: [] } // si relation many-to-many via table intermédiaire
+      }]
+    });
+
+    if (users.length === 0) {
+      return res.status(404).json({ message: "Aucun utilisateur trouvé" });
+    }
+
+    return res.status(200).json({ users });
+  } catch (err) {
+    console.error(err);
+    return res.status(401).json({ message: "Token invalide ou expiré", error: err.message });
   }
 };
 
