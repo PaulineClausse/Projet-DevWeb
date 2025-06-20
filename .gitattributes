@@ -1,0 +1,4 @@
+*.crt text eol=lf
+*.key text eol=lf
+*.json text eol=lf
+*.conf text eol=lf

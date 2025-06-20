@@ -16,7 +16,7 @@ const HomePage = () => {
   const getPosts = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.get("http://localhost/posts/", {
+      const response = await axios.get("https://localhost/posts/", {
         withCredentials: true
       });
       console.log(response.data);
@@ -60,7 +60,7 @@ const HomePage = () => {
         setIsInputVisible(false);
         return;
       }
-      const res = await axios.post("http://localhost/posts/create", data, {
+      const res = await axios.post("https://localhost/posts/create", data, {
         withCredentials: true
       });
 
@@ -77,7 +77,7 @@ const HomePage = () => {
   };
   const deletePost = async (id) => {
     try {
-      const res = await axios.delete(`http://localhost/posts/${id}`, {
+      const res = await axios.delete(`https://localhost/posts/${id}`, {
         withCredentials: true
       });
 
@@ -96,7 +96,7 @@ const HomePage = () => {
       userId: user.user_id,
     };
     try {
-      const res = await axios.put(`http://localhost/posts/${id}`, data, {
+      const res = await axios.put(`https://localhost/posts/${id}`, data, {
         withCredentials: true
       });
 
@@ -113,7 +113,7 @@ const HomePage = () => {
   };
   const getUsers = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/auth", {
+      const response = await axios.get("https://localhost:5000/auth", {
         withCredentials: true,
       });
       console.log("Utilisateur connecté :", response.data.user);
@@ -125,7 +125,7 @@ const HomePage = () => {
 
   const getUsername = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/user", {
+      const response = await axios.get("https://localhost:5000/user", {
         withCredentials: true,
       });
       console.log("Information utilisateur :", response.data.user);

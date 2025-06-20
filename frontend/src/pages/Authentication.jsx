@@ -13,7 +13,7 @@ const Authentication = () => {
     try {
       console.log("PDDDDD");
       const response = await axios.post(
-        "http://localhost/auth/login",
+        "https://localhost/auth/login",
         {
           email,
           password,

@@ -9,7 +9,7 @@ const cors = require("cors");
 const AuthRouter = require("./routes/auth.routes");
 
 app.use(cors({
-  origin: ["http://localhost:5173", "http://Zing.com", "http://localhost", "http://localhost:80", "http://zing.com", "http://10.64.128.76:5173"], // ← ajoute tous les domaines que tu utilises
+  origin: ["http://localhost:5173", "https://Zing.com", "http://localhost", "http://localhost:80", "https://zing.com", "http://10.64.128.76:5173"], // ← ajoute tous les domaines que tu utilises
   credentials: true
 }));
 
