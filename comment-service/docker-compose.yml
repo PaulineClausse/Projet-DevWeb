@@ -2,7 +2,7 @@
 
 services:
   comment-service:
-    build: ./comment-service
+    build: .
     container_name: comment-service
     restart: unless-stopped
     ports:

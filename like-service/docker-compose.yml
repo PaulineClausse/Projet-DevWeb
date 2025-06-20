@@ -1,6 +1,6 @@
 services:
   like-service:
-    build: ./like-service
+    build: .
     container_name: like-service
     restart: unless-stopped
     ports:
