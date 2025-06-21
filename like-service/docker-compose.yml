@@ -28,4 +28,4 @@ volumes:
 
 networks:
   microservices-network:
-    driver: bridge
+    external: true

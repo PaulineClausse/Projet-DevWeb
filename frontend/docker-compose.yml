@@ -8,11 +8,10 @@ services:
       - "5173:5173"
     restart: unless-stopped
     networks:
-      - default
+      - microservices-network
     environment:
       - NODE_ENV=development
 
 networks:
-  default:
-    external:
-      name: microservices-network
+  microservices-network:
+    external: true

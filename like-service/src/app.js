@@ -3,13 +3,21 @@ const express = require("express");
 const mongoose = require("mongoose");
 const likeRoutes = require("./routes/like.routes");
 require("dotenv").config(); // Charger les variables d'environnement
-
+const cors = require("cors");
+const verifyToken = require("./middlewares/VerifyToken");
+const cookieParser = require("cookie-parser");
 const app = express();
 const port = process.env.PORT || 4002; // Utilise le port depuis .env ou le port 4002 par défaut
 
-// Middleware
+
+app.use(cors({
+  origin: "http://localhost:5173", 
+  credentials: true,
+}));
+
+app.use(cookieParser());
 app.use(express.json()); // Pour analyser le JSON dans le corps de la requête
-app.use("/api/likes", likeRoutes);  // Définir les routes pour les likes
+app.use("/api/likes",verifyToken, likeRoutes);  // Définir les routes pour les likes
 
 // Connexion à MongoDB avec gestion d'erreurs et options supplémentaires
 mongoose.connect(process.env.MONGO_URI, { 

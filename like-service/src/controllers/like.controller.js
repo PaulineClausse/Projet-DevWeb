@@ -15,25 +15,28 @@ exports.getUsersWhoLiked = async (req, res) => {
 };
 
 // Fonction pour liker un post
-exports.addLike = async (req, res) => {
-  const { post_id, user_id } = req.body;
+
+exports.toggleLike = async (req, res) => {
+  const user_id = req.user.user_id;
+  const { post_id } = req.body;
 
   try {
-    // Vérifier si l'utilisateur a déjà liké ce post
     const existingLike = await Like.findOne({ post_id, user_id });
+
     if (existingLike) {
-      return res.status(400).json({ message: "Vous avez déjà liké ce post" });
+      await Like.deleteOne({ _id: existingLike._id });
+      return res.status(200).json({ message: "Like supprimé" });
     }
 
-    // Ajouter un nouveau like
     const newLike = new Like({ post_id, user_id });
     await newLike.save();
 
-    res.status(201).json({ message: "Post liké avec succès", like: newLike });
+    res.status(201).json({ message: "Post liké", like: newLike });
   } catch (err) {
-    res.status(500).json({ message: "Erreur lors de l'ajout du like", error: err });
+    res.status(500).json({ message: "Erreur lors du traitement du like", error: err });
   }
 };
+
 
 // Fonction pour récupérer le nombre de likes d'un post
 exports.getLikesCount = async (req, res) => {
@@ -44,5 +47,16 @@ exports.getLikesCount = async (req, res) => {
     res.status(200).json({ likes_count: likesCount });
   } catch (err) {
     res.status(500).json({ message: "Erreur lors de la récupération du nombre de likes", error: err });
+  }
+};
+
+exports.getLikedPostsByUser = async (req, res) => {
+  const user_id = req.user.user_id;
+  try {
+    const likes = await Like.find({ user_id });
+    const likedPosts = likes.map(like => like.post_id);
+    res.status(200).json({ likedPosts });
+  } catch (err) {
+    res.status(500).json({ message: "Erreur lors de la récupération des posts likés", error: err });
   }
 };

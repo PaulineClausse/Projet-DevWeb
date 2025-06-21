@@ -22,6 +22,10 @@ const HomePage = () => {
   const [activePostId, setActivePostId] = useState(null);
   const [replyTarget, setReplyTarget] = useState(null);
 
+  // const [likedPosts, setLikedPosts] = useState({});
+
+
+  
   // Ajoute le token d'auth à chaque requête protégée
   const getAuthHeaders = () => {
     const token = localStorage.getItem("accessToken");
@@ -87,7 +91,10 @@ const HomePage = () => {
       // Récupère la liste des user_id ayant liké
       const response = await axios.get(
         `http://localhost:4002/api/likes/${postId}/users`,
-        { headers: getAuthHeaders() }
+        {
+          headers: getAuthHeaders(),
+          withCredentials: true,
+        }
       );
       setLikes((prev) => ({
         ...prev,
@@ -200,8 +207,12 @@ const HomePage = () => {
           post_id: postId,
           user_id: currentUserId,
         },
-        { headers: getAuthHeaders() }
+        {
+          headers: getAuthHeaders(),
+          withCredentials: true,
+        }
       );
+
       getLikes(postId);
     } catch (error) {
       console.error("Erreur lors du like :", error);
