@@ -52,6 +52,7 @@ const HomePage = () => {
       setIsLoading(true);
       const response = await axios.get("http://localhost:3000/api/posts/", {
         headers: getAuthHeaders(),
+        withCredentials: true,
       });
       setPosts(response.data);
       setIsLoading(false);
@@ -154,18 +155,31 @@ const HomePage = () => {
     }
   };
 
-  const putPost = async (id, data) => {
+  const putPost = async (id) => {
+    const data = {
+      title,
+      content,
+      image,
+      userId: user.user_id,
+    };
     try {
-      await axios.put(`http://localhost:3000/api/posts/${id}`, data, {
-        headers: getAuthHeaders(),
-      });
+      const res = await axios.put(
+        `http://localhost:3000/api/posts/modify/${id}`,
+        data,
+        {
+          headers: getAuthHeaders(),
+          withCredentials: true,
+        }
+      );
+      console.log("Données envoyées dans le PUT :", data);
+      console.log("Résultat de la requête PUT :", res);
       getPosts();
       setIsInputVisible(false);
       setTitle("");
       setContent("");
       setImage("");
     } catch (error) {
-      console.error("Erreur lors de la mise à jour du post :", error);
+      console.error("Erreur lors de la mise à jour :", error.message);
     }
   };
 
@@ -240,6 +254,7 @@ const HomePage = () => {
       }
       await axios.post("http://localhost:3000/api/posts/", data, {
         headers: getAuthHeaders(),
+        withCredentials: true,
       });
       getPosts();
       setIsInputVisible(false);

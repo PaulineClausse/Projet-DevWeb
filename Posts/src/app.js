@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const VerifyToken = require("./middlewares/VerifyToken");
 
 const mongoose = require("mongoose");
 
@@ -17,7 +18,7 @@ app.use(
 
 app.use(express.json());
 
-app.use("/api/posts", require("./routes/posts.routes"));
+app.use("/api/posts", VerifyToken, require("./routes/posts.routes"));
 
 mongoose
   .connect(
