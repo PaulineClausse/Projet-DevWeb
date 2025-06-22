@@ -36,13 +36,13 @@ module.exports = {
   /*************  ✨ Windsurf Command ⭐  *************/
   /**
    * Retrieves all posts for a specific user.
-   * 
+   *
    * @param {Object} req - The request object, containing user ID in params.
    * @param {Object} res - The response object, used to send back the posts.
    * @returns {void} - Sends a JSON response with the list of posts or an error message.
    */
 
-/*******  91844153-e7cc-4663-9cc9-f718ae972b17  *******/
+  /*******  91844153-e7cc-4663-9cc9-f718ae972b17  *******/
   userPost: async (req, res) => {
     try {
       const { id } = req.params;
@@ -68,7 +68,8 @@ module.exports = {
   },
 
   createPost: async (req, res) => {
-    const { title, content, userId } = req.body;
+    const { title, content } = req.body;
+    const userId = req.user.user_id;
     if (!title || !content)
       return res.status(400).send("Title and content are required");
 

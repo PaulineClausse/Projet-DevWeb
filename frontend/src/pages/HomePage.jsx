@@ -86,7 +86,9 @@ const HomePage = () => {
       }
       const res = await axios.post(
         "http://localhost:3000/api/posts/create",
-        data
+
+        data,
+        { withCredentials: true }
       );
       console.log("Résultat de la requête POST :", res);
       getPosts();
@@ -102,7 +104,8 @@ const HomePage = () => {
   const deletePost = async (id) => {
     try {
       const res = await axios.delete(
-        `http://localhost:3000/api/posts/delete/${id}`
+        `http://localhost:3000/api/posts/delete/${id}`,
+        { withCredentials: true }
       );
       console.log("Résultat de la requête DELETE :", res);
       getPosts();
@@ -121,7 +124,8 @@ const HomePage = () => {
     try {
       const res = await axios.put(
         `http://localhost:3000/api/posts/modify/${id}`,
-        data
+        data,
+        { withCredentials: true }
       );
       console.log("Données envoyées dans le PUT :", data);
       console.log("Résultat de la requête PUT :", res);
@@ -146,11 +150,6 @@ const HomePage = () => {
     }
   };
 
-  const follow = async (id) => {
-    try{
-      const res = await axios.post("http://localhost:")
-    }
-  }
   useEffect(() => {
     getUsers();
   }, []);

@@ -24,8 +24,14 @@ module.exports = {
 
   createFollower: async (req, res) => {
     try {
-      const follower = await Follower.create(req.body);
-      res.status(201).json(follower);
+      const { followerId, followingId } = req.params;
+      const isFollowing = await Follower.exists({ followerId, followingId });
+      if (isFollowing) {
+        return res.status(400).json({ error: "Follower already exists" });
+      } else {
+        const follower = await Follower.create({ followerId, followingId });
+        res.status(201).json(follower);
+      }
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -33,11 +39,25 @@ module.exports = {
 
   deleteFollower: async (req, res) => {
     try {
-      const { id } = req.params;
-      const follower = await Follower.findByIdAndDelete(id);
+      const { followerId, followingId } = req.params;
+      const follower = await Follower.findOneAndDelete({
+        followerId,
+        followingId,
+      });
       res.status(200).json(follower);
     } catch (error) {
       res.status(500).json({ error: error.message });
+    }
+  },
+
+  isFollowing: async (req, res) => {
+    const { followerId, followingId } = req.params;
+
+    try {
+      const isFollowing = await Follower.exists({ followerId, followingId });
+      return res.status(200).json({ isFollowing: !!isFollowing });
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
     }
   },
 };

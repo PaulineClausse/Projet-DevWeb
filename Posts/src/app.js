@@ -1,11 +1,11 @@
 const express = require("express");
 const cors = require("cors");
-
+const verifyToken = require("./middlewares/verifyToken");
 const mongoose = require("mongoose");
-
+const postsRoutes = require("./routes/posts.routes");
 require("dotenv").config();
 const app = express();
-
+const cookieParser = require('cookie-parser');
 const port = 3000;
 
 app.use(
@@ -16,8 +16,8 @@ app.use(
 );
 
 app.use(express.json());
-
-app.use("/api/posts", require("./routes/posts.routes"));
+app.use(cookieParser());
+app.use("/api/posts", verifyToken, postsRoutes);
 
 mongoose
   .connect(

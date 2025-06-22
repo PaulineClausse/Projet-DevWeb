@@ -190,10 +190,47 @@ const ProfilPage = () => {
       alert("Échec de l'upload");
     }
   };
+
+  const getfollow = async () => {
+    try {
+      const res = await axios.post(
+        `http://localhost:4003/followers/${user.user_id}/${id}`,
+        { withCredentials: true }
+      );
+      if (res.data.isFollowing === true) {
+        setIsFollowing(true);
+      } else {
+        setIsFollowing(false);
+      }
+      console.log(`L'utilisateur ${user.user_id} suit l'utilisateur ${id}`);
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour :", error.message);
+    }
+  };
+
+  const handlefollow = async () => {
+    if (setIsFollowing) {
+      setIsFollowing(false);
+      return;
+    } else {
+      try {
+        const res = await axios.post(
+          `http://localhost:4003/followers/create/${user.user_id}/${id}`,
+          { withCredentials: true }
+        );
+        console.log("Résultat de la requête POST :", res);
+        setIsFollowing(true);
+      } catch (error) {
+        console.error("Erreur lors de la mise à jour :", error.message);
+      }
+    }
+  };
+
   useEffect(() => {
     getUserPosts();
     getUserActual();
     getUserInfo();
+    getfollow();
   }, []);
 
   return (
@@ -232,7 +269,7 @@ const ProfilPage = () => {
 
                 <div className="absolute flex flex-row  left-3 gap-3 mt-5 ">
                   <button
-                    onClick={() => setIsFollowing(!isFollowing)}
+                    onClick={() => handlefollow()}
                     className="text-sm font-medium flex flex-col items-center "
                   >
                     {isFollowing ? (
@@ -312,7 +349,7 @@ const ProfilPage = () => {
             </div>
           </div>
           <img
-            className=" absolute lg:w-24 lg:h-24/12 md:w-24 md:h-24 right-0 mt-2  rounded-full w-28 h-28  object-cover border-2 border-white"
+            className=" absolute lg:w-24 lg:h-24/12 md:w-24 md:h-24 right-2 mt-2  rounded-full w-28 h-28  object-cover border-2 border-white"
             src={
               user?.image
                 ? `http://localhost:5000/uploads/${user.image}`
@@ -330,13 +367,17 @@ const ProfilPage = () => {
                 posts.map((post) => (
                   <div
                     key={post._id}
-                    className=" relative mt-5 top-16 border-[2px]  border-[rgba(119,191,199,0.5)] bg-opacity-80 rounded-lg p-5 shadow-[2px_1px_8px_rgba(255,255,255,0.15)]  max-w-md mx-auto"
+                    className=" relative mt-5 top-16  bg-[rgba(38,38,38,0.5)]   bg-opacity-80 rounded-lg p-5 shadow-[2px_1px_8px_rgba(255,255,255,0.15)]  max-w-md mx-auto"
                   >
                     {/* En-tête : avatar + pseudo + date */}
                     <header className="flex items-center justify-between mb-1">
                       <div className="flex items-center space-x-3">
                         <img
-                          src={`http://localhost:5000/uploads/${user.image}`}
+                          src={
+                            user?.image
+                              ? `http://localhost:5000/uploads/${user.image}`
+                              : "../public/images/pdp_basique.jpeg"
+                          }
                           alt="Avatar"
                           className="w-12 h-12 rounded-full border-2 border-white object-cover"
                         />
