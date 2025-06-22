@@ -1,0 +1,39 @@
+const express = require("express");
+const cors = require("cors");
+
+const mongoose = require("mongoose");
+
+require("dotenv").config();
+const app = express();
+
+const port = 4003;
+
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
+
+app.use(express.json());
+
+app.use("/", require("./routes/followers.routes"));
+
+mongoose
+  .connect(
+    "mongodb://" +
+      process.env.MONGO_HOST +
+      ":" +
+      process.env.MONGO_PORT +
+      "/" +
+      process.env.MONGO_DATABASE_NAME
+  )
+  .then(() => {
+    console.log("MongoDB connected !");
+    app.listen(port, () => {
+      console.log(`Listening on port ${port}`);
+    });
+  })
+  .catch((err) => {
+    console.log(err);
+  });
