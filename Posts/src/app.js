@@ -5,7 +5,7 @@ const mongoose = require("mongoose");
 const postsRoutes = require("./routes/posts.routes");
 require("dotenv").config();
 const app = express();
-const cookieParser = require('cookie-parser');
+const cookieParser = require("cookie-parser");
 const port = 3000;
 
 app.use(
@@ -16,20 +16,17 @@ app.use(
 );
 
 app.use(express.json());
-
+app.use(cookieParser());
 app.use("/api/posts", verifyToken, postsRoutes);
-
-app.use(cookieParser()); 
-
 
 const mongoUri =
   process.env.MONGO_URI ||
-  ("mongodb://" +
+  "mongodb://" +
     process.env.MONGO_HOST +
     ":" +
     process.env.MONGO_PORT +
     "/" +
-    process.env.MONGO_DATABASE_NAME);
+    process.env.MONGO_DATABASE_NAME;
 
 mongoose
   .connect(mongoUri)
