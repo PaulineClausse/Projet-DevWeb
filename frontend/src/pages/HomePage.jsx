@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Navbar from "../components/Navbar";
+import CommentWithRepliesView from "../components/CommentWithRepliesView";
 
 import { useNavigate } from "react-router-dom";
 
@@ -16,6 +17,27 @@ const HomePage = () => {
   const [user, setUser] = useState({});
   const selfId = user?.user_id;
   const navigate = useNavigate();
+  const [newComment, setNewComment] = useState("");
+  const [activePostId, setActivePostId] = useState(null);
+  const [replyTarget, setReplyTarget] = useState(null);
+  const [comments, setComments] = useState({});
+  const [likes, setLikes] = useState({});
+  const [likesUsers, setLikesUsers] = useState({});
+  const [users, setUsers] = useState({});
+  const [showLikesList, setShowLikesList] = useState(null);
+
+  const fetchUser = async (userId) => {
+    if (!userId || users[userId]) return;
+    try {
+      const res = await axios.get(`http://localhost:5000/user/${userId}`, {
+        withCredentials: true,
+      });
+      setUsers((prev) => ({ ...prev, [userId]: res.data.user }));
+    } catch (e) {
+      setUsers((prev) => ({ ...prev, [userId]: { username: "Utilisateur" } }));
+    }
+  };
+
   const getPosts = async () => {
     try {
       setIsLoading(true);
@@ -53,6 +75,134 @@ const HomePage = () => {
 
   const handleClose = () => {
     setIsInputVisible(false);
+  };
+
+  const getComments = async (postId) => {
+    try {
+      const response = await axios.get(
+        `http://localhost:4001/api/comments/post/${postId}`,
+        { withCredentials: true }
+      );
+      setComments((prev) => ({
+        ...prev,
+        [postId]: response.data,
+      }));
+    } catch (error) {
+      if (error.response && error.response.status === 404) {
+        setComments((prev) => ({
+          ...prev,
+          [postId]: [],
+        }));
+      } else {
+        console.log("Erreur lors de la récupération des commentaires:", error);
+      }
+    }
+  };
+
+  const getLikes = async (postId) => {
+    try {
+      const response = await axios.get(
+        `http://localhost:4002/api/likes/${postId}/users`,
+        { withCredentials: true }
+      );
+      setLikes((prev) => ({
+        ...prev,
+        [postId]: response.data.users.length,
+      }));
+      setLikesUsers((prev) => ({
+        ...prev,
+        [postId]: response.data.users,
+      }));
+      response.data.users.forEach((userId) => fetchUser(userId));
+    } catch (error) {
+      setLikes((prev) => ({
+        ...prev,
+        [postId]: 0,
+      }));
+      setLikesUsers((prev) => ({
+        ...prev,
+        [postId]: [],
+      }));
+    }
+  };
+
+  const addComment = async (postId) => {
+    if (!newComment) return alert("Le commentaire ne peut pas être vide");
+    const commentData = {
+      post_id: postId,
+      content: newComment,
+    };
+    try {
+      await axios.post("http://localhost:4001/api/comments/", commentData, {
+        withCredentials: true,
+      });
+      setNewComment("");
+      getComments(postId);
+    } catch (error) {
+      console.error("Erreur lors de l'ajout du commentaire :", error);
+    }
+  };
+
+  const addReply = async (postId, commentId) => {
+    if (!replyTarget?.value) return alert("La réponse ne peut pas être vide");
+    try {
+      await axios.post(
+        `http://localhost:4001/api/comments/${commentId}/reply`,
+        {
+          post_id: postId,
+          content: replyTarget.value,
+        },
+        { withCredentials: true }
+      );
+      setReplyTarget(null);
+      getComments(postId);
+    } catch (error) {
+      console.error("Erreur lors de la réponse :", error);
+    }
+  };
+
+  const deleteComment = async (commentId, postId, parentId = null) => {
+    try {
+      if (parentId) {
+        await axios.delete(
+          `http://localhost:4001/api/comments/${parentId}/reply/${commentId}`,
+          { withCredentials: true }
+        );
+      } else {
+        await axios.delete(`http://localhost:4001/api/comments/${commentId}`, {
+          withCredentials: true,
+        });
+      }
+      getComments(postId);
+    } catch (error) {
+      console.error("Erreur lors de la suppression du commentaire :", error);
+    }
+  };
+
+  const toggleLike = async (postId) => {
+    try {
+      await axios.post(
+        "http://localhost:4002/api/likes/",
+        {
+          post_id: postId,
+        },
+        {
+          withCredentials: true,
+        }
+      );
+      getLikes(postId);
+    } catch (error) {
+      console.error("Erreur lors du like :", error);
+    }
+  };
+
+  const toggleComments = (postId) => {
+    if (activePostId === postId) {
+      setActivePostId(null);
+    } else {
+      setActivePostId(postId);
+      getComments(postId);
+    }
   };
 
   const handleEditClick = (post) => {
@@ -110,7 +260,7 @@ const HomePage = () => {
       console.log("Résultat de la requête DELETE :", res);
       getPosts();
     } catch (error) {
-      console.error("Erreur lors de la suppression :", error.message);
+      console.error("Erreur lors de la suppression du post :", error.message);
     }
   };
 
@@ -138,6 +288,7 @@ const HomePage = () => {
       console.error("Erreur lors de la mise à jour :", error.message);
     }
   };
+
   const getUsers = async () => {
     try {
       const response = await axios.get("http://localhost:5000/auth", {
@@ -159,12 +310,61 @@ const HomePage = () => {
       getPosts();
     }
   }, [user]);
+
+  const getReplies = (comment, allComments) => {
+    return allComments.filter((c) => c.parent_id === comment._id);
+  };
+
+  useEffect(() => {
+    axios
+      .get("http://localhost:5000/auth", { withCredentials: true })
+      .then(() => getPosts())
+      .catch(() => (window.location.href = "/auth"));
+  }, []);
+
+  useEffect(() => {
+    posts.forEach((post) => {
+      fetchUser(post.user_id);
+      getLikes(post._id);
+    });
+  }, [posts]);
+
   return (
     <div
       id=""
       className="min-h-screen bg-gradient-to-tr from-[#5e5d5d9e] to-[#0a525b] flex flex-col mx-auto px-4 gap-5 "
     >
       <Navbar />
+      <nav className="hidden md:flex flex-col fixed top-60 left-3 xl:left-16 text-white bg-[rgb(38,38,38)] rounded-2xl shadow-2xl w-40 p-4 space-y-7 z-30">
+        <a
+          href="/home"
+          className="hover:text-blue-400 flex items-center space-x-2"
+        >
+          <img
+            src="/images/acceuil.png"
+            alt="Accueil"
+            className="w-7 h-7 rounded-full"
+          />
+          <span>Home</span>
+        </a>
+        <a
+          href="/followers"
+          className="hover:text-blue-400 flex items-center space-x-2"
+        >
+          <span>Followers</span>
+        </a>
+        <a
+          href="/profil"
+          className="flex px-2 items-center gap-x-4 hover:text-blue-400"
+        >
+          <img
+            className="w-10 h-10 rounded-full object-cover border-2 border-white"
+            src="/images/pdp_test.jpg"
+            alt="Profile"
+          />
+          <span className="text-white hover:text-blue-400">Profil</span>
+        </a>
+      </nav>
       <div className="mt-16 md:mt-4 md:flex flex-col items-center">
         <div id="Message" className="h-16 ">
           <section className="text-white text-xl font-bold fonts md:mt-">
@@ -242,19 +442,35 @@ const HomePage = () => {
                               )}
                             </div>
                             {selfId === post.userId && (
-                              <svg
-                                onClick={() => deletePost(post._id)}
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 448 512"
-                                fill="rgb(38, 38, 38)"
-                                className="absolute top-3 right-3 w-5 h-6   cursor-pointer"
-                              >
-                                <path
-                                  d="M135.2 17.7L128 32 32 32C14.3 32 0 46.3 0 64S14.3 96 32 96l384 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0-7.2-14.3C307.4 6.8 296.3 0 284.2 0L163.8 0c-12.1 0-23.2 6.8-28.6 17.7zM416 128L32 128 53.2 467c1.6 25.3 22.6 45 47.9 45l245.8 0c25.3 0 46.3-19.7 47.9-45L416 128z"
-                                  stroke="rgb(191, 191, 199)"
-                                  stroke-width="40"
-                                />
-                              </svg>
+                              <div className="flex items-center">
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  viewBox="0 0 512 512"
+                                  fill="rgb(38, 38, 38)"
+                                  className="w-6 h-6 cursor-pointer"
+                                  onClick={() => handleEditClick(post)}
+                                  title="Modifier le post"
+                                >
+                                  <path
+                                    d="M362.7 19.3L314.3 67.7 444.3 197.7l48.4-48.4c25-25 25-65.5 0-90.5L453.3 19.3c-25-25-65.5-25-90.5 0zm-71 71L58.6 323.5c-10.4 10.4-18 23.3-22.2 37.4L1 481.2C-1.5 489.7 .8 498.8 7 505s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L421.7 220.3 291.7 90.3z"
+                                    stroke="rgb(191, 191, 199)"
+                                    strokeWidth="40"
+                                  />
+                                </svg>
+                                <svg
+                                  onClick={() => deletePost(post._id)}
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  viewBox="0 0 448 512"
+                                  fill="rgb(38, 38, 38)"
+                                  className="absolute top-3 right-3 w-5 h-6   cursor-pointer"
+                                >
+                                  <path
+                                    d="M135.2 17.7L128 32 32 32C14.3 32 0 46.3 0 64S14.3 96 32 96l384 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0-7.2-14.3C307.4 6.8 296.3 0 284.2 0L163.8 0c-12.1 0-23.2 6.8-28.6 17.7zM416 128L32 128 53.2 467c1.6 25.3 22.6 45 47.9 45l245.8 0c25.3 0 46.3-19.7 47.9-45L416 128z"
+                                    stroke="rgb(191, 191, 199)"
+                                    stroke-width="40"
+                                  />
+                                </svg>
+                              </div>
                             )}
                           </div>
                         </div>
@@ -273,7 +489,10 @@ const HomePage = () => {
 
                     <section className="flex items-center justify-between text-gray-300">
                       <div className="flex space-x-6">
-                        <button className="flex items-center space-x-1 hover:text-blue-400 transition-colors duration-200">
+                        <button
+                          className="flex items-center space-x-1 hover:text-blue-400 transition-colors duration-200"
+                          onClick={() => toggleLike(post._id)}
+                        >
                           <img
                             className="w-6 h-6"
                             src="/icons/like.png"
@@ -281,8 +500,10 @@ const HomePage = () => {
                           />
                           <span>Like</span>
                         </button>
-
-                        <button className="flex items-center space-x-1 hover:text-green-400 transition-colors duration-200">
+                        <button
+                          onClick={() => toggleComments(post._id)}
+                          className="flex items-center space-x-1 hover:text-green-400 transition-colors duration-200"
+                        >
                           <img
                             className="w-6 h-6"
                             src="/icons/comment.png"
@@ -301,6 +522,72 @@ const HomePage = () => {
                         </button>
                       </div>
                     </section>
+                    {showLikesList === post._id && (
+                      <div className="absolute bg-gray-800 text-white rounded p-2 z-50 mt-2 left-0 right-0 max-w-xs mx-auto">
+                        <h4 className="font-bold mb-2">Likes</h4>
+                        <ul>
+                          {(likesUsers[post._id] || []).map((userId) => (
+                            <li
+                              key={userId}
+                              className="flex items-center gap-2 mb-1"
+                            >
+                              <img
+                                src={
+                                  users[userId]?.image || "/images/pdp_test.jpg"
+                                }
+                                alt="Avatar"
+                                className="w-6 h-6 rounded-full border"
+                              />
+                              <span>
+                                {users[userId]?.username || "Utilisateur"}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                        <button
+                          className="mt-2 text-sm text-blue-400"
+                          onClick={() => setShowLikesList(null)}
+                        >
+                          Fermer
+                        </button>
+                      </div>
+                    )}
+                    {activePostId === post._id && (
+                      <div className="comments-section">
+                        <div className="pt-4">
+                          {(comments[post._id] || [])
+                            .filter((c) => !c.parent_id)
+                            .map((comment) => (
+                              <CommentWithRepliesView
+                                key={comment._id}
+                                comment={comment}
+                                postId={post._id}
+                                allComments={comments[post._id] || []}
+                                replyTarget={replyTarget}
+                                setReplyTarget={setReplyTarget}
+                                addReply={addReply}
+                                deleteComment={deleteComment}
+                                getReplies={getReplies}
+                              />
+                            ))}
+                        </div>
+                        <div className="mt-6 flex flex-col gap-2">
+                          <textarea
+                            value={newComment}
+                            onChange={(e) => setNewComment(e.target.value)}
+                            placeholder="Ajouter un commentaire"
+                            className="w-full p-3 rounded-xl border-2 border-[rgba(119,191,199,0.5)] bg-[rgba(38,38,38,0.8)] text-gray-100 focus:outline-none focus:ring-2 focus:ring-[rgba(119,191,199,0.7)] transition"
+                            rows={2}
+                          />
+                          <button
+                            onClick={() => addComment(post._id)}
+                            className="self-end px-5 py-2 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-xl font-semibold shadow-md hover:from-blue-700 hover:to-cyan-600 transition"
+                          >
+                            Ajouter un commentaire
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))
               ) : (
