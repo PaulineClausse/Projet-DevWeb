@@ -14,7 +14,7 @@ RUN npm install --include=dev
 COPY . .
 
 # Expose le port utilisé par le service (à adapter pour chaque service)
-EXPOSE 5000
+EXPOSE 4001
 
 # Commande de démarrage (à adapter pour chaque service)
 CMD ["npm", "run", "dev"]

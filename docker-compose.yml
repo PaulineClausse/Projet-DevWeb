@@ -1,0 +1,138 @@
+services:
+  auth:
+    build: ./auth-service
+    container_name: auth-service
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=authuser
+      - DB_PASSWORD=Authpassword1!!
+      - DB_NAME=authdb
+      - ACCESS_JWT_KEY=your_secret_key
+    depends_on:
+      - mysql
+    networks:
+      - microservices-network
+    # volumes:
+    #   - ./auth-service:/app
+
+  mysql:
+    image: mysql:latest
+    container_name: mysql
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=Authpassword1!!
+      - MYSQL_DATABASE=authdb
+      - MYSQL_USER=authuser
+      - MYSQL_PASSWORD=Authpassword1!!
+    ports:
+      - "3306:3306"
+    # volumes:
+    #   - mysql-data:/var/lib/mysql
+    #   - ./auth-service/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - microservices-network
+
+  posts:
+    build: ./Posts
+    container_name: posts
+    restart: unless-stopped
+    depends_on:
+      - mongo-profil-page
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - MONGO_URI=mongodb://mongo-profil-page:27017/todo-api
+      - ACCESS_JWT_KEY=your_secret_key
+    networks:
+      - microservices-network
+    # volumes:
+    #   - ./Posts:/app
+  mongo-profil-page:
+    image: mongo
+    container_name: mongo-profil-page
+    restart: unless-stopped
+    # volumes:
+    #   - mongo-profil-page_data:/data/db   
+    ports:
+      - "27018:27017"
+    networks:
+      - microservices-network
+  comment-service:
+    build: ./comment-service
+    container_name: comment-service
+    restart: unless-stopped
+    depends_on:
+      - mongo
+    ports:
+      - "4001:4001"
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/comment-service
+      - ACCESS_JWT_KEY=your_secret_key
+    networks:
+      - microservices-network
+    # volumes:
+    #   - ./comment-service:/app
+  mongo:
+    image: mongo
+    container_name: mongo
+    restart: unless-stopped
+    volumes:
+      - mongo-data:/data/db               
+    ports:
+      - "27017:27017"
+    networks:
+      - microservices-network
+
+  like-service:
+    build: ./like-service
+    container_name: like-service
+    restart: unless-stopped
+    depends_on:
+      - mongo-like
+    ports:
+      - "4002:4002"
+    environment:
+      - MONGO_URI=mongodb://mongo-like:27017/like-service
+      - ACCESS_JWT_KEY=your_secret_key
+    networks:
+      - microservices-network
+    # volumes:
+    #   - ./like-service:/app
+  mongo-like:
+    image: mongo
+    container_name: mongo-like
+    restart: unless-stopped
+    volumes:
+      - mongo-like_data:/data/db
+    ports:
+      - "27019:27017"
+    networks:
+      - microservices-network
+
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    ports:
+      - "5173:5173"
+    restart: unless-stopped
+    networks:
+      - microservices-network
+    environment:
+      - NODE_ENV=development
+    # volumes:
+    #   - ./frontend:/app
+
+networks:
+  microservices-network:
+    external: true
+
+volumes:
+  mysql-data:
+  mongo-profil-page_data:
+  mongo-data:
+  mongo-like_data:

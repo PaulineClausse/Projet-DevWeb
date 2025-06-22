@@ -16,18 +16,23 @@ app.use(
 );
 
 app.use(express.json());
-app.use(cookieParser());
+
 app.use("/api/posts", verifyToken, postsRoutes);
 
+app.use(cookieParser()); 
+
+
+const mongoUri =
+  process.env.MONGO_URI ||
+  ("mongodb://" +
+    process.env.MONGO_HOST +
+    ":" +
+    process.env.MONGO_PORT +
+    "/" +
+    process.env.MONGO_DATABASE_NAME);
+
 mongoose
-  .connect(
-    "mongodb://" +
-      process.env.MONGO_HOST +
-      ":" +
-      process.env.MONGO_PORT +
-      "/" +
-      process.env.MONGO_DATABASE_NAME
-  )
+  .connect(mongoUri)
   .then(() => {
     console.log("MongoDB connected !");
     app.listen(port, () => {
@@ -35,5 +40,5 @@ mongoose
     });
   })
   .catch((err) => {
-    console.log(err);
+    console.log("MongoDB connection error:", err);
   });
