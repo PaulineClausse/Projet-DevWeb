@@ -1,18 +1,19 @@
 import { useNavigate, useLocation } from "react-router-dom";
+import axios from "axios";
 
 const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const hidePdpOn = "/profil";
 
-  // Déconnexion : supprime le token et redirige vers /auth
-  const handleLogout = () => {
-    localStorage.removeItem("accessToken");
+  const handleLogout = async () => {
+    try {
+      await axios.post("http://localhost:5000/logout", {}, { withCredentials: true });
+    } catch (e) {
+      // ignore error
+    }
     navigate("/auth");
   };
-
-  // Vérifie si l'utilisateur est connecté (présence du token)
-  const isAuthenticated = !!localStorage.getItem("accessToken");
 
   return (
     <div className="relative bg-[rgb(38,38,38)]">
@@ -22,8 +23,9 @@ const Navbar = () => {
       {/* Image Bottom Top Left */}
       <div className="Image_Top_Left">
         <img
-          src="../public/images/logo.png"
+          src="/images/logo.png"
           className="w-20 h-20 fixed md:w-15 md:h-15 md:fixed md:top-4 md:left-14 md:z-50"
+          alt="Logo"
         />
         {location.pathname !== hidePdpOn && (
           <button
@@ -89,14 +91,12 @@ const Navbar = () => {
             <span>Profil</span>
           </a>
         </button>
-        {isAuthenticated && (
-          <button
-            className="mt-1 text-red-500 font-bold"
-            onClick={handleLogout}
-          >
-            Déconnexion
-          </button>
-        )}
+        <button
+          className="mt-1 text-red-500 font-bold"
+          onClick={handleLogout}
+        >
+          Déconnexion
+        </button>
       </div>
 
       {/* Desktop vertical menu */}
@@ -105,32 +105,18 @@ const Navbar = () => {
           href="/home"
           className="hover:text-blue-400 flex items-center space-x-2"
         >
-          <svg
-            className="w-7 h-7"
-            xmlns="http://www.w3.org/2000/svg"
-            height="20"
-            width="22.5"
-            viewBox="0 0 576 512"
-            fill="rgb(38, 38, 38)"
-          >
-            <path d="M224 0c-17.7 0-32 14.3-32 32l0 19.2C119 66 64 130.6 64 208l0 25.4c0 45.4-15.5 89.5-43.8 124.9L5.3 377c-5.8 7.2-6.9 17.1-2.9 25.4S14.8 416 24 416l400 0c9.2 0 17.6-5.3 21.6-13.6s2.9-18.2-2.9-25.4l-14.9-18.6C399.5 322.9 384 278.8 384 233.4l0-25.4c0-77.4-55-142-128-156.8L256 32c0-17.7-14.3-32-32-32z" />
-          </svg>
+          <img
+            src="/images/acceuil.png"
+            alt="Accueil"
+            className="w-7 h-7 rounded-full"
+          />
           <span>Home</span>
         </a>
         <a
           href="/followers"
           className="hover:text-blue-400 flex items-center space-x-2"
         >
-          <svg
-            className="w-7 h-7"
-            xmlns="http://www.w3.org/2000/svg"
-            height="20"
-            width="22.5"
-            viewBox="0 0 512 512"
-            fill="rgb(38, 38, 38)"
-          >
-            <path d="M512 240c0 114.9-114.6 208-256 208c-37.1 0-72.3-6.4-104.1-17.9c-11.9 8.7-31.3 20.6-54.3 30.6C73.6 471.1 44.7 480 16 480c-6.5 0-12.3-3.9-14.8-9.9c-2.5-6-1.1-12.8 3.4-17.4c0 0 0 0 0 0s0 0 0 0s0 0 0 0c0 0 0 0 0 0l.3-.3c.3-.3 .7-.7 1.3-1.4c1.1-1.2 2.8-3.1 4.9-5.7c4.1-5.1 10.2-12.7 17.7-22.2C48.5 410.2 64 366.1 64 320.7l0-25.4c0-77.4 55-142 128-156.8L256 32c0-17.7 14.3-32 32-32s32 14.3 32 32l0 19.2C393 66 448 130.6 448 208l0 25.4c0 45.4 15.5 89.5 43.8 124.9l14.9 18.6c5.8 7.2 6.9 17.1 2.9 25.4S497.2 480 488 480c-28.7 0-57.6-8.9-81.6-19.3c-23-10-42.4-21.9-54.3-30.6C328.3 441.6 293.1 448 256 448c-141.4 0-256-93.1-256-208c0-114.9 114.6-208 256-208s256 93.1 256 208z" />
-          </svg>
+          {/* Pas d'image pour followers */}
           <span>Followers</span>
         </a>
         <a
@@ -144,14 +130,12 @@ const Navbar = () => {
           />
           <span className="text-white hover:text-blue-400">Profil</span>
         </a>
-        {isAuthenticated && (
-          <button
-            className="mt-4 text-red-500 font-bold"
-            onClick={handleLogout}
-          >
-            Déconnexion
-          </button>
-        )}
+        <button
+          className="mt-4 text-red-500 font-bold"
+          onClick={handleLogout}
+        >
+          Déconnexion
+        </button>
       </nav>
     </div>
   );

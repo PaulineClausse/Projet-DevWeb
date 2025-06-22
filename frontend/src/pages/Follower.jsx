@@ -23,6 +23,23 @@ const Follower = () => {
         </div>
         <div className="">
           <Navbar />
+          <div className="fixed left-0 top-1/2 transform -translate-y-1/2 flex flex-col gap-4 z-20">
+            <img
+              src="./images/pdp_test.jpg"
+              alt="Profil 1"
+              className="w-12 h-12 rounded-full border-2 border-white object-cover"
+            />
+            <img
+              src="./images/pdp_test.jpg"
+              alt="Profil 2"
+              className="w-12 h-12 rounded-full border-2 border-white object-cover"
+            />
+            <img
+              src="./images/pdp_test.jpg"
+              alt="Profil 3"
+              className="w-12 h-12 rounded-full border-2 border-white object-cover"
+            />
+          </div>
         </div>
         <div className="relative z-10 flex flex-col items-center  px-4 text-white">
           <h1 className="text-4xl font-bold mb-6 py-32 text-center drop-shadow-lg">

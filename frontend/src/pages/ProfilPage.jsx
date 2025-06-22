@@ -2,7 +2,6 @@ import Navbar from "../components/Navbar";
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-const currentUserId = "currentUserId";
 const BASE_REPLY_ROWS = 1;
 
 const ProfilPage = () => {
@@ -18,13 +17,22 @@ const ProfilPage = () => {
   const [newComment, setNewComment] = useState("");
   const [activePostId, setActivePostId] = useState(null);
   const [likes, setLikes] = useState({});
+  const [likesUsers, setLikesUsers] = useState({});
+  const [users, setUsers] = useState({});
   const [showLikesList, setShowLikesList] = useState(null);
   const [replyTarget, setReplyTarget] = useState(null);
 
-  // Ajoute le token d'auth à chaque requête protégée
-  const getAuthHeaders = () => {
-    const token = localStorage.getItem("accessToken");
-    return token ? { Authorization: `Bearer ${token}` } : {};
+  // Récupère les infos d'un utilisateur et les met en cache
+  const fetchUser = async (userId) => {
+    if (!userId || users[userId]) return;
+    try {
+      const res = await axios.get(`http://localhost:5000/user/${userId}`, {
+        withCredentials: true,
+      });
+      setUsers((prev) => ({ ...prev, [userId]: res.data.user }));
+    } catch (e) {
+      setUsers((prev) => ({ ...prev, [userId]: { username: "Utilisateur" } }));
+    }
   };
 
   const handleClose = () => {
@@ -34,7 +42,7 @@ const ProfilPage = () => {
   const deletePost = async (id) => {
     try {
       await axios.delete(`http://localhost:3000/api/posts/${id}`, {
-        headers: getAuthHeaders(),
+        withCredentials: true,
       });
       getPosts();
     } catch (error) {
@@ -46,7 +54,7 @@ const ProfilPage = () => {
     const data = { title, content, image };
     try {
       await axios.put(`http://localhost:3000/api/posts/${id}`, data, {
-        headers: getAuthHeaders(),
+        withCredentials: true,
       });
       getPosts();
       setIsInputVisible(false);
@@ -60,6 +68,9 @@ const ProfilPage = () => {
 
   const handleClick = async () => {
     const data = { title, content, image };
+    if (!title || !content) {
+      return alert("Title and content are required");
+    }
     try {
       if (editingPostId) {
         await putPost(editingPostId);
@@ -71,7 +82,7 @@ const ProfilPage = () => {
         return;
       }
       await axios.post("http://localhost:3000/api/posts/", data, {
-        headers: getAuthHeaders(),
+        withCredentials: true,
       });
       getPosts();
       setIsInputVisible(false);
@@ -95,11 +106,12 @@ const ProfilPage = () => {
     try {
       setIsLoading(true);
       const response = await axios.get("http://localhost:3000/api/posts/", {
-        headers: getAuthHeaders(),
+        withCredentials: true,
       });
       setPosts(response.data);
       setIsLoading(false);
     } catch (error) {
+      setIsLoading(false);
       console.log(error);
     }
   };
@@ -109,7 +121,7 @@ const ProfilPage = () => {
     try {
       const response = await axios.get(
         `http://localhost:4001/api/comments/post/${postId}`,
-        { headers: getAuthHeaders() }
+        { withCredentials: true }
       );
       setComments((prev) => ({
         ...prev,
@@ -130,17 +142,26 @@ const ProfilPage = () => {
   const getLikes = async (postId) => {
     try {
       const response = await axios.get(
-        `http://localhost:4002/api/likes/${postId}`,
-        { headers: getAuthHeaders() }
+        `http://localhost:4002/api/likes/${postId}/users`,
+        { withCredentials: true }
       );
       setLikes((prev) => ({
         ...prev,
-        [postId]: response.data.likes_count,
+        [postId]: response.data.users.length,
       }));
+      setLikesUsers((prev) => ({
+        ...prev,
+        [postId]: response.data.users,
+      }));
+      response.data.users.forEach((userId) => fetchUser(userId));
     } catch (error) {
       setLikes((prev) => ({
         ...prev,
         [postId]: 0,
+      }));
+      setLikesUsers((prev) => ({
+        ...prev,
+        [postId]: [],
       }));
     }
   };
@@ -149,12 +170,11 @@ const ProfilPage = () => {
     if (!newComment) return alert("Le commentaire ne peut pas être vide");
     const commentData = {
       post_id: postId,
-      user_id: currentUserId,
       content: newComment,
     };
     try {
       await axios.post("http://localhost:4001/api/comments/", commentData, {
-        headers: getAuthHeaders(),
+        withCredentials: true,
       });
       setNewComment("");
       getComments(postId);
@@ -170,10 +190,9 @@ const ProfilPage = () => {
         `http://localhost:4001/api/comments/${commentId}/reply`,
         {
           post_id: postId,
-          user_id: currentUserId,
           content: replyTarget.value,
         },
-        { headers: getAuthHeaders() }
+        { withCredentials: true }
       );
       setReplyTarget(null);
       getComments(postId);
@@ -187,12 +206,12 @@ const ProfilPage = () => {
       if (parentId) {
         await axios.delete(
           `http://localhost:4001/api/comments/${parentId}/reply/${commentId}`,
-          { headers: getAuthHeaders() }
+          { withCredentials: true }
         );
       } else {
         await axios.delete(
           `http://localhost:4001/api/comments/${commentId}`,
-          { headers: getAuthHeaders() }
+          { withCredentials: true }
         );
       }
       getComments(postId);
@@ -207,9 +226,8 @@ const ProfilPage = () => {
         "http://localhost:4002/api/likes/",
         {
           post_id: postId,
-          user_id: currentUserId,
         },
-        { headers: getAuthHeaders() }
+        { withCredentials: true }
       );
       getLikes(postId);
     } catch (error) {
@@ -237,12 +255,12 @@ const ProfilPage = () => {
         <div className="flex justify-between items-center mb-1" style={level > 0 ? { marginLeft: `${level * 2}rem` } : {}}>
           <div className="flex items-center gap-2">
             <img
-              src={comment.avatar || "/images/pdp_test.jpg"}
+              src={comment.user?.image || "/images/pdp_test.jpg"}
               alt="Avatar"
               className={`rounded-full border-2 border-white object-cover ${level === 0 ? "w-7 h-7" : "w-5 h-5"}`}
             />
             <span className={`font-semibold ${level === 0 ? "text-[rgba(119,191,199,0.9)]" : "text-cyan-300 text-sm"}`}>
-              {comment.pseudo || comment.username || "Utilisateur"}
+              {comment.user?.username || "Utilisateur"}
             </span>
           </div>
           <span className="text-xs text-gray-400">
@@ -321,31 +339,59 @@ const ProfilPage = () => {
     );
   };
 
-  // Ajout récupération des infos utilisateur
+  // Récupération de l'utilisateur connecté via le cookie (token)
   useEffect(() => {
-    const token = localStorage.getItem("accessToken");
-    if (!token) {
-      window.location.href = "/auth";
-    } else {
-      // Récupère les infos utilisateur connecté
-      axios
-        .get("http://localhost:5000/auth", {
-          headers: { Authorization: `Bearer ${token}` },
-          withCredentials: true,
-        })
-        .then((res) => setUser(res.data.user))
-        .catch(() => setUser(null));
-      getPosts();
-    }
+    axios
+      .get("http://localhost:5000/auth", { withCredentials: true })
+      .then((res) => {
+        setUser(res.data.user);
+        getPosts();
+      })
+      .catch(() => window.location.href = "/auth");
   }, []);
 
   useEffect(() => {
-    posts.forEach((post) => getLikes(post._id));
+    posts.forEach((post) => {
+      fetchUser(post.user_id);
+      getLikes(post._id);
+    });
   }, [posts]);
 
   return (
-    <div>
+    <div className="min-h-screen flex flex-col mx-auto px-4 gap-5">
       <Navbar />
+      {/* Menu vertical à gauche (bulle) */}
+      <nav className="hidden md:flex flex-col fixed top-60 left-3 xl:left-16 text-white bg-[rgb(38,38,38)] rounded-2xl shadow-2xl w-40 p-4 space-y-7 z-30">
+        <a
+          href="/home"
+          className="hover:text-blue-400 flex items-center space-x-2"
+        >
+          <img
+            src="/images/acceuil.png"
+            alt="Accueil"
+            className="w-7 h-7 rounded-full"
+          />
+          <span>Home</span>
+        </a>
+        <a
+          href="/followers"
+          className="hover:text-blue-400 flex items-center space-x-2"
+        >
+          {/* Pas d'image pour followers */}
+          <span>Followers</span>
+        </a>
+        <a
+          href="/profil"
+          className="flex px-2 items-center gap-x-4 hover:text-blue-400"
+        >
+          <img
+            className="w-10 h-10 rounded-full object-cover border-2 border-white"
+            src="/images/pdp_test.jpg"
+            alt="Profile"
+          />
+          <span className="text-white hover:text-blue-400">Profil</span>
+        </a>
+      </nav>
       <div className="flex flex-col">
         <div className="relative top-20">
           <div className="shadow-2xl bg-gradient-to-r from-[#7BE9E49E] to-[#0A3C5B] text-white p-14 w-9/12 right-14 top-12 absolute rounded-lg">
@@ -383,30 +429,33 @@ const ProfilPage = () => {
                 posts.map((post) => (
                   <div
                     key={post._id}
-                    className=" relative mt-8 border-[2px]  border-[rgba(119,191,199,0.5)] bg-opacity-80 rounded-lg p-5 shadow-[2px_1px_8px_rgba(255,255,255,0.15)]  max-w-md mx-auto"
+                    className="relative mt-8 border-[2px] border-[rgba(119,191,199,0.5)] bg-opacity-80 rounded-lg p-5 shadow-[2px_1px_8px_rgba(255,255,255,0.15)] max-w-md mx-auto"
                   >
                     <header className="flex items-center justify-between mb-4">
                       <div className="flex items-center space-x-3">
                         <img
-                          src={user?.image || "./images/pdp_test.jpg"}
+                          src={users[post.user_id]?.image || "./images/pdp_test.jpg"}
                           alt="Avatar"
                           className="w-12 h-12 rounded-full border-2 border-white object-cover"
                         />
                         <div className="flex flex-col">
                           <div className="flex items-center justify-between space-x-3">
                             <div>
-                              <h3 className=" text-[rgba(119,191,199,0.5)] font-semibold text-lg">
-                                {post.pseudo || user?.username || "Pseudo"}
+                              <h3 className="text-[rgba(119,191,199,0.5)] font-semibold text-lg">
+                                {users[post.user_id]?.username || "Pseudo"}
                               </h3>
                               <time className="text-gray-400 text-xs">
                                 {new Date(post.date).toLocaleString("fr-FR")}
                               </time>
+                            </div>
+                            <div className="flex items-center">
                               <svg
-                                onClick={handleEditClick.bind(null, post)}
                                 xmlns="http://www.w3.org/2000/svg"
                                 viewBox="0 0 512 512"
                                 fill="rgb(38, 38, 38)"
-                                className="absolute top-3 right-12 w-6 h-6   cursor-pointer"
+                                className="w-6 h-6 cursor-pointer"
+                                onClick={handleEditClick.bind(null, post)}
+                                title="Modifier le post"
                               >
                                 <path
                                   d="M362.7 19.3L314.3 67.7 444.3 197.7l48.4-48.4c25-25 25-65.5 0-90.5L453.3 19.3c-25-25-65.5-25-90.5 0zm-71 71L58.6 323.5c-10.4 10.4-18 23.3-22.2 37.4L1 481.2C-1.5 489.7 .8 498.8 7 505s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L421.7 220.3 291.7 90.3z"
@@ -414,28 +463,27 @@ const ProfilPage = () => {
                                   strokeWidth="40"
                                 />
                               </svg>
+                              <svg
+                                onClick={() => deletePost(post._id)}
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 448 512"
+                                fill="rgb(38, 38, 38)"
+                                className="w-5 h-6 ml-2 cursor-pointer"
+                                title="Supprimer le post"
+                              >
+                                <path
+                                  d="M135.2 17.7L128 32 32 32C14.3 32 0 46.3 0 64S14.3 96 32 96l384 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0-7.2-14.3C307.4 6.8 296.3 0 284.2 0L163.8 0c-12.1 0-23.2 6.8-28.6 17.7zM416 128L32 128 53.2 467c1.6 25.3 22.6 45 47.9 45l245.8 0c25.3 0 46.3-19.7 47.9-45L416 128z"
+                                  stroke="rgb(191, 191, 199)"
+                                  strokeWidth="40"
+                                />
+                              </svg>
                             </div>
-                            <svg
-                              onClick={() => deletePost(post._id)}
-                              xmlns="http://www.w3.org/2000/svg"
-                              viewBox="0 0 448 512"
-                              fill="rgb(38, 38, 38)"
-                              className="absolute top-3 right-3 w-5 h-6   cursor-pointer"
-                            >
-                              <path
-                                d="M135.2 17.7L128 32 32 32C14.3 32 0 46.3 0 64S14.3 96 32 96l384 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0-7.2-14.3C307.4 6.8 296.3 0 284.2 0L163.8 0c-12.1 0-23.2 6.8-28.6 17.7zM416 128L32 128 53.2 467c1.6 25.3 22.6 45 47.9 45l245.8 0c25.3 0 46.3-19.7 47.9-45L416 128z"
-                                stroke="rgb(191, 191, 199)"
-                                strokeWidth="40"
-                              />
-                            </svg>
                           </div>
                         </div>
                       </div>
                     </header>
                     {post.title && (
-                      <h2 className="text-white text-xl font-bold mb-2">
-                        {post.title}
-                      </h2>
+                      <h2 className="text-white text-xl font-bold mb-2">{post.title}</h2>
                     )}
                     <p className="text-gray-200 text-base leading-relaxed mb-4">
                       {post.content}
@@ -483,10 +531,22 @@ const ProfilPage = () => {
                         </button>
                       </div>
                     </section>
+                    {/* Liste des utilisateurs ayant liké */}
                     {showLikesList === post._id && (
                       <div className="absolute bg-gray-800 text-white rounded p-2 z-50 mt-2 left-0 right-0 max-w-xs mx-auto">
                         <h4 className="font-bold mb-2">Likes</h4>
-                        <p className="text-gray-400 text-sm">Affichage de la liste à implémenter</p>
+                        <ul>
+                          {(likesUsers[post._id] || []).map((userId) => (
+                            <li key={userId} className="flex items-center gap-2 mb-1">
+                              <img
+                                src={users[userId]?.image || "/images/pdp_test.jpg"}
+                                alt="Avatar"
+                                className="w-6 h-6 rounded-full border"
+                              />
+                              <span>{users[userId]?.username || "Utilisateur"}</span>
+                            </li>
+                          ))}
+                        </ul>
                         <button
                           className="mt-2 text-sm text-blue-400"
                           onClick={() => setShowLikesList(null)}
@@ -518,65 +578,82 @@ const ProfilPage = () => {
                   </div>
                 ))
               ) : (
-                <p className="text-justify text-gray-400 text-lg font-bold  px-64 py-20">
+                <p className="text-justify text-gray-400 text-lg font-bold md:left-72">
                   You don't have any posts to view.
                 </p>
               )}
             </>
           )}
         </div>
-      </div>
-      {isInputVisible && (
-        <>
-          <div
-            className="fixed inset-0 bg-black/30 backdrop-blur-sm z-10"
-            onClick={handleClose}
-          ></div>
-          <div
-            className="
-              relative fixed bottom-8 left-1/2 transform -translate-x-1/2 
-              w-5/6 max-w-md px-4 py-3 gap-4 flex flex-col 
-              bg-[rgb(50,50,50)] rounded-3xl shadow-2xl z-20
-              sm:flex-row sm:items-center
-            "
-            onClick={(e) => e.stopPropagation()}
-          >
-            <img
-              src={user?.image || "./images/pdp_test.jpg"}
-              alt="Avatar"
-              className="absolute -top-5 -left-3 w-12 h-12 rounded-full border-2 border-white object-cover"
-            />
-            <input
-              type="text"
-              placeholder="Titre"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-6 text-2xl sm:text-4xl font-bold outline-none placeholder-gray-400 bg-transparent mb-2 sm:mb-0"
-            />
-            <div className="flex items-center bg-black/10 backdrop-blur-sm rounded-3xl px-4 py-3 flex-1">
+        {/* FORMULAIRE AJOUT POST CENTRÉ EN BAS */}
+        {isInputVisible && (
+          <>
+            <div
+              className="fixed inset-0 bg-black/30 backdrop-blur-sm z-10"
+              onClick={handleClose}
+            ></div>
+            <div
+              className="
+                fixed left-1/2 bottom-8 transform -translate-x-1/2
+                w-5/6 max-w-md px-4 py-3 gap-4 flex flex-col
+                bg-[rgb(50,50,50)] rounded-3xl shadow-2xl z-20
+                sm:flex-row sm:items-center
+              "
+              onClick={(e) => e.stopPropagation()}
+            >
+              <img
+                src={user?.image || "./images/pdp_test.jpg"}
+                alt="Avatar"
+                className="w-12 h-12 rounded-full border-2 border-white object-cover"
+              />
               <input
                 type="text"
-                id="content"
-                placeholder="Écris quelque chose..."
-                autoFocus
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                className="flex-1 text-white placeholder-gray-400 outline-none bg-transparent"
+                placeholder="Titre du post"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="w-full px-6 text-2xl sm:text-4xl font-bold outline-none placeholder-gray-400 bg-gray-800 text-white mb-2 sm:mb-0 rounded-xl"
               />
-              <button
-                className="ml-3 p-2 hover:bg-white/20 rounded-full transition flex-shrink-0"
-                onClick={handleClick}
-              >
-                <img
-                  className="w-6 h-6"
-                  src="/icons/publish.png"
-                  alt="Publish icon"
+              <div className="flex items-center bg-black/10 backdrop-blur-sm rounded-3xl px-4 py-3 flex-1">
+                <input
+                  type="text"
+                  id="content"
+                  placeholder="Écris quelque chose..."
+                  autoFocus
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  className="flex-1 text-white placeholder-gray-400 outline-none bg-transparent"
                 />
-              </button>
+                <button
+                  className="ml-3 p-2 hover:bg-white/20 rounded-full transition flex-shrink-0"
+                  onClick={handleClick}
+                >
+                  <img
+                    className="w-6 h-6"
+                    src="/icons/publish.png"
+                    alt="Publish icon"
+                  />
+                </button>
+              </div>
             </div>
-          </div>
-        </>
-      )}
+          </>
+        )}
+        {/* BOUTON AJOUT POST */}
+        <div className="fixed shadow-lg border border-gray-600 bg-black/30 rounded-full w-11 text-center h-11 right-8 bottom-24 z-40">
+          <button
+            onClick={() => setIsInputVisible(!isInputVisible)}
+            className="mt-3"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 448 512"
+              className="w-6 h-6"
+              fill="rgb(191, 191, 199)"
+            >
+              <path d="M0 216C0 149.7 53.7 96 120 96l8 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-8 0c-30.9 0-56 25.1-56 56l0 8 64 0c35.3 0 64 28.7 64 64l0 64c0 35.3-28.7 64-64 64l-64 0c-35.3 0-64-28.7-64-64l0-32 0-32 0-72zm256 0c0-66.3 53.7-120 120-120l8 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-8 0c-30.9 0-56 25.1-56 56l0 8 64 0c35.3 0 64 28.7 64 64l0 64c0 35.3-28.7 64-64 64l-64 0c-35.3 0-64-28.7-64-64l0-32 0-32 0-72z" />
+            </svg>
+          </button>
+        </div>
+      </div>
     </div>
   );
 };

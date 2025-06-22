@@ -1,20 +1,20 @@
-# Utilisation de l'image officielle Node.js
-FROM node:16
+# Utilise la version Node adaptée à ton projet (16 ou 20 selon le service)
+FROM node:20
 
-# Définir le répertoire de travail dans le conteneur
+# Dossier de travail
 WORKDIR /app
 
-# Copier package.json et package-lock.json pour installer les dépendances
+# Copie les fichiers de dépendances
 COPY package*.json ./
 
-# Installer les dépendances
-RUN npm install
+# Installe toutes les dépendances (prod + dev)
+RUN npm install --include=dev
 
-# Copier le reste des fichiers du projet dans le conteneur
+# Copie le reste du code
 COPY . .
 
-# Exposer le port utilisé par l'application
+# Expose le port utilisé par le service (à adapter pour chaque service)
 EXPOSE 4002
 
-# Lancer l'application
+# Commande de démarrage (à adapter pour chaque service)
 CMD ["npm", "run", "dev"]

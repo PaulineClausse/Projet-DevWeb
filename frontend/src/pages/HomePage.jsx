@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import Navbar from "../components/Navbar";
 
-const currentUserId = "currentUserId";
 const BASE_REPLY_ROWS = 1;
 
 const HomePage = () => {
@@ -22,24 +21,12 @@ const HomePage = () => {
   const [activePostId, setActivePostId] = useState(null);
   const [replyTarget, setReplyTarget] = useState(null);
 
-  // const [likedPosts, setLikedPosts] = useState({});
-
-
-  
-  // Ajoute le token d'auth à chaque requête protégée
-  const getAuthHeaders = () => {
-    const token = localStorage.getItem("accessToken");
-    return token ? { Authorization: `Bearer ${token}` } : {};
-  };
-
   // Récupère les infos d'un utilisateur et les met en cache
   const fetchUser = async (userId) => {
     if (!userId || users[userId]) return;
     try {
-      const token = localStorage.getItem("accessToken");
       const res = await axios.get(`http://localhost:5000/user/${userId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-        withCredentials: true,
+        withCredentials: true
       });
       setUsers((prev) => ({ ...prev, [userId]: res.data.user }));
     } catch (e) {
@@ -51,8 +38,7 @@ const HomePage = () => {
     try {
       setIsLoading(true);
       const response = await axios.get("http://localhost:3000/api/posts/", {
-        headers: getAuthHeaders(),
-        withCredentials: true,
+        withCredentials: true
       });
       setPosts(response.data);
       setIsLoading(false);
@@ -66,14 +52,12 @@ const HomePage = () => {
     try {
       const response = await axios.get(
         `http://localhost:4001/api/comments/post/${postId}`,
-        { headers: getAuthHeaders() }
+        { withCredentials: true }
       );
       setComments((prev) => ({
         ...prev,
         [postId]: response.data,
       }));
-      // Récupère les utilisateurs pour chaque commentaire
-      response.data.forEach((comment) => fetchUser(comment.user_id));
     } catch (error) {
       if (error.response && error.response.status === 404) {
         setComments((prev) => ({
@@ -86,16 +70,11 @@ const HomePage = () => {
     }
   };
 
-  // Récupère le nombre de likes et la liste des users ayant liké
   const getLikes = async (postId) => {
     try {
-      // Récupère la liste des user_id ayant liké
       const response = await axios.get(
         `http://localhost:4002/api/likes/${postId}/users`,
-        {
-          headers: getAuthHeaders(),
-          withCredentials: true,
-        }
+        { withCredentials: true }
       );
       setLikes((prev) => ({
         ...prev,
@@ -122,12 +101,11 @@ const HomePage = () => {
     if (!newComment) return alert("Le commentaire ne peut pas être vide");
     const commentData = {
       post_id: postId,
-      user_id: currentUserId,
       content: newComment,
     };
     try {
       await axios.post("http://localhost:4001/api/comments/", commentData, {
-        headers: getAuthHeaders(),
+        withCredentials: true
       });
       setNewComment("");
       getComments(postId);
@@ -143,10 +121,9 @@ const HomePage = () => {
         `http://localhost:4001/api/comments/${commentId}/reply`,
         {
           post_id: postId,
-          user_id: currentUserId,
           content: replyTarget.value,
         },
-        { headers: getAuthHeaders() }
+        { withCredentials: true }
       );
       setReplyTarget(null);
       getComments(postId);
@@ -160,19 +137,15 @@ const HomePage = () => {
       title,
       content,
       image,
-      userId: user.user_id,
     };
     try {
-      const res = await axios.put(
-        `http://localhost:3000/api/posts/modify/${id}`,
+      await axios.put(
+        `http://localhost:3000/api/posts/${id}`,
         data,
         {
-          headers: getAuthHeaders(),
-          withCredentials: true,
+          withCredentials: true
         }
       );
-      console.log("Données envoyées dans le PUT :", data);
-      console.log("Résultat de la requête PUT :", res);
       getPosts();
       setIsInputVisible(false);
       setTitle("");
@@ -186,7 +159,7 @@ const HomePage = () => {
   const deletePost = async (id) => {
     try {
       await axios.delete(`http://localhost:3000/api/posts/${id}`, {
-        headers: getAuthHeaders(),
+        withCredentials: true
       });
       getPosts();
     } catch (error) {
@@ -199,12 +172,12 @@ const HomePage = () => {
       if (parentId) {
         await axios.delete(
           `http://localhost:4001/api/comments/${parentId}/reply/${commentId}`,
-          { headers: getAuthHeaders() }
+          { withCredentials: true }
         );
       } else {
         await axios.delete(
           `http://localhost:4001/api/comments/${commentId}`,
-          { headers: getAuthHeaders() }
+          { withCredentials: true }
         );
       }
       getComments(postId);
@@ -219,14 +192,11 @@ const HomePage = () => {
         "http://localhost:4002/api/likes/",
         {
           post_id: postId,
-          user_id: currentUserId,
         },
         {
-          headers: getAuthHeaders(),
-          withCredentials: true,
+          withCredentials: true
         }
       );
-
       getLikes(postId);
     } catch (error) {
       console.error("Erreur lors du like :", error);
@@ -253,8 +223,7 @@ const HomePage = () => {
         return;
       }
       await axios.post("http://localhost:3000/api/posts/", data, {
-        headers: getAuthHeaders(),
-        withCredentials: true,
+        withCredentials: true
       });
       getPosts();
       setIsInputVisible(false);
@@ -286,12 +255,12 @@ const HomePage = () => {
         <div className="flex justify-between items-center mb-1" style={level > 0 ? { marginLeft: `${level * 2}rem` } : {}}>
           <div className="flex items-center gap-2">
             <img
-              src={users[comment.user_id]?.image || "/images/pdp_test.jpg"}
+              src={comment.user?.image || "/images/pdp_test.jpg"}
               alt="Avatar"
               className={`rounded-full border-2 border-white object-cover ${level === 0 ? "w-7 h-7" : "w-5 h-5"}`}
             />
             <span className={`font-semibold ${level === 0 ? "text-[rgba(119,191,199,0.9)]" : "text-cyan-300 text-sm"}`}>
-              {users[comment.user_id]?.username || "Utilisateur"}
+              {comment.user?.username || "Utilisateur"}
             </span>
           </div>
           <span className="text-xs text-gray-400">
@@ -371,42 +340,56 @@ const HomePage = () => {
   };
 
   useEffect(() => {
-    // Redirige si non authentifié
-    const token = localStorage.getItem("accessToken");
-    if (!token) {
-      window.location.href = "/auth";
-    } else {
-      getPosts();
-    }
-  }, []);
+        axios.get("http://localhost:5000/auth", { withCredentials: true })
+        .then(() => getPosts())
+        .catch(() => window.location.href = "/auth");
+    }, []);
 
   useEffect(() => {
-    posts.forEach((post) => getLikes(post._id));
+    posts.forEach((post) => {
+      fetchUser(post.user_id);
+      getLikes(post._id);
+    });
   }, [posts]);
 
   return (
     <div className="min-h-screen flex flex-col mx-auto px-4 gap-5">
       <Navbar />
+      {/* Menu vertical à gauche (bulle) */}
+      <nav className="hidden md:flex flex-col fixed top-60 left-3 xl:left-16 text-white bg-[rgb(38,38,38)] rounded-2xl shadow-2xl w-40 p-4 space-y-7 z-30">
+        <a
+          href="/home"
+          className="hover:text-blue-400 flex items-center space-x-2"
+        >
+          <img
+            src="/images/acceuil.png"
+            alt="Accueil"
+            className="w-7 h-7 rounded-full"
+          />
+          <span>Home</span>
+        </a>
+        <a
+          href="/followers"
+          className="hover:text-blue-400 flex items-center space-x-2"
+        >
+          {/* Pas d'image pour followers */}
+          <span>Followers</span>
+        </a>
+        <a
+          href="/profil"
+          className="flex px-2 items-center gap-x-4 hover:text-blue-400"
+        >
+          <img
+            className="w-10 h-10 rounded-full object-cover border-2 border-white"
+            src="/images/pdp_test.jpg"
+            alt="Profile"
+          />
+          <span className="text-white hover:text-blue-400">Profil</span>
+        </a>
+      </nav>
       <div className="mt-16 md:mt-4 md:flex flex-col items-center">
         <div id="Message" className="h-16">
           <section className="text-white text-xl font-bold">Messages</section>
-        </div>
-        <div className="flex justify-center items-center gap-4 mb-2">
-          <img
-            src="./images/pdp_test.jpg"
-            alt="Profil 1"
-            className="w-12 h-12 rounded-full border-2 border-white object-cover"
-          />
-          <img
-            src="./images/pdp_test.jpg"
-            alt="Profil 2"
-            className="w-12 h-12 rounded-full border-2 border-white object-cover"
-          />
-          <img
-            src="./images/pdp_test.jpg"
-            alt="Profil 3"
-            className="w-12 h-12 rounded-full border-2 border-white object-cover"
-          />
         </div>
         <div className="flex-grow pb-32 px-4 py-9">
           {isloading ? (
@@ -422,7 +405,7 @@ const HomePage = () => {
                     <header className="flex items-center justify-between mb-4">
                       <div className="flex items-center space-x-3">
                         <img
-                          src="./images/pdp_test.jpg"
+                          src={users[post.user_id]?.image || "./images/pdp_test.jpg"}
                           alt="Avatar"
                           className="w-12 h-12 rounded-full border-2 border-white object-cover"
                         />
@@ -430,7 +413,7 @@ const HomePage = () => {
                           <div className="flex items-center justify-between space-x-3">
                             <div>
                               <h3 className="text-[rgba(119,191,199,0.5)] font-semibold text-lg">
-                                {post.pseudo || "Pseudo"}
+                                {users[post.user_id]?.username || "Pseudo"}
                               </h3>
                               <time className="text-gray-400 text-xs">
                                 {new Date(post.date).toLocaleString("fr-FR")}
@@ -519,7 +502,6 @@ const HomePage = () => {
                         </button>
                       </div>
                     </section>
-                    {/* Liste des utilisateurs ayant liké */}
                     {showLikesList === post._id && (
                       <div className="absolute bg-gray-800 text-white rounded p-2 z-50 mt-2 left-0 right-0 max-w-xs mx-auto">
                         <h4 className="font-bold mb-2">Likes</h4>
@@ -573,7 +555,6 @@ const HomePage = () => {
             </>
           )}
         </div>
-        {/* FORMULAIRE AJOUT POST STYLE BASE */}
         {isInputVisible && (
           <>
             <div
@@ -582,8 +563,8 @@ const HomePage = () => {
             ></div>
             <div
               className="
-                relative bottom-8 left-1/2 transform -translate-x-1/2 
-                w-5/6 max-w-md px-4 py-3 gap-4 flex flex-col 
+                fixed left-1/2 bottom-8 transform -translate-x-1/2
+                w-5/6 max-w-md px-4 py-3 gap-4 flex flex-col
                 bg-[rgb(50,50,50)] rounded-3xl shadow-2xl z-20
                 sm:flex-row sm:items-center
               "
@@ -592,14 +573,14 @@ const HomePage = () => {
               <img
                 src="./images/pdp_test.jpg"
                 alt="Avatar"
-                className="absolute -top-5 -left-3 w-12 h-12 rounded-full border-2 border-white object-cover"
+                className="w-12 h-12 rounded-full border-2 border-white object-cover"
               />
               <input
                 type="text"
-                placeholder="Titre"
+                placeholder="Titre du post"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full px-6 text-2xl sm:text-4xl font-bold outline-none placeholder-gray-400 bg-transparent mb-2 sm:mb-0"
+                className="w-full px-6 text-2xl sm:text-4xl font-bold outline-none placeholder-gray-400 bg-gray-800 text-white mb-2 sm:mb-0 rounded-xl"
               />
               <div className="flex items-center bg-black/10 backdrop-blur-sm rounded-3xl px-4 py-3 flex-1">
                 <input
@@ -625,7 +606,6 @@ const HomePage = () => {
             </div>
           </>
         )}
-        {/* BOUTON AJOUT POST STYLE BASE */}
         <div className="fixed shadow-lg border border-gray-600 bg-black/30 rounded-full w-11 text-center h-11 right-8 bottom-24 z-40">
           <button
             onClick={() => setIsInputVisible(!isInputVisible)}

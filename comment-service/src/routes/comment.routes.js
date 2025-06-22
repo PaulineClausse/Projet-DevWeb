@@ -6,14 +6,14 @@ const requiredFields = require("../middlewares/requiredFields.middleware");
 // Route pour créer un commentaire
 router.post(
   "/",
-  requiredFields(["post_id", "user_id", "content"]),  // Ajout du middleware ici
+  requiredFields(["post_id", "content"]),  // user_id retiré
   commentController.createComment
 );
 
 // Route pour créer une réponse à un commentaire
 router.post(
   "/:commentId/reply",
-  requiredFields(["user_id", "content"]),
+  requiredFields(["post_id", "content"]), // user_id retiré
   commentController.replyToComment
 );
 

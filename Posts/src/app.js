@@ -1,8 +1,8 @@
 const express = require("express");
 const cors = require("cors");
 const VerifyToken = require("./middlewares/VerifyToken");
-
 const mongoose = require("mongoose");
+const cookieParser = require("cookie-parser"); 
 
 require("dotenv").config();
 const app = express();
@@ -17,18 +17,22 @@ app.use(
 );
 
 app.use(express.json());
+app.use(cookieParser()); 
 
 app.use("/api/posts", VerifyToken, require("./routes/posts.routes"));
 
+// Correction : connexion avec MONGO_URI si disponible, sinon fallback sur les variables séparées
+const mongoUri =
+  process.env.MONGO_URI ||
+  ("mongodb://" +
+    process.env.MONGO_HOST +
+    ":" +
+    process.env.MONGO_PORT +
+    "/" +
+    process.env.MONGO_DATABASE_NAME);
+
 mongoose
-  .connect(
-    "mongodb://" +
-      process.env.MONGO_HOST +
-      ":" +
-      process.env.MONGO_PORT +
-      "/" +
-      process.env.MONGO_DATABASE_NAME
-  )
+  .connect(mongoUri)
   .then(() => {
     console.log("MongoDB connected !");
     app.listen(port, () => {
@@ -36,5 +40,5 @@ mongoose
     });
   })
   .catch((err) => {
-    console.log(err);
+    console.log("MongoDB connection error:", err);
   });

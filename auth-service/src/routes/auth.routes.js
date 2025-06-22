@@ -10,5 +10,13 @@ router.get("/user/:id", loginController.getUser);
 router.post("/register", loginController.register);
 router.post("/update", loginController.update);
 router.delete("/delete", loginController.deleteUser);
+router.post("/logout", (req, res) => {
+  res.clearCookie("accessToken", {
+    httpOnly: true,
+    secure: false,
+    sameSite: "Lax",
+  });
+  res.status(200).json({ message: "Déconnexion réussie" });
+});
 
 module.exports = router;

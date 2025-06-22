@@ -1,9 +1,11 @@
+// filepath: [comment.controller.js](http://_vscodecontentref_/4)
 const Comment = require("../models/comment.model");
 const axios = require("axios");
 
 // Fonction pour créer un commentaire
 exports.createComment = async (req, res) => {
-  const { post_id, user_id, content } = req.body;
+  const { post_id, content } = req.body;
+  const user_id = req.user.user_id; // récupéré via le middleware
 
   if (!post_id || !user_id || !content) {
     return res.status(400).send("Post ID, User ID and content are required");
@@ -41,18 +43,18 @@ exports.getCommentsByPost = async (req, res) => {
     const enrichedComments = await Promise.all(
       comments.map(async (comment) => {
         try {
-          // Utilise le nom du service Docker pour auth-service
           const userRes = await axios.get(
             `http://auth-service:5000/user/${comment.user_id}`
           );
           return {
             ...comment.toObject(),
             user: {
-              username: userRes.data.user.username,
-              image: userRes.data.user.image,
+              username: userRes.data.user?.username || "Utilisateur",
+              image: userRes.data.user?.image || null,
             },
           };
         } catch (e) {
+          console.error("Erreur lors de la récupération de l'utilisateur pour le commentaire", comment._id, e.message);
           return {
             ...comment.toObject(),
             user: { username: "Utilisateur", image: null },
@@ -70,7 +72,8 @@ exports.getCommentsByPost = async (req, res) => {
 // Fonction pour répondre à un commentaire
 exports.replyToComment = async (req, res) => {
   const { commentId } = req.params;
-  const { post_id, user_id, content } = req.body;
+  const { post_id, content } = req.body;
+  const user_id = req.user.user_id; // récupéré via le middleware
 
   if (!user_id || !content) {
     return res.status(400).json({ message: "user_id et content sont requis" });
