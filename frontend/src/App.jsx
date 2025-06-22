@@ -4,13 +4,13 @@ import Home from "./pages/HomePage";
 import Profil from "./pages/ProfilPage";
 import Followers from "./pages/Follower";
 import NewAccount from "./pages/NewAccount";
-import { Route, Routes, Link } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import LandingPage from "./pages/LandingPage";
 
 const App = () => {
   return (
     <Routes>
-      <Route path="/" element={<Navbar />} />
+      <Route path="/" element={<LandingPage />} />
       <Route path="/auth" element={<Authentication />} />
       <Route path="/home" element={<Home />} />
       <Route path="/profil" element={<Profil />} />
