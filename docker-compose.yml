@@ -25,14 +25,16 @@ services:
     restart: unless-stopped
     environment:
       - MYSQL_ROOT_PASSWORD=Authpassword1!!
+      - MYSQL_HOST=mysql
       - MYSQL_DATABASE=authdb
       - MYSQL_USER=authuser
       - MYSQL_PASSWORD=Authpassword1!!
+      - MYSQL_PORT=3306
     ports:
       - "3306:3306"
-    # volumes:
-    #   - mysql-data:/var/lib/mysql
-    #   - ./auth-service/init.sql:/docker-entrypoint-initdb.d/init.sql
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./auth-service/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - microservices-network
 
@@ -57,7 +59,7 @@ services:
     container_name: mongo-profil-page
     restart: unless-stopped
     # volumes:
-    #   - mongo-profil-page_data:/data/db   
+    #   - mongo-profil-page_data:/data/db
     ports:
       - "27018:27017"
     networks:
@@ -82,7 +84,7 @@ services:
     container_name: mongo
     restart: unless-stopped
     volumes:
-      - mongo-data:/data/db               
+      - mongo-data:/data/db
     ports:
       - "27017:27017"
     networks:

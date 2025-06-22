@@ -10,8 +10,6 @@ const AuthRouter = require("./routes/auth.routes");
 const errorHandler = require("./middlewares/errorHandler");
 const multer = require("multer");
 
-
-
 app.use(
   cors({
     origin: "http://localhost:5173",

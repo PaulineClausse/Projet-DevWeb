@@ -19,9 +19,7 @@ const Authentication = () => {
         { email, password },
         { withCredentials: true }
       );
-      // if (response.data.accessToken) {
-      //   localStorage.setItem("accessToken", response.data.accessToken);
-      // }
+      
       window.location.href = "/home";
     } catch (err) {
       setErrorMsg(

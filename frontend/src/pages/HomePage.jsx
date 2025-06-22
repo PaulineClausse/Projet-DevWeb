@@ -33,6 +33,7 @@ const HomePage = () => {
         withCredentials: true,
       });
       setUsers((prev) => ({ ...prev, [userId]: res.data.user }));
+      // eslint-disable-next-line no-unused-vars
     } catch (e) {
       setUsers((prev) => ({ ...prev, [userId]: { username: "Utilisateur" } }));
     }
@@ -114,6 +115,7 @@ const HomePage = () => {
         [postId]: response.data.users,
       }));
       response.data.users.forEach((userId) => fetchUser(userId));
+      // eslint-disable-next-line no-unused-vars
     } catch (error) {
       setLikes((prev) => ({
         ...prev,
@@ -499,6 +501,17 @@ const HomePage = () => {
                             alt="Like"
                           />
                           <span>Like</span>
+                          <span
+                            className="ml-2 cursor-pointer"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setShowLikesList(
+                                showLikesList === post._id ? null : post._id
+                              );
+                            }}
+                          >
+                            {likes[post._id] || 0}
+                          </span>
                         </button>
                         <button
                           onClick={() => toggleComments(post._id)}

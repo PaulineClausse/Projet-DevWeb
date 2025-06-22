@@ -15,10 +15,18 @@ const NewAccount = () => {
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value, files } = e.target;
+    if (name === "image") {
+      setFormData({
+        ...formData,
+        image: files[0],
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value,
+      });
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -26,8 +34,18 @@ const NewAccount = () => {
     setErrorMsg("");
     setLoading(true);
     try {
-      await axios.post("http://localhost:5000/register", formData, {
+      const data = new FormData();
+      Object.entries(formData).forEach(([key, value]) => {
+        if (value !== null && value !== undefined) {
+          data.append(key, value);
+        }
+      });
+
+      await axios.post("http://localhost:5000/register", data, {
         withCredentials: true,
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       });
       window.location.href = "/auth";
     } catch (err) {
