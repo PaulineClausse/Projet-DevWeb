@@ -334,7 +334,7 @@ const HomePage = () => {
   return (
     <div id="" className="min-h-screen  flex flex-col mx-auto px-4 gap-5 ">
       <Navbar />
-     
+
       <div className="fixed inset-0 backdrop-blur-md z-0" />
       <div className="mt-16 md:mt-4 md:flex flex-col items-center z-10">
         <div id="Message" className="h-16 ">
@@ -370,7 +370,7 @@ const HomePage = () => {
                 posts.map((post) => (
                   <div
                     key={post._id}
-                    className=" relative mt-8 border-[2px] bg-[rgba(38,38,38,0.5)] border-[rgba(119,191,199,0.5)] bg-opacity-80 rounded-lg p-5 shadow-[2px_1px_8px_rgba(255,255,255,0.15)]  max-w-md mx-auto"
+                    className=" relative opacity-0 translate-y-4 animate-fadeInUp delay-300 transition duration-200 ease-in-out transform hover:scale-105 hover:bg-[rgb(55,134,148)] mt-8 border-[2px] bg-[rgba(38,38,38,0.5)] border-[rgba(119,191,199,0.5)] bg-opacity-80 rounded-lg p-5 shadow-[2px_1px_8px_rgba(255,255,255,0.15)]  max-w-md mx-auto"
                   >
                     <header className="flex items-center justify-between mb-4">
                       <div className="flex items-center space-x-3">
@@ -629,7 +629,7 @@ const HomePage = () => {
             </div>
           </>
         )}
-        <div className=" fixed shadow-lg border border-gray-600  bg-black/30 rounded-full w-11 text-center h-11 right-8 bottom-24">
+        <div className=" fixed shadow-lg border transition duration-200 ease-in-out transform hover:scale-105 hover:bg-[rgb(70,180,190)] border-gray-600  bg-black/30 rounded-full w-11 text-center h-11 right-8 bottom-24">
           <button
             onClick={() => setIsInputVisible(!isInputVisible)}
             className="mt-3"

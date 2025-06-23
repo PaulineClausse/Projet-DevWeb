@@ -153,19 +153,10 @@ exports.authenticate = async (req, res) => {
   }
 };
 exports.update = async (req, res) => {
-  const authHeader = req.headers["authorization"];
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({ message: "Token manquant ou mal formaté" });
-  }
-
-  const token = authHeader.split(" ")[1];
-
   try {
-    // On va décoder le TOKEN pour avoir les informations (ID)
-    const decoded = jwt.verify(token, process.env.ACCESS_JWT_KEY);
-    const userId = decoded.user_id;
+    const userId = req.user.user_id;
 
-    const { email, username, name, first_name, password } = req.body;
+    const { email, username, name, first_name, biography, password } = req.body;
 
     // L'objet qui va recevoir les nouvelles valeurs
     const updateFields = {};
@@ -174,7 +165,6 @@ exports.update = async (req, res) => {
     if (name) updateFields.name = name;
     if (first_name) updateFields.first_name = first_name;
     if (biography) updateFields.biography = biography;
-    if (image) updateFields.image = image;
     if (password) updateFields.password = await bcrypt.hash(password, 10);
 
     const [updatedRows] = await User.update(updateFields, {

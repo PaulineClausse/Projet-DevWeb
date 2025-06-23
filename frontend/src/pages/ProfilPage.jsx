@@ -5,6 +5,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import { useRef } from "react";
+import ProfilModify from "../components/ProfilModify";
 
 const ProfilPage = () => {
   const [posts, setPosts] = useState([]);
@@ -28,6 +29,7 @@ const ProfilPage = () => {
   const [users, setUsers] = useState({});
   const [showLikesList, setShowLikesList] = useState(null);
   const [replyTarget, setReplyTarget] = useState(null);
+  const [isModifyingVisible, setIsModifyingVisible] = useState(false);
 
   const fetchUser = async (userId) => {
     if (!userId || users[userId]) return;
@@ -179,10 +181,6 @@ const ProfilPage = () => {
     } catch (error) {
       console.log("Pas d'utilisateur", error);
     }
-  };
-
-  const handleButtonClick = () => {
-    fileInputRef.current.click(); // Ouvre l’explorateur
   };
 
   const handleFileChange = async (e) => {
@@ -393,14 +391,14 @@ const ProfilPage = () => {
       <div className="fixed inset-0 backdrop-blur-md z-0" />
 
       <div className="flex flex-col">
-        <div className="mt-20 flex justify-center">
+        <div className="mt-20 flex  justify-center">
           <div className=" shadow-2xl  bg-[rgb(38,38,38,0.7)] text-white p-16 w-10/12 right-10 md:w-9/12 top-36 absolute rounded-lg">
             <h1 className="absolute -top-10 left-0 text-3xl font-bold text-white">
               Profil
             </h1>
             {userActual.user_id == user.user_id && (
               <button
-                onClick={handleButtonClick}
+                onClick={() => setIsModifyingVisible(!isModifyingVisible)}
                 className="absolute -top-9 left-24"
               >
                 <img src="../public/icons/modify.png" className="w-7 h-7"></img>
@@ -774,6 +772,7 @@ const ProfilPage = () => {
           </div>
         </>
       )}
+      {isModifyingVisible && <ProfilModify />}
     </div>
   );
 };

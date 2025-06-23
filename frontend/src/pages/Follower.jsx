@@ -64,13 +64,8 @@ const Follower = () => {
   }, [id]);
 
   return (
-    <div className="relative min-h-screen bg-black text-white">
-      {/* Background blur + image */}
-      <img
-        src="/images/logo.png"
-        alt="Background logo"
-        className="fixed inset-0 w-full h-full object-cover z-0 opacity-20"
-      />
+    <div className="relative min-h-screen  text-white">
+      
       <div className="fixed inset-0 backdrop-blur-md z-0" />
 
       {/* Navbar */}
