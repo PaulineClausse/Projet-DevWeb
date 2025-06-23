@@ -1,13 +1,41 @@
 import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
-
+import { useParams } from "react-router-dom";
+import axios from "axios";
 const Follower = () => {
   const [followers, setFollowers] = useState([]);
-  // const [isloading, setIsLoading] = useState(false);
+  const { id } = useParams();
 
-  // useEffect(() => {
-  //   // ton fetch ici si besoin
-  // }, []);
+  const getfollowers = async () => {
+    try {
+      const response = await axios.get(
+        `http://localhost:4003/followers/followers/${id}`
+      );
+      const rawFollowers = response.data;
+
+      const detailedFollowers = await Promise.all(
+        rawFollowers.map(async (f) => {
+          const res = await axios.get(
+            `http://localhost:5000/user/${f.followerId}`,
+            {
+              withCredentials: true,
+            }
+          );
+
+          return res.data.user;
+        })
+      );
+
+      setFollowers(detailedFollowers);
+      console.log("Followers complets :", detailedFollowers);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getfollowers();
+  }, [id]);
 
   return (
     <div>
@@ -24,15 +52,29 @@ const Follower = () => {
         <div className="">
           <Navbar />
         </div>
-        <div className="relative z-10 flex flex-col items-center  px-4 text-white">
+        <div className="relative   z-10 flex flex-col items-center  px-4 text-white">
           <h1 className="text-4xl font-bold mb-6 py-32 text-center drop-shadow-lg">
             {followers.length} Followers
           </h1>
-          <div className="space-y-2 text-lg">
-            {followers.map((follower) => (
-              <p key={follower.id} className="drop-shadow">
-                {follower.username}
-              </p>
+          <div className="space-y-2 bg-[rgba(38,38,38,0.95)] w-10/12 h-auto  p-4 rounded-md text-lg">
+            {followers.map((follower, index) => (
+              <div
+                key={follower.user_id}
+                className={`drop-shadow py-2 ${
+                  index !== followers.length - 1 ? "border-b border-white" : ""
+                }`}
+              >
+                <img
+                  src={
+                    follower?.image
+                      ? `http://localhost:5000/uploads/${follower.image}`
+                      : "/images/pdp_basique.jpeg"
+                  }
+                ></img>
+                <span className="text-sm font-semibold">
+                  {follower.username}
+                </span>
+              </div>
             ))}
           </div>
         </div>

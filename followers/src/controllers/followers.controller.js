@@ -12,11 +12,21 @@ module.exports = {
     }
   },
 
-  getOneFollower: async (req, res) => {
+  getFollowersUser: async (req, res) => {
     try {
-      const { id } = req.params;
-      const follower = await Follower.findById(id);
-      res.status(200).json(follower);
+      const { followingId } = req.params;
+      const followers = await Follower.find({ followingId });
+      res.status(200).json(followers);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  },
+
+  getFollowingUser: async (req, res) => {
+    try {
+      const { followerId } = req.params;
+      const followers = await Follower.find({ followerId });
+      res.status(200).json(followers);
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
