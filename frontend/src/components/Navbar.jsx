@@ -14,18 +14,18 @@ const Navbar = () => {
   const handleLogout = async () => {
     try {
       await axios.post(
-        "http://localhost:5000/logout",
+        "https://zing.com/auth/logout",
         {},
         { withCredentials: true }
       );
     } catch (e) {
       // ignore error
     }
-    navigate("/auth");
+    navigate("/authentication");
   };
   const getUsers = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/auth", {
+      const response = await axios.get("https://zing.com/auth/auth", {
         withCredentials: true,
       });
       console.log("Utilisateur connecté :", response.data.user);
@@ -59,7 +59,7 @@ const Navbar = () => {
                 className=" rounded-full w-full h-full  object-cover border-2 border-white"
                 src={
                   user?.image
-                    ? `http://localhost:5000/uploads/${user.image}`
+                    ? `https://zing.com/auth/uploads/${user.image}`
                     : "../public/images/pdp_basique.jpeg"
                 }
                 alt="Profil"
@@ -209,7 +209,7 @@ const Navbar = () => {
               className="w-10 h-10 rounded-full object-cover border-2 border-white"
               src={
                 user?.image
-                  ? `http://localhost:5000/uploads/${user.image}`
+                  ? `https://zing.com/auth/uploads/${user.image}`
                   : "../public/images/pdp_basique.jpeg"
               }
               alt="Profil"

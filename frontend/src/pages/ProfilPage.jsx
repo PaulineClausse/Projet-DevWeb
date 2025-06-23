@@ -34,7 +34,7 @@ const ProfilPage = () => {
   const fetchUser = async (userId) => {
     if (!userId || users[userId]) return;
     try {
-      const res = await axios.get(`http://localhost:5000/user/${userId}`, {
+      const res = await axios.get(`https://zing.com/auth/user/${userId}`, {
         withCredentials: true,
       });
       setUsers((prev) => ({ ...prev, [userId]: res.data.user }));
@@ -49,7 +49,7 @@ const ProfilPage = () => {
   const deletePost = async (id) => {
     try {
       const res = await axios.delete(
-        `http://localhost:3000/api/posts/delete/${id}`
+        `https://zing.com/posts/delete/${id}`
       );
       console.log("Résultat de la requête DELETE :", res);
       getUserPosts();
@@ -65,7 +65,7 @@ const ProfilPage = () => {
     };
     try {
       const res = await axios.put(
-        `http://localhost:3000/api/posts/modify/${id}`,
+        `https://zing.com/posts/modify/${id}`,
         data
       );
       console.log("Résultat de la requête PUT :", res);
@@ -97,7 +97,7 @@ const ProfilPage = () => {
         return;
       }
       const res = await axios.post(
-        "http://localhost:3000/api/posts/create",
+        "https://zing.com/posts/create",
         data
       );
       console.log("Résultat de la requête POST :", res);
@@ -121,7 +121,7 @@ const ProfilPage = () => {
 
   const getUserActual = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/auth", {
+      const response = await axios.get("https://zing.com/auth/auth", {
         withCredentials: true,
       });
       console.log("Utilisateur connecté :", response.data.user);
@@ -135,7 +135,7 @@ const ProfilPage = () => {
     try {
       setIsLoading(true);
       const response = await axios.get(
-        `http://localhost:3000/api/posts/user/${id}`,
+        `https://zing.com/posts/user/${id}`,
         { withCredentials: true }
       );
       console.log(response.data);
@@ -151,7 +151,7 @@ const ProfilPage = () => {
   const getComments = async (postId) => {
     try {
       const response = await axios.get(
-        `http://localhost:4001/api/comments/post/${postId}`,
+        `https://zing.com/comment-service/post/${postId}`,
         { withCredentials: true }
       );
       setComments((prev) => ({
@@ -172,7 +172,7 @@ const ProfilPage = () => {
 
   const getUserInfo = async () => {
     try {
-      const response = await axios.get(`http://localhost:5000/user/${id}`, {
+      const response = await axios.get(`https://zing.com/auth/user/${id}`, {
         withCredentials: true,
       });
 
@@ -195,7 +195,7 @@ const ProfilPage = () => {
       console.log(pair[0], pair[1]);
     }
     try {
-      const res = await axios.post("http://localhost:5000/upload", formData, {
+      const res = await axios.post("https://zing.com/auth/upload", formData, {
         headers: { "Content-Type": "multipart/form-data" },
         withCredentials: true,
       });
@@ -214,7 +214,7 @@ const ProfilPage = () => {
   const getfollow = async () => {
     try {
       const res = await axios.get(
-        `http://localhost:4003/followers/${userActual.user_id}/${id}`,
+        `https://zing.com/followers/followers/${userActual.user_id}/${id}`,
         { withCredentials: true }
       );
       if (res.data.isFollowing === true) {
@@ -234,7 +234,7 @@ const ProfilPage = () => {
     if (isFollowing === true) {
       setIsFollowing(false);
       const res = await axios.delete(
-        `http://localhost:4003/followers/delete/${userActual.user_id}/${id}`,
+        `https://zing.com/followers/followers/delete/${userActual.user_id}/${id}`,
         { withCredentials: true }
       );
       console.log("Résultat de la requête DELETE :", res);
@@ -242,7 +242,7 @@ const ProfilPage = () => {
       try {
         setIsFollowing(true);
         const res = await axios.post(
-          `http://localhost:4003/followers/create/${userActual.user_id}/${id}`,
+          `https://zing.com/followers/followers/create/${userActual.user_id}/${id}`,
           { withCredentials: true }
         );
         console.log("Résultat de la requête POST :", res);
@@ -256,7 +256,7 @@ const ProfilPage = () => {
   const toggleLike = async (postId) => {
     try {
       await axios.post(
-        "http://localhost:4002/api/likes/",
+        "https://zing.com/likes/",
         {
           post_id: postId,
         },
@@ -271,7 +271,7 @@ const ProfilPage = () => {
   const getLikes = async (postId) => {
     try {
       const response = await axios.get(
-        `http://localhost:4002/api/likes/${postId}/users`,
+        `https://zing.com/likes/${postId}/users`,
         { withCredentials: true }
       );
       setLikes((prev) => ({
@@ -311,7 +311,7 @@ const ProfilPage = () => {
       content: newComment,
     };
     try {
-      await axios.post("http://localhost:4001/api/comments/", commentData, {
+      await axios.post("https://zing.com/comments/", commentData, {
         withCredentials: true,
       });
       setNewComment("");
@@ -325,11 +325,11 @@ const ProfilPage = () => {
     try {
       if (parentId) {
         await axios.delete(
-          `http://localhost:4001/api/comments/${parentId}/reply/${commentId}`,
+          `https://zing.com/comments/${parentId}/reply/${commentId}`,
           { withCredentials: true }
         );
       } else {
-        await axios.delete(`http://localhost:4001/api/comments/${commentId}`, {
+        await axios.delete(`https://zing.com/comments/${commentId}`, {
           withCredentials: true,
         });
       }
@@ -343,7 +343,7 @@ const ProfilPage = () => {
     if (!replyTarget?.value) return alert("La réponse ne peut pas être vide");
     try {
       await axios.post(
-        `http://localhost:4001/api/comments/${commentId}/reply`,
+        `https://zing.com/comments/${commentId}/reply`,
         {
           post_id: postId,
           content: replyTarget.value,

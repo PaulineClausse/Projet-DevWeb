@@ -9,16 +9,17 @@ require("dotenv").config();
 const app = express();
 const port = 4001;
 
-// Middleware
+
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: ["http://localhost:5173", "https://zing.com"],
     credentials: true,
   })
 );
+
 app.use(express.json());
 app.use(cookieParser());
-app.use("/api/comments", VerifyToken, commentRoutes);
+app.use("/", VerifyToken, commentRoutes);
 
 mongoose
   .connect(process.env.MONGO_URI, {

@@ -25,7 +25,7 @@ function CommentTree({
           <img
             src={
               comment.user?.image
-                ? `http://localhost:5000/uploads/${comment.user.image}`
+                ? `https://zing.com/auth/${comment.user.image}`
                 : "../public/images/pdp_basique.jpeg"
             }
             alt="Avatar"
