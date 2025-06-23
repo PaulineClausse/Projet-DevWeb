@@ -15,45 +15,20 @@ const NewAccount = () => {
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
-    const { name, value, files } = e.target;
-    if (name === "image") {
-      setFormData({
-        ...formData,
-        image: files[0],
-      });
-    } else {
-      setFormData({
-        ...formData,
-        [name]: value,
-      });
-    }
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setErrorMsg("");
-    setLoading(true);
     try {
-      const data = new FormData();
-      Object.entries(formData).forEach(([key, value]) => {
-        if (value !== null && value !== undefined) {
-          data.append(key, value);
-        }
-      });
-
-      await axios.post("http://localhost:5000/register", data, {
-        withCredentials: true,
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      const res = await axios.post("http://localhost:5000/register", formData);
       window.location.href = "/auth";
     } catch (err) {
-      setErrorMsg(
-        err.response?.data?.message || "Erreur lors de l’enregistrement"
-      );
-    } finally {
-      setLoading(false);
+      console.error(err);
+      alert(err.response?.data?.message || "Erreur lors de l’enregistrement");
     }
   };
 

@@ -36,7 +36,7 @@ const ProfilPage = () => {
         withCredentials: true,
       });
       setUsers((prev) => ({ ...prev, [userId]: res.data.user }));
-    // eslint-disable-next-line no-unused-vars
+      // eslint-disable-next-line no-unused-vars
     } catch (e) {
       setUsers((prev) => ({ ...prev, [userId]: { username: "Utilisateur" } }));
     }
@@ -76,26 +76,6 @@ const ProfilPage = () => {
       console.error("Erreur lors de la mise à jour :", error.message);
     }
   };
-
-  // const handlefollow = async () => {
-  //   try {
-  //     const data = {
-  //       followerId: user.user_id,
-  //       content,
-  //       image,
-  //       userId: user.user_id,
-  //     };
-  //     const res = await axios.post("http://localhost:6000/followers", data);
-  //     console.log("Résultat de la requête POST :", res);
-  //     getUserPosts();
-  //     setIsInputVisible(false);
-  //     setTitle("");
-  //     setContent("");
-  //     setImage("");
-  //   } catch (error) {
-  //     console.error("Erreur lors de la mise à jour :", error.message);
-  //   }
-  // };
 
   const handleClick = async () => {
     const data = {
@@ -235,14 +215,16 @@ const ProfilPage = () => {
 
   const getfollow = async () => {
     try {
-      const res = await axios.post(
-        `http://localhost:4003/followers/${user.user_id}/${id}`,
+      const res = await axios.get(
+        `http://localhost:4003/followers/${userActual.user_id}/${id}`,
         { withCredentials: true }
       );
       if (res.data.isFollowing === true) {
+        console.log(res.data.isFollowing);
         setIsFollowing(true);
       } else {
         setIsFollowing(false);
+        console.log(res.data.isFollowing);
       }
       console.log(`L'utilisateur ${user.user_id} suit l'utilisateur ${id}`);
     } catch (error) {
@@ -251,13 +233,18 @@ const ProfilPage = () => {
   };
 
   const handlefollow = async () => {
-    if (setIsFollowing) {
+    if (isFollowing === true) {
       setIsFollowing(false);
-      return;
+      const res = await axios.delete(
+        `http://localhost:4003/followers/delete/${userActual.user_id}/${id}`,
+        { withCredentials: true }
+      );
+      console.log("Résultat de la requête DELETE :", res);
     } else {
       try {
+        setIsFollowing(true);
         const res = await axios.post(
-          `http://localhost:4003/followers/create/${user.user_id}/${id}`,
+          `http://localhost:4003/followers/create/${userActual.user_id}/${id}`,
           { withCredentials: true }
         );
         console.log("Résultat de la requête POST :", res);
@@ -298,7 +285,7 @@ const ProfilPage = () => {
         [postId]: response.data.users,
       }));
       response.data.users.forEach((userId) => fetchUser(userId));
-    // eslint-disable-next-line no-unused-vars
+      // eslint-disable-next-line no-unused-vars
     } catch (error) {
       setLikes((prev) => ({
         ...prev,
@@ -398,37 +385,7 @@ const ProfilPage = () => {
   return (
     <div className="min-h-screen">
       <Navbar />
-      {/* Menu vertical à gauche (bulle) */}
-      <nav className="hidden md:flex flex-col fixed top-60 left-3 xl:left-16 text-white bg-[rgb(38,38,38)] rounded-2xl shadow-2xl w-40 p-4 space-y-7 z-30">
-        <a
-          href="/home"
-          className="hover:text-blue-400 flex items-center space-x-2"
-        >
-          <img
-            src="/images/acceuil.png"
-            alt="Accueil"
-            className="w-7 h-7 rounded-full"
-          />
-          <span>Home</span>
-        </a>
-        <a
-          href="/followers"
-          className="hover:text-blue-400 flex items-center space-x-2"
-        >
-          <span>Followers</span>
-        </a>
-        <a
-          href="/profil"
-          className="flex px-2 items-center gap-x-4 hover:text-blue-400"
-        >
-          <img
-            className="w-10 h-10 rounded-full object-cover border-2 border-white"
-            src="/images/pdp_test.jpg"
-            alt="Profile"
-          />
-          <span className="text-white hover:text-blue-400">Profil</span>
-        </a>
-      </nav>
+
       <div className="flex flex-col">
         <div className="mt-20 flex justify-center">
           <div className=" shadow-2xl  bg-[rgb(38,38,38,0.7)] text-white p-16 w-10/12 right-10 md:w-9/12 top-36 absolute rounded-lg">
@@ -459,61 +416,62 @@ const ProfilPage = () => {
               </div>
               <div>
                 <p className="absolute left-4 top-12">{user.biography}</p>
+                {userActual.user_id != user.user_id && (
+                  <div className="absolute flex flex-row  left-3 gap-3 mt-5 ">
+                    <button
+                      onClick={() => handlefollow()}
+                      className="text-sm font-medium flex flex-col items-center "
+                    >
+                      {isFollowing ? (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="w-6 h-6 text-green-500"
+                          viewBox="0 0 512 512"
+                        >
+                          <path d="M504 256c0 136.967-111.033 248-248 248S8 392.967 8 256 119.033 8 256 8s248 111.033 248 248zm-277.02 97.941l184-184c4.686-4.686 4.686-12.284 0-16.971l-28.284-28.284c-4.686-4.686-12.284-4.686-16.971 0L216 284.118l-70.745-70.745c-4.686-4.686-12.284-4.686-16.971 0L100 241.657c-4.686 4.686-4.686 12.284 0 16.971l100 100c4.686 4.686 12.284 4.686 16.971.001z" />
+                        </svg>
+                      ) : (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="w-6 h-6"
+                          viewBox="0 0 640 512"
+                        >
+                          <path d="M96 128a128 128 0 1 1 256 0A128 128 0 1 1 96 128zM0 482.3C0 383.8 79.8 304 178.3 304l91.4 0C368.2 304 448 383.8 448 482.3c0 16.4-13.3 29.7-29.7 29.7L29.7 512C13.3 512 0 498.7 0 482.3zM504 312l0-64-64 0c-13.3 0-24-10.7-24-24s10.7-24 24-24l64 0 0-64c0-13.3 10.7-24 24-24s24 10.7 24 24l0 64 64 0c13.3 0 24 10.7 24 24s-10.7 24-24 24l-64 0 0 64c0 13.3-10.7 24-24 24s-24-10.7-24-24z" />
+                        </svg>
+                      )}
 
-                <div className="absolute flex flex-row  left-3 gap-3 mt-5 ">
-                  <button
-                    onClick={() => handlefollow()}
-                    className="text-sm font-medium flex flex-col items-center "
-                  >
-                    {isFollowing ? (
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="w-6 h-6 text-green-500"
-                        viewBox="0 0 512 512"
-                      >
-                        <path d="M504 256c0 136.967-111.033 248-248 248S8 392.967 8 256 119.033 8 256 8s248 111.033 248 248zm-277.02 97.941l184-184c4.686-4.686 4.686-12.284 0-16.971l-28.284-28.284c-4.686-4.686-12.284-4.686-16.971 0L216 284.118l-70.745-70.745c-4.686-4.686-12.284-4.686-16.971 0L100 241.657c-4.686 4.686-4.686 12.284 0 16.971l100 100c4.686 4.686 12.284 4.686 16.971.001z" />
-                      </svg>
-                    ) : (
+                      <span className="text-xs font-medium">
+                        {isFollowing ? "Following" : "Follow"}
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => navigate("/followers")}
+                      className="text-sm font-medium flex flex-col items-center "
+                    >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         className="w-6 h-6"
-                        viewBox="0 0 640 512"
+                        viewBox="0 0 448 512"
                       >
-                        <path d="M96 128a128 128 0 1 1 256 0A128 128 0 1 1 96 128zM0 482.3C0 383.8 79.8 304 178.3 304l91.4 0C368.2 304 448 383.8 448 482.3c0 16.4-13.3 29.7-29.7 29.7L29.7 512C13.3 512 0 498.7 0 482.3zM504 312l0-64-64 0c-13.3 0-24-10.7-24-24s10.7-24 24-24l64 0 0-64c0-13.3 10.7-24 24-24s24 10.7 24 24l0 64 64 0c13.3 0 24 10.7 24 24s-10.7 24-24 24l-64 0 0 64c0 13.3-10.7 24-24 24s-24-10.7-24-24z" />
+                        <path d="M224 256A128 128 0 1 0 224 0a128 128 0 1 0 0 256zm-45.7 48C79.8 304 0 383.8 0 482.3C0 498.7 13.3 512 29.7 512l388.6 0c16.4 0 29.7-13.3 29.7-29.7C448 383.8 368.2 304 269.7 304l-91.4 0z" />
                       </svg>
-                    )}
-                    <span className="text-xs font-medium">
-                      {isFollowing ? "Following" : "Follow"}
-                    </span>
-                  </button>
-                  <button
-                    onClick={() => navigate("/followers")}
-                    className="text-sm font-medium flex flex-col items-center "
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="w-6 h-6"
-                      viewBox="0 0 448 512"
+                      <span className="text-xs">Followers</span>
+                    </button>
+                    <button
+                      onClick={() => navigate("/home")}
+                      className="text-sm font-medium flex flex-col items-center"
                     >
-                      <path d="M224 256A128 128 0 1 0 224 0a128 128 0 1 0 0 256zm-45.7 48C79.8 304 0 383.8 0 482.3C0 498.7 13.3 512 29.7 512l388.6 0c16.4 0 29.7-13.3 29.7-29.7C448 383.8 368.2 304 269.7 304l-91.4 0z" />
-                    </svg>
-                    <span className="text-xs">Followers</span>
-                  </button>
-                  <button
-                    onClick={() => navigate("/home")}
-                    className="text-sm font-medium flex flex-col items-center"
-                  >
-                    <svg
-                      className="w-6 h-6 "
-                      xmlns="http://www.w3.org/2000/svg"
-                      xmlns:xlink="http://www.w3.org/1999/xlink"
-                      viewBox="0 0 310.745 310.745"
-                      xml:space="preserve"
-                    >
-                      <g id="XMLID_341_">
-                        <path
-                          id="XMLID_348_"
-                          d="M77.622,120.372c9.942,0,19.137-3.247,26.593-8.728c11.382,16.007,30.063,26.479,51.157,26.479
+                      <svg
+                        className="w-6 h-6 "
+                        xmlns="http://www.w3.org/2000/svg"
+                        xmlns:xlink="http://www.w3.org/1999/xlink"
+                        viewBox="0 0 310.745 310.745"
+                        xml:space="preserve"
+                      >
+                        <g id="XMLID_341_">
+                          <path
+                            id="XMLID_348_"
+                            d="M77.622,120.372c9.942,0,19.137-3.247,26.593-8.728c11.382,16.007,30.063,26.479,51.157,26.479
 		c21.093,0,39.774-10.472,51.157-26.479c7.456,5.481,16.651,8.728,26.593,8.728c24.813,0,45-20.187,45-44.999
 		c0-24.814-20.187-45.001-45-45.001c-9.943,0-19.138,3.248-26.594,8.729c-11.383-16.006-30.063-26.478-51.156-26.478
 		c-21.093,0-39.773,10.472-51.156,26.478c-7.456-5.481-16.651-8.729-26.594-8.729c-24.813,0-45,20.187-45,45.001
@@ -521,10 +479,10 @@ const ProfilPage = () => {
 		c-8.271,0-15-6.729-15-14.999C218.122,67.102,224.851,60.372,233.122,60.372z M155.372,42.623c18.059,0,32.75,14.691,32.75,32.75
 		s-14.691,32.75-32.75,32.75c-18.059,0-32.75-14.691-32.75-32.75S137.313,42.623,155.372,42.623z M77.622,60.372
 		c8.271,0,15,6.73,15,15.001c0,8.271-6.729,14.999-15,14.999s-15-6.729-15-14.999C62.622,67.102,69.351,60.372,77.622,60.372z"
-                        />
-                        <path
-                          id="XMLID_440_"
-                          d="M233.122,150.372c-19.643,0-38.329,7.388-52.584,20.532c-8.103-1.816-16.523-2.781-25.166-2.781
+                          />
+                          <path
+                            id="XMLID_440_"
+                            d="M233.122,150.372c-19.643,0-38.329,7.388-52.584,20.532c-8.103-1.816-16.523-2.781-25.166-2.781
 		c-8.643,0-17.063,0.965-25.165,2.781c-14.255-13.144-32.942-20.532-52.585-20.532C34.821,150.372,0,185.194,0,227.995
 		c0,8.284,6.716,15,15,15h32.6c-4.669,12.5-7.228,26.019-7.228,40.127c0,8.284,6.716,15,15,15h200c8.284,0,15-6.716,15-15
 		c0-14.108-2.559-27.627-7.229-40.127h32.602c8.284,0,15-6.716,15-15C310.745,185.194,275.923,150.372,233.122,150.372z
@@ -532,12 +490,13 @@ const ProfilPage = () => {
 		c-12.484,7.456-23.443,17.209-32.29,28.673H32.42z M71.697,268.122c7.106-39.739,41.923-69.999,83.675-69.999
 		c41.751,0,76.569,30.26,83.675,69.999H71.697z M246.449,212.995c-8.848-11.464-19.806-21.217-32.29-28.673
 		c5.912-2.567,12.347-3.95,18.964-3.95c21.021,0,38.905,13.689,45.203,32.623H246.449z"
-                        />
-                      </g>
-                    </svg>
-                    <span className="text-xs">Following</span>
-                  </button>
-                </div>
+                          />
+                        </g>
+                      </svg>
+                      <span className="text-xs">Following</span>
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>

@@ -2,23 +2,29 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const commentRoutes = require("./routes/comment.routes");
-const authMiddleware = require("./middlewares/VerifyToken");
-const cookieParser = require("cookie-parser"); 
+const VerifyToken = require("./middlewares/VerifyToken");
+const cookieParser = require("cookie-parser");
 require("dotenv").config();
 
 const app = express();
 const port = 4001;
 
 // Middleware
-app.use(cors({
-  origin: "http://localhost:5173", 
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
 app.use(express.json());
-app.use(cookieParser()); 
-app.use("/api/comments", authMiddleware, commentRoutes);
+app.use(cookieParser());
+app.use("/api/comments", VerifyToken, commentRoutes);
 
-mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose
+  .connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
   .then(() => {
     console.log("MongoDB connecté !");
     app.listen(port, () => {

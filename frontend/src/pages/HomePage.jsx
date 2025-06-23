@@ -198,7 +198,7 @@ const HomePage = () => {
     }
   };
 
-  const toggleComments = (postId) => {
+  const toggleComments = async (postId) => {
     if (activePostId === postId) {
       setActivePostId(null);
     } else {
@@ -337,36 +337,7 @@ const HomePage = () => {
       className="min-h-screen bg-gradient-to-tr from-[#5e5d5d9e] to-[#0a525b] flex flex-col mx-auto px-4 gap-5 "
     >
       <Navbar />
-      <nav className="hidden md:flex flex-col fixed top-60 left-3 xl:left-16 text-white bg-[rgb(38,38,38)] rounded-2xl shadow-2xl w-40 p-4 space-y-7 z-30">
-        <a
-          href="/home"
-          className="hover:text-blue-400 flex items-center space-x-2"
-        >
-          <img
-            src="/images/acceuil.png"
-            alt="Accueil"
-            className="w-7 h-7 rounded-full"
-          />
-          <span>Home</span>
-        </a>
-        <a
-          href="/followers"
-          className="hover:text-blue-400 flex items-center space-x-2"
-        >
-          <span>Followers</span>
-        </a>
-        <a
-          href="/profil"
-          className="flex px-2 items-center gap-x-4 hover:text-blue-400"
-        >
-          <img
-            className="w-10 h-10 rounded-full object-cover border-2 border-white"
-            src="/images/pdp_test.jpg"
-            alt="Profile"
-          />
-          <span className="text-white hover:text-blue-400">Profil</span>
-        </a>
-      </nav>
+
       <div className="mt-16 md:mt-4 md:flex flex-col items-center">
         <div id="Message" className="h-16 ">
           <section className="text-white text-xl font-bold fonts md:mt-">
@@ -444,21 +415,7 @@ const HomePage = () => {
                               )}
                             </div>
                             {selfId === post.userId && (
-                              <div className="flex items-center">
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  viewBox="0 0 512 512"
-                                  fill="rgb(38, 38, 38)"
-                                  className="w-6 h-6 cursor-pointer"
-                                  onClick={() => handleEditClick(post)}
-                                  title="Modifier le post"
-                                >
-                                  <path
-                                    d="M362.7 19.3L314.3 67.7 444.3 197.7l48.4-48.4c25-25 25-65.5 0-90.5L453.3 19.3c-25-25-65.5-25-90.5 0zm-71 71L58.6 323.5c-10.4 10.4-18 23.3-22.2 37.4L1 481.2C-1.5 489.7 .8 498.8 7 505s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L421.7 220.3 291.7 90.3z"
-                                    stroke="rgb(191, 191, 199)"
-                                    strokeWidth="40"
-                                  />
-                                </svg>
+                              <div>
                                 <svg
                                   onClick={() => deletePost(post._id)}
                                   xmlns="http://www.w3.org/2000/svg"
@@ -500,7 +457,7 @@ const HomePage = () => {
                             src="/icons/like.png"
                             alt="Like"
                           />
-                          <span>Like</span>
+
                           <span
                             className="ml-2 cursor-pointer"
                             onClick={(e) => {
@@ -546,7 +503,9 @@ const HomePage = () => {
                             >
                               <img
                                 src={
-                                  users[userId]?.image || "/images/pdp_test.jpg"
+                                  user?.image
+                                    ? `http://localhost:5000/uploads/${user.image}`
+                                    : "../public/images/pdp_basique.jpeg"
                                 }
                                 alt="Avatar"
                                 className="w-6 h-6 rounded-full border"
