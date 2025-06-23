@@ -10,14 +10,14 @@ const Following = () => {
   const getFollowing = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:4003/followers/following/${id}`
+        `https://zing.com/followers/followers/following/${id}`
       );
       const rawFollowing = response.data;
 
       const detailedFollowing = await Promise.all(
         rawFollowing.map(async (f) => {
           const res = await axios.get(
-            `http://localhost:5000/user/${f.followingId}`,
+            `https://zing.com/auth/user/${f.followingId}`,
             {
               withCredentials: true,
             }
@@ -70,7 +70,7 @@ const Following = () => {
                 className="w-12 h-12 rounded-full object-cover"
                 src={
                   follow?.image
-                    ? `http://localhost:5000/uploads/${follow.image}`
+                    ? `https://zing.com/auth/uploads/${follow.image}`
                     : "/images/pdp_basique.jpeg"
                 }
                 alt={`${follow.username} profile`}

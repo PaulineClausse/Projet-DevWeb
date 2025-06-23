@@ -29,7 +29,7 @@ const HomePage = () => {
   const fetchUser = async (userId) => {
     if (!userId || users[userId]) return;
     try {
-      const res = await axios.get(`http://localhost:5000/user/${userId}`, {
+      const res = await axios.get(`https://zing.com/auth/user/${userId}`, {
         withCredentials: true,
       });
       setUsers((prev) => ({ ...prev, [userId]: res.data.user }));
@@ -42,7 +42,7 @@ const HomePage = () => {
   const getPosts = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.get("http://localhost:3000/api/posts/", {
+      const response = await axios.get("https://zing.com/posts/", {
         withCredentials: true,
       });
 
@@ -53,7 +53,7 @@ const HomePage = () => {
         post.map(async (post) => {
           try {
             const userResponse = await axios.get(
-              `http://localhost:5000/user/${post.userId}`,
+              `https://zing.com/auth/user/${post.userId}`,
               {
                 withCredentials: true,
               }
@@ -81,7 +81,7 @@ const HomePage = () => {
   const getComments = async (postId) => {
     try {
       const response = await axios.get(
-        `http://localhost:4001/api/comments/post/${postId}`,
+        `https://zing.com/comments/post/${postId}`,
         { withCredentials: true }
       );
       setComments((prev) => ({
@@ -103,7 +103,7 @@ const HomePage = () => {
   const getLikes = async (postId) => {
     try {
       const response = await axios.get(
-        `http://localhost:4002/api/likes/${postId}/users`,
+        `https://zing.com/likes/${postId}/users`,
         { withCredentials: true }
       );
       setLikes((prev) => ({
@@ -135,7 +135,7 @@ const HomePage = () => {
       content: newComment,
     };
     try {
-      await axios.post("http://localhost:4001/api/comments/", commentData, {
+      await axios.post("https://zing.com/comments/", commentData, {
         withCredentials: true,
       });
       setNewComment("");
@@ -149,7 +149,7 @@ const HomePage = () => {
     if (!replyTarget?.value) return alert("La réponse ne peut pas être vide");
     try {
       await axios.post(
-        `http://localhost:4001/api/comments/${commentId}/reply`,
+        `https://zing.com/comments/${commentId}/reply`,
         {
           post_id: postId,
           content: replyTarget.value,
@@ -167,11 +167,11 @@ const HomePage = () => {
     try {
       if (parentId) {
         await axios.delete(
-          `http://localhost:4001/api/comments/${parentId}/reply/${commentId}`,
+          `https://zing.com/comments/${parentId}/reply/${commentId}`,
           { withCredentials: true }
         );
       } else {
-        await axios.delete(`http://localhost:4001/api/comments/${commentId}`, {
+        await axios.delete(`https://zing.com/comments/${commentId}`, {
           withCredentials: true,
         });
       }
@@ -184,7 +184,7 @@ const HomePage = () => {
   const toggleLike = async (postId) => {
     try {
       await axios.post(
-        "http://localhost:4002/api/likes/",
+        "https://zing.com/likes/",
         {
           post_id: postId,
         },
@@ -237,7 +237,7 @@ const HomePage = () => {
         return;
       }
       const res = await axios.post(
-        "http://localhost:3000/api/posts/create",
+        "https://zing.com/posts/create",
 
         data,
         { withCredentials: true }
@@ -256,7 +256,7 @@ const HomePage = () => {
   const deletePost = async (id) => {
     try {
       const res = await axios.delete(
-        `http://localhost:3000/api/posts/delete/${id}`,
+        `https://zing.com/posts/delete/${id}`,
         { withCredentials: true }
       );
       console.log("Résultat de la requête DELETE :", res);
@@ -275,7 +275,7 @@ const HomePage = () => {
     };
     try {
       const res = await axios.put(
-        `http://localhost:3000/api/posts/modify/${id}`,
+        `https://zing.com/posts/modify/${id}`,
         data,
         { withCredentials: true }
       );
@@ -293,7 +293,7 @@ const HomePage = () => {
 
   const getUsers = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/auth", {
+      const response = await axios.get("https://zing.com/auth/auth", {
         withCredentials: true,
       });
       console.log("Utilisateur connecté :", response.data.user);
@@ -319,9 +319,9 @@ const HomePage = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/auth", { withCredentials: true })
+      .get("https://zing.com/auth/auth", { withCredentials: true })
       .then(() => getPosts())
-      .catch(() => (window.location.href = "/auth"));
+      .catch(() => (window.location.href = "/authentication"));
   }, []);
 
   useEffect(() => {
@@ -380,7 +380,7 @@ const HomePage = () => {
                           <img
                             src={
                               post?.imageUser
-                                ? `http://localhost:5000/uploads/${post.imageUser}`
+                                ? `https://zing.com/auth/uploads/${post.imageUser}`
                                 : "../public/images/pdp_basique.jpeg"
                             }
                             alt="Avatar"
@@ -502,7 +502,7 @@ const HomePage = () => {
                               <img
                                 src={
                                   user?.image
-                                    ? `http://localhost:5000/uploads/${user.image}`
+                                    ? `https://zing.com/auth/uploads/${user.image}`
                                     : "../public/images/pdp_basique.jpeg"
                                 }
                                 alt="Avatar"
@@ -589,7 +589,7 @@ const HomePage = () => {
               <img
                 src={
                   user?.image
-                    ? `http://localhost:5000/uploads/${user.image}`
+                    ? `https://zing.com/auth/uploads/${user.image}`
                     : "../public/images/pdp_basique.jpeg"
                 }
                 alt="Avatar"

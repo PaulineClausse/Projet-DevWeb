@@ -15,7 +15,7 @@ const Authentication = () => {
     setLoading(true);
     try {
       const response = await axios.post(
-        "http://localhost:5000/login",
+        "https://zing.com/auth/login",
         { email, password },
         { withCredentials: true }
       );

@@ -24,8 +24,8 @@ const NewAccount = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("http://localhost:5000/register", formData);
-      window.location.href = "/auth";
+      const res = await axios.post("https://zing.com/auth/register", formData);
+      window.location.href = "/authentication";
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.message || "Erreur lors de l’enregistrement");

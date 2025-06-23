@@ -23,7 +23,7 @@ const LandingPage = () => {
         </button>
 
         <button
-          onClick={() => navigate("/auth")}
+          onClick={() => navigate("/authentication")}
           className="w-full border-2 border-cyan-400 text-white font-semibold py-3 rounded-md hover:bg-zinc-700 transition duration-200"
         >
           Se Connecter

@@ -12,7 +12,7 @@ const App = () => {
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
-      <Route path="/auth" element={<Authentication />} />
+      <Route path="/authentication" element={<Authentication />} />
       <Route path="/home" element={<Home />} />
       <Route path="/profil/:id" element={<Profil />} />
       <Route path="/followers/:id" element={<Followers />} />

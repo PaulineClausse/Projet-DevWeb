@@ -11,14 +11,14 @@ const Follower = () => {
   const getFollowers = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:4003/followers/followers/${id}`
+        `https://zing.com/followers/followers/followers/${id}`
       );
       const rawFollowers = response.data;
 
       const detailedFollowers = await Promise.all(
         rawFollowers.map(async (f) => {
           const res = await axios.get(
-            `http://localhost:5000/user/${f.followerId}`,
+            `https://zing.com/auth/user/${f.followerId}`,
             {
               withCredentials: true,
             }
@@ -36,14 +36,14 @@ const Follower = () => {
   const getFollowing = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:4003/followers/following/${id}`
+        `https://zing.com/followers/followers/following/${id}`
       );
       const rawFollowers = response.data;
 
       const detailedFollowers = await Promise.all(
         rawFollowers.map(async (f) => {
           const res = await axios.get(
-            `http://localhost:5000/user/${f.followerId}`,
+            `https://zing.com/auth/user/${f.followerId}`,
             {
               withCredentials: true,
             }
@@ -97,7 +97,7 @@ const Follower = () => {
                 className="w-12 h-12 rounded-full object-cover"
                 src={
                   follower?.image
-                    ? `http://localhost:5000/uploads/${follower.image}`
+                    ? `https://zing.com/auth/uploads/${follower.image}`
                     : "/images/pdp_basique.jpeg"
                 }
                 alt={`${follower.username} profile`}

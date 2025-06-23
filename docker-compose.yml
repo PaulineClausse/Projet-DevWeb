@@ -64,6 +64,8 @@ services:
       - "27018:27017"
     networks:
       - microservices-network
+
+
   comment-service:
     build: ./comment-service
     container_name: comment-service
@@ -89,6 +91,7 @@ services:
       - "27017:27017"
     networks:
       - microservices-network
+
 
   like-service:
     build: ./like-service
@@ -116,6 +119,31 @@ services:
     networks:
       - microservices-network
 
+
+  followers:
+    build: ./followers
+    container_name: followers
+    restart: unless-stopped
+    depends_on:
+      - mongofollowers
+    ports:
+      - "4003:4003"
+    environment:
+      - NODE_ENV=development
+      - MONGO_URI=mongodb://mongofollowers:27017/followers-api
+    networks:
+      - microservices-network
+  mongofollowers:
+    image: mongo
+    container_name: mongofollowers
+    restart: unless-stopped
+    volumes:
+      - mongodb-follower-data:/data/db
+    ports:
+      - "27020:27017"
+    networks:
+      - microservices-network
+
   frontend:
     build: ./frontend
     container_name: frontend
@@ -129,6 +157,19 @@ services:
     # volumes:
     #   - ./frontend:/app
 
+  nginx:
+    build: ./Nginx
+    container_name: nginx-gateway
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./Nginx/certs/selfsigned.crt:/etc/nginx/selfsigned.crt
+      - ./Nginx/certs/selfsigned.key:/etc/nginx/selfsigned.key
+    networks:
+      - microservices-network
+
 networks:
   microservices-network:
     external: true
@@ -138,3 +179,4 @@ volumes:
   mongo-profil-page_data:
   mongo-data:
   mongo-like_data:
+  mongodb-follower-data:

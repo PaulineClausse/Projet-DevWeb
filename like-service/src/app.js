@@ -10,14 +10,16 @@ const app = express();
 const port = process.env.PORT || 4002; // Utilise le port depuis .env ou le port 4002 par défaut
 
 
-app.use(cors({
-  origin: "http://localhost:5173", 
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "https://zing.com"],
+    credentials: true,
+  })
+);
 
 app.use(cookieParser());
 app.use(express.json()); // Pour analyser le JSON dans le corps de la requête
-app.use("/api/likes",verifyToken, likeRoutes);  // Définir les routes pour les likes
+app.use("/",verifyToken, likeRoutes);  // Définir les routes pour les likes
 
 // Connexion à MongoDB avec gestion d'erreurs et options supplémentaires
 mongoose.connect(process.env.MONGO_URI, { 
