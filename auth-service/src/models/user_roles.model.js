@@ -11,6 +11,8 @@ const UserRole = sequelize.define('user_roles', {
     references: { model: 'roles', key: 'role_id' }
   }
 }, {
+  sequelize,
+  modelName: 'UserRole',
   tableName: 'user_roles',
   timestamps: false
 });

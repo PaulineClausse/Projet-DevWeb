@@ -3,7 +3,7 @@ const http = require('http');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const sequelize = require('../config/database');
-const { User, Roles } = require('../models'); // Assure-toi que tu as bien les imports
+const { User, Role } = require('../models');
 
 
 
@@ -17,14 +17,14 @@ exports.login = async (req, res) => {
 
   try {
     const user = await User.findOne({
-      where: { email },
-      attributes: ['email', 'password', 'username', 'user_id', 'first_name'],
+      where: { email: req.body.email },
       include: [{
-        model: Roles,
-        attributes: ['role_name'],
-        through: { attributes: [] }
+        model: Role,
+        attributes: ['role_name'], // ou ['role_id', 'role_name'] si besoin
+        through: { attributes: [] } // n'affiche pas les infos de la table pivot
       }]
     });
+    console.log("testdebug", JSON.stringify(user, null, 2));
 
     if (!user) {
       return res.status(401).json({ message: 'Utilisateur non trouvé' });
@@ -35,7 +35,9 @@ exports.login = async (req, res) => {
       return res.status(401).json({ message: 'Mot de passe incorrect' });
     }
 
-    const roleNames = user.Roles.map(role => role.role_name); // tableau des rôles (ex: ['admin'])
+    console.log("user roles : ", user.Roles); 
+
+    const roleNames = user.Roles.map(role => role.role_name);
 
     const payload = {
       user_id: user.user_id,
@@ -78,7 +80,6 @@ exports.register = async (req, res) => {
     const newUser = await User.create({
       email,
       password: hashedPassword,
-      
       username,
       name,
       first_name,
@@ -86,7 +87,7 @@ exports.register = async (req, res) => {
     });
 
     // Recherche du rôle "user"
-    const userRole = await Roles.findOne({ where: { role_name: 'user' } });
+    const userRole = await Role.findOne({ where: { role_name: 'user' } });
 
     if (!userRole) {
       return res.status(500).json({ message: 'Rôle par défaut "user" introuvable' });
@@ -193,7 +194,7 @@ exports.getUser = async (req, res) => {
       where: { user_id: userId },
       attributes: ['user_id', 'email', 'username', 'name', 'first_name'],
       include: [{
-        model: Roles,
+        model: Role,
         attributes: ['role_name'], // On ne veut que le nom du rôle
         through: { attributes: [] } // Supprime les métadonnées de la table intermédiaire
       }]
@@ -253,7 +254,7 @@ exports.getAllUsers = async (req, res) => {
     const users = await User.findAll({
       attributes: ['user_id', 'email', 'username', 'name', 'first_name'],
       include: [{
-        model: Roles,
+        model: Role,
         attributes: ['role_name'],
         through: { attributes: [] } // si relation many-to-many via table intermédiaire
       }]
@@ -276,7 +277,7 @@ exports.getAllUsers = async (req, res) => {
 //       where: { user_id: userId },
 //       attributes: ['user_id', 'email', 'username', 'name', 'first_name'],
 //       include: [{
-//         model: Roles,
+//         model: Role,
 //         attributes: ['role_name'], // On ne veut que le nom du rôle
 //         through: { attributes: [] } // Supprime les métadonnées de la table intermédiaire
 //       }]

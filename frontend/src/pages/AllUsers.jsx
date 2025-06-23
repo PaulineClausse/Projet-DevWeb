@@ -16,7 +16,7 @@ const AllUsersPage = () => {
             Authorization: `Bearer ${token}`,
           },
         });
-        setUsers(response.data.user); // ou response.data selon ton backend
+        setUsers(response.data.user);
       } catch (err) {
         console.error(err);
         setError("Erreur lors de la récupération des utilisateurs");
