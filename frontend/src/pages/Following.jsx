@@ -3,47 +3,21 @@ import Navbar from "../components/Navbar";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 
-const Follower = () => {
-  const [followers, setFollowers] = useState([]);
+const Following = () => {
   const [following, setFollowing] = useState([]);
   const { id } = useParams();
-
-  const getFollowers = async () => {
-    try {
-      const response = await axios.get(
-        `http://localhost:4003/followers/followers/${id}`
-      );
-      const rawFollowers = response.data;
-
-      const detailedFollowers = await Promise.all(
-        rawFollowers.map(async (f) => {
-          const res = await axios.get(
-            `http://localhost:5000/user/${f.followerId}`,
-            {
-              withCredentials: true,
-            }
-          );
-          return res.data.user;
-        })
-      );
-
-      setFollowers(detailedFollowers);
-    } catch (error) {
-      console.error("Erreur lors du chargement des followers :", error);
-    }
-  };
 
   const getFollowing = async () => {
     try {
       const response = await axios.get(
         `http://localhost:4003/followers/following/${id}`
       );
-      const rawFollowers = response.data;
+      const rawFollowing = response.data;
 
-      const detailedFollowers = await Promise.all(
-        rawFollowers.map(async (f) => {
+      const detailedFollowing = await Promise.all(
+        rawFollowing.map(async (f) => {
           const res = await axios.get(
-            `http://localhost:5000/user/${f.followerId}`,
+            `http://localhost:5000/user/${f.followingId}`,
             {
               withCredentials: true,
             }
@@ -52,14 +26,13 @@ const Follower = () => {
         })
       );
 
-      setFollowing(detailedFollowers);
+      setFollowing(detailedFollowing);
     } catch (error) {
       console.error("Erreur lors du chargement des followers :", error);
     }
   };
 
   useEffect(() => {
-    getFollowers();
     getFollowing();
   }, [id]);
 
@@ -81,29 +54,29 @@ const Follower = () => {
       {/* Main content */}
       <div className="relative z-10 flex flex-col items-center px-6 pt-32 pb-16">
         <h1 className="text-4xl md:text-5xl font-bold mb-10 drop-shadow-lg text-center">
-          {followers.length} Follower{followers.length !== 1 && "s"}
+          {following.length} Following
         </h1>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-5xl">
-          {followers.map((follower) => (
+          {following.map((follow) => (
             <div
-              key={follower.user_id}
+              key={follow.user_id}
               className="bg-zinc-800/80 rounded-xl p-4 flex items-center  gap-4 transition-transform hover:scale-105 shadow-lg backdrop-blur-sm"
               onClick={() =>
-                (window.location.href = `/profil/${follower.user_id}`)
+                (window.location.href = `/profil/${follow.user_id}`)
               }
             >
               <img
                 className="w-12 h-12 rounded-full object-cover"
                 src={
-                  follower?.image
-                    ? `http://localhost:5000/uploads/${follower.image}`
+                  follow?.image
+                    ? `http://localhost:5000/uploads/${follow.image}`
                     : "/images/pdp_basique.jpeg"
                 }
-                alt={`${follower.username} profile`}
+                alt={`${follow.username} profile`}
               />
               <div>
-                <p className="text-lg font-semibold">{follower.username}</p>
+                <p className="text-lg font-semibold">{follow.username}</p>
               </div>
             </div>
           ))}
@@ -113,4 +86,4 @@ const Follower = () => {
   );
 };
 
-export default Follower;
+export default Following;

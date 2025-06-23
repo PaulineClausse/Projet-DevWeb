@@ -332,13 +332,11 @@ const HomePage = () => {
   }, [posts]);
 
   return (
-    <div
-      id=""
-      className="min-h-screen bg-gradient-to-tr from-[#5e5d5d9e] to-[#0a525b] flex flex-col mx-auto px-4 gap-5 "
-    >
+    <div id="" className="min-h-screen  flex flex-col mx-auto px-4 gap-5 ">
       <Navbar />
-
-      <div className="mt-16 md:mt-4 md:flex flex-col items-center">
+     
+      <div className="fixed inset-0 backdrop-blur-md z-0" />
+      <div className="mt-16 md:mt-4 md:flex flex-col items-center z-10">
         <div id="Message" className="h-16 ">
           <section className="text-white text-xl font-bold fonts md:mt-">
             Messages
@@ -392,7 +390,7 @@ const HomePage = () => {
                         <div className="flex flex-col">
                           <div className="flex items-center justify-between space-x-3">
                             <div>
-                              <h3 className=" text-[rgba(119,191,199,0.5)] font-semibold text-lg">
+                              <h3 className=" text-[#7ddce6] font-semibold text-lg">
                                 {post.username || "Pseudo"}
                               </h3>
                               <time className="text-gray-400 text-xs">
