@@ -255,10 +255,9 @@ const HomePage = () => {
   };
   const deletePost = async (id) => {
     try {
-      const res = await axios.delete(
-        `https://zing.com/posts/delete/${id}`,
-        { withCredentials: true }
-      );
+      const res = await axios.delete(`https://zing.com/posts/delete/${id}`, {
+        withCredentials: true,
+      });
       console.log("Résultat de la requête DELETE :", res);
       getPosts();
     } catch (error) {
@@ -274,11 +273,9 @@ const HomePage = () => {
       userId: user.user_id,
     };
     try {
-      const res = await axios.put(
-        `https://zing.com/posts/modify/${id}`,
-        data,
-        { withCredentials: true }
-      );
+      const res = await axios.put(`https://zing.com/posts/modify/${id}`, data, {
+        withCredentials: true,
+      });
       console.log("Données envoyées dans le PUT :", data);
       console.log("Résultat de la requête PUT :", res);
       getPosts();
@@ -337,29 +334,6 @@ const HomePage = () => {
 
       <div className="fixed inset-0 backdrop-blur-md z-0" />
       <div className="mt-16 md:mt-4 md:flex flex-col items-center z-10">
-        <div id="Message" className="h-16 ">
-          <section className="text-white text-xl font-bold fonts md:mt-">
-            Messages
-          </section>
-          <div className="flex gap-2 py-3 ">
-            <img
-              src="./images/pdp_test.jpg"
-              alt="Avatar"
-              className="w-12 h-12 rounded-full shadow-2xl border-2 border-white object-cover"
-            />
-            <img
-              src="./images/pdp_test.jpg"
-              alt="Avatar"
-              className="w-12 h-12 rounded-full  shadow-2xl border-2 border-white object-cover"
-            />
-            <img
-              src="./images/pdp_test.jpg"
-              alt="Avatar"
-              className="w-12 h-12 rounded-full  shadow-2xl border-2 border-white object-cover"
-            />
-          </div>
-        </div>
-
         <div className=" flex-grow  pb-32 px-4 py-9">
           <section className="text-white text-xl font-bold fonts">Feed</section>
           {isloading ? (
