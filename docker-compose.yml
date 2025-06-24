@@ -1,6 +1,8 @@
 services:
   auth:
     build: ./auth-service
+    volumes:
+      - ./auth-service/uploads:/app/uploads
     container_name: auth-service
     ports:
       - "5000:5000"

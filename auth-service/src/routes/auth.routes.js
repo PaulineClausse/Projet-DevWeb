@@ -9,7 +9,7 @@ router.post("/login", loginController.login);
 router.get("/user/:id", loginController.getUser);
 router.post("/register", loginController.register);
 router.put("/update", authMiddleware, loginController.update);
-router.delete("/delete", loginController.deleteUser);
+router.delete("/delete/:id",authMiddleware, loginController.deleteUser);
 router.post("/logout", (req, res) => {
   res.clearCookie("accessToken", {
     httpOnly: true,
