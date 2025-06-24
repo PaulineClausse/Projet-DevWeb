@@ -1,14 +1,14 @@
+require("dotenv").config();
 const http = require("http");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const sequelize = require("../config/database");
-require("dotenv").config();
-
-const { User, Roles } = require("../models"); // Assure-toi que tu as bien les imports
+const { User, Role } = require("../models");
 
 const PORT = 5000;
 
 exports.login = async (req, res) => {
+  
   const { email, password } = req.body;
   if (!email || !password) {
     return res.status(400).json({ message: "Champs manquants" });
@@ -16,9 +16,14 @@ exports.login = async (req, res) => {
 
   try {
     const user = await User.findOne({
-      where: { email },
-      attributes: ["email", "password", "username", "user_id", "first_name"], //'image'
+      where: { email: req.body.email },
+      include: [{
+        model: Role,
+        attributes: ['role_name'],
+        through: { attributes: [] } // n'affiche pas les infos de la table pivot
+      }]
     });
+
     if (!user) {
       return res.status(401).json({ message: "Utilisateur non trouvé" });
     }
@@ -28,12 +33,15 @@ exports.login = async (req, res) => {
       return res.status(401).json({ message: "Mot de passe incorrect" });
     }
 
+    const roleNames = user.Roles.map(role => role.role_name);
+
     const payload = {
       user_id: user.user_id,
       username: user.username,
       email: user.email,
       biography: user.biography,
       image: user.image,
+      roles: roleNames,
 
       first_name: user.first_name,
       exp: Math.floor(Date.now() / 1000) + 60 * 60,
@@ -82,7 +90,7 @@ exports.register = async (req, res) => {
     });
 
     // Recherche du rôle "user"
-    const userRole = await Roles.findOne({ where: { role_name: "user" } });
+    const userRole = await Role.findOne({ where: { role_name: "user" } });
 
     if (!userRole) {
       return res
@@ -231,14 +239,33 @@ exports.deleteUser = async (req, res) => {
   }
 };
 
-// A GARDER EN COMMENTAIRES POUR UTILISATION FUTUR POUR RETOURNER LE ROLE
+exports.getAllUsers = async (req, res) => {
+  const token = req.cookies.accessToken;
+  if (!token) {
+    return res.status(401).json({ message: "Token manquant" });
+  }
+  console.log("testing");
+  try {
+    const decoded = jwt.verify(token, process.env.ACCESS_JWT_KEY);
+    const userId = decoded.user_id;
+    console.log("decoded", decoded);
 
-// const user = await User.findOne({
-//       where: { user_id: userId },
-//       attributes: ['user_id', 'email', 'username', 'name', 'first_name'],
-//       include: [{
-//         model: Roles,
-//         attributes: ['role_name'], // On ne veut que le nom du rôle
-//         through: { attributes: [] } // Supprime les métadonnées de la table intermédiaire
-//       }]
-//     });
+    const users = await User.findAll({
+      attributes: ['user_id', 'email', 'username', 'name', 'first_name'],
+      include: [{
+        model: Role,
+        attributes: ['role_name'],
+        through: { attributes: [] } // si relation many-to-many via table intermédiaire
+      }]
+    });
+
+    if (users.length === 0) {
+      return res.status(404).json({ message: "Aucun utilisateur trouvé" });
+    }
+
+    return res.status(200).json({ users });
+  } catch (err) {
+    console.error(err);
+    return res.status(401).json({ message: "Token invalide ou expiré", error: err.message });
+  }
+};

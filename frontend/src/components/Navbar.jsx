@@ -223,6 +223,12 @@ const Navbar = () => {
         >
           Déconnexion
         </button>
+          <a
+            href="/allUsers"
+            className="text-red-600 hover:underline font-semibold"
+          >
+            Centre d'administration
+          </a>
       </nav>
     </div>
   );

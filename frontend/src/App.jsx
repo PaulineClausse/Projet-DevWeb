@@ -5,8 +5,9 @@ import Profil from "./pages/ProfilPage";
 import Followers from "./pages/Follower";
 import Following from "./pages/Following";
 import NewAccount from "./pages/NewAccount";
-import { Route, Routes } from "react-router-dom";
 import LandingPage from "./pages/LandingPage";
+import { Route, Routes } from "react-router-dom";
+import AllUsersPage from "./pages/allUsers";
 
 const App = () => {
   return (
@@ -19,6 +20,7 @@ const App = () => {
       <Route path="/following/:id" element={<Following />} />
       <Route path="/register" element={<NewAccount />} />
       <Route path="/landing" element={<LandingPage />} />
+      <Route path="/allUsers" element={<AllUsersPage />} />
     </Routes>
   );
 };
