@@ -70,11 +70,12 @@ module.exports = {
   createPost: async (req, res) => {
     const { title, content } = req.body;
     const userId = req.user.user_id;
+    const image = req.file ? req.file.filename : null;
     if (!title || !content)
       return res.status(400).send("Title and content are required");
 
     try {
-      const newPost = new Post({ title, content, image: false, userId });
+      const newPost = new Post({ title, content, image, userId });
       await newPost.save();
       postsList.push(newPost);
 

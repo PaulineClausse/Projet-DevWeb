@@ -4,11 +4,13 @@ const router = express.Router();
 
 const postsController = require("../controllers/posts.controller.js");
 
+const upload = require("../middlewares/upload.js");
+
 router.get("/", postsController.getAllPosts);
 
 router.get("/:id", postsController.getOnePost);
 
-router.post("/create", postsController.createPost);
+router.post("/create", upload.single("image"), postsController.createPost);
 
 router.delete("/delete/:id", postsController.deletePost);
 

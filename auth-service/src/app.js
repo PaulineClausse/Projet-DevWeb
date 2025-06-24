@@ -8,7 +8,6 @@ const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const AuthRouter = require("./routes/auth.routes");
 const errorHandler = require("./middlewares/errorHandler");
-const multer = require("multer");
 
 app.use(
   cors({
@@ -17,7 +16,7 @@ app.use(
   })
 );
 
-app.use("/uploads", express.static("uploads"));
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 app.use(errorHandler);
 // parse requests of content-type - application/json

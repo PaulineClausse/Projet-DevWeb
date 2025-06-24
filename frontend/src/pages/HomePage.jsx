@@ -25,7 +25,10 @@ const HomePage = () => {
   const [likesUsers, setLikesUsers] = useState({});
   const [users, setUsers] = useState({});
   const [showLikesList, setShowLikesList] = useState(null);
+  const [activeTab, setActiveTab] = useState("forYou");
+  const [following, setFollowing] = useState([]);
 
+  const [imagePreview, setImagePreview] = useState(null);
   const fetchUser = async (userId) => {
     if (!userId || users[userId]) return;
     try {
@@ -215,13 +218,13 @@ const HomePage = () => {
     setIsInputVisible(true);
   };
   const handleClick = async () => {
-    const data = {
-      title,
-      content,
-      image,
-      userId: user.user_id,
-    };
-
+    const formData = new FormData();
+    formData.append("title", title);
+    formData.append("content", content);
+    formData.append("userId", user.user_id);
+    if (image) {
+      formData.append("image", image);
+    }
     if (!title || !content) {
       return alert("Title and content are required");
     }
@@ -236,23 +239,52 @@ const HomePage = () => {
         setIsInputVisible(false);
         return;
       }
-      const res = await axios.post(
-        "https://zing.com/posts/create",
+      const res = await axios.post("https://zing.com/posts/create", formData, {
+        withCredentials: true,
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
-        data,
-        { withCredentials: true }
-      );
       console.log("Résultat de la requête POST :", res);
       getPosts();
       setIsInputVisible(false);
       setTitle("");
       setContent("");
-      setImage("");
+      setImage(null);
+      setImagePreview(null);
       setUserPost("");
     } catch (error) {
       console.error("Erreur lors de la création :", error.message);
     }
   };
+
+  const getFollowing = async () => {
+    try {
+      const response = await axios.get(
+        `https://zing.com/followers/followers/following/${user.user_id}`
+      );
+      const rawFollowing = response.data;
+
+      const detailedFollowing = await Promise.all(
+        rawFollowing.map(async (f) => {
+          const res = await axios.get(
+            `https://zing.com/auth/user/${f.followingId}`,
+            {
+              withCredentials: true,
+            }
+          );
+          return res.data.user;
+        })
+      );
+
+      setFollowing(detailedFollowing);
+      console.log("Utilisateurs suivis :", detailedFollowing);
+    } catch (error) {
+      console.error("Erreur lors du chargement des followers :", error);
+    }
+  };
+
   const deletePost = async (id) => {
     try {
       const res = await axios.delete(`https://zing.com/posts/delete/${id}`, {
@@ -306,6 +338,7 @@ const HomePage = () => {
 
   useEffect(() => {
     if (user.user_id) {
+      getFollowing();
       getPosts();
     }
   }, [user]);
@@ -335,16 +368,48 @@ const HomePage = () => {
       <div className="fixed inset-0 backdrop-blur-md z-0" />
       <div className="mt-16 md:mt-4 md:flex flex-col items-center z-10">
         <div className=" flex-grow  pb-32 px-4 py-9">
-          <section className="text-white text-xl font-bold fonts">Feed</section>
+          <div className="flex transition duration-200 ease-in-out transform hover:scale-105 gap-4">
+            <button
+              onClick={() => setActiveTab("forYou")}
+              className={`font-bold w-32 rounded-lg text-white border-[2px] transition-all duration-200
+      ${
+        activeTab === "forYou"
+          ? "bg-[rgb(55,134,148)] border-[rgba(119,191,199,0.5)]"
+          : "bg-[rgba(38,38,38,0.5)] border-transparent hover:bg-[rgb(55,134,148)] hover:border-[rgba(119,191,199,0.5)]"
+      }`}
+            >
+              For You
+            </button>
+
+            <button
+              onClick={() => setActiveTab("following")}
+              className={`font-bold w-32 rounded-lg text-white border-[2px] transition-all duration-200
+      ${
+        activeTab === "following"
+          ? "bg-[rgb(55,134,148)] border-[rgba(119,191,199,0.5)]"
+          : "bg-[rgba(38,38,38,0.5)] border-transparent hover:bg-[rgb(55,134,148)] hover:border-[rgba(119,191,199,0.5)]"
+      }`}
+            >
+              Following
+            </button>
+          </div>
+
           {isloading ? (
             "Loading..."
           ) : (
             <>
               {posts.length > 0 ? (
-                posts.map((post) => (
+                (activeTab === "forYou"
+                  ? posts
+                  : posts.filter((post) =>
+                      following.some(
+                        (user) => String(user.user_id) === String(post.userId)
+                      )
+                    )
+                ).map((post) => (
                   <div
                     key={post._id}
-                    className=" relative opacity-0 translate-y-4 animate-fadeInUp delay-300 transition duration-200 ease-in-out transform hover:scale-105 hover:bg-[rgb(55,134,148)] mt-8 border-[2px] bg-[rgba(38,38,38,0.5)] border-[rgba(119,191,199,0.5)] bg-opacity-80 rounded-lg p-5 shadow-[2px_1px_8px_rgba(255,255,255,0.15)]  max-w-md mx-auto"
+                    className=" relative opacity-0 translate-y-4 animate-fadeInUp transition duration-200 ease-in-out transform hover:scale-105 hover:bg-[rgb(55,134,148)] mt-8 border-[2px] bg-[rgba(38,38,38,0.5)] border-[rgba(119,191,199,0.5)] bg-opacity-80 rounded-lg p-5 shadow-[2px_1px_8px_rgba(255,255,255,0.15)]  max-w-md mx-auto"
                   >
                     <header className="flex items-center justify-between mb-4">
                       <div className="flex items-center space-x-3">
@@ -417,6 +482,16 @@ const HomePage = () => {
                     <p className="text-gray-200 text-base leading-relaxed mb-4">
                       {post.content}
                     </p>
+                    {post.image?.trim() !== "" && (
+                      <img
+                        src={`https://zing.com/uploads/${post.image}`}
+                        alt="Post"
+                        className="max-w-full max-h-80 rounded-lg mb-4 object-contain"
+                        onError={(e) => {
+                          e.currentTarget.style.display = "none"; // cache l’image si erreur de chargement
+                        }}
+                      />
+                    )}
 
                     <section className="flex items-center justify-between text-gray-300">
                       <div className="flex space-x-6">
@@ -476,7 +551,7 @@ const HomePage = () => {
                               <img
                                 src={
                                   user?.image
-                                    ? `https://zing.com/auth/uploads/${user.image}`
+                                    ? `https://zing.com/posts/uploads/${user.image}`
                                     : "../public/images/pdp_basique.jpeg"
                                 }
                                 alt="Avatar"
@@ -552,12 +627,11 @@ const HomePage = () => {
 
             <div
               className="
-               md:left-64
-    relative bottom-24 left-1/2 transform -translate-x-1/2 
-    w-5/6 max-w-md px-4 py-3 gap-4 flex flex-col 
-    bg-[rgb(50,50,50)] rounded-3xl shadow-2xl z-20
-    sm:flex-row sm:items-center
-  "
+        md:left-64 relative bottom-24 left-1/2 transform -translate-x-1/2 
+        w-5/6 max-w-md px-4 py-3 gap-4 flex flex-col 
+        bg-[rgb(50,50,50)] rounded-3xl shadow-2xl z-20
+        sm:flex-row sm:items-center
+      "
               onClick={(e) => e.stopPropagation()}
             >
               <img
@@ -578,27 +652,69 @@ const HomePage = () => {
                 className="w-full px-6 text-2xl sm:text-4xl font-bold outline-none placeholder-gray-400 bg-transparent mb-2 sm:mb-0"
               />
 
-              <div className="flex items-center bg-black/10 backdrop-blur-sm rounded-3xl px-4 py-3 flex-1">
-                <input
-                  type="text"
-                  id="content"
-                  placeholder="Écris quelque chose..."
-                  maxLength={280}
-                  autoFocus
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  className="flex-1 text-white placeholder-gray-400 outline-none bg-transparent"
-                />
-                <button
-                  className="ml-3 p-2 md:px-6 hover:bg-white/20 rounded-full transition flex-shrink-0"
-                  onClick={handleClick}
-                >
-                  <img
-                    className="w-6 h-6"
-                    src="/icons/publish.png"
-                    alt="Publish icon"
+              <div className="flex flex-col w-full gap-2">
+                <div className="flex items-center bg-black/10 backdrop-blur-sm rounded-3xl px-4 py-3">
+                  <input
+                    type="text"
+                    id="content"
+                    placeholder="Écris quelque chose..."
+                    maxLength={280}
+                    autoFocus
+                    value={content}
+                    onChange={(e) => setContent(e.target.value)}
+                    className="flex-1 text-white placeholder-gray-400 outline-none bg-transparent"
                   />
-                </button>
+
+                  <label className="cursor-pointer ml-2">
+                    <img
+                      src="/icons/image.svg"
+                      alt="Add"
+                      className="absolute -top-6 -left-4 w-14 h-14 rounded-full border-2 border-[#7ddce6] shadow-lg object-cover ring-2 ring-white/20 transition-transform duration-300 hover:scale-105"
+                    />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                          setImage(file);
+                          setImagePreview(URL.createObjectURL(file));
+                        }
+                      }}
+                    />
+                  </label>
+                  <button
+                    className="ml-3 p-2 md:px-6 hover:bg-white/20 rounded-full transition flex-shrink-0"
+                    onClick={handleClick}
+                  >
+                    <img
+                      className="w-6 h-6"
+                      src="/icons/publish.png"
+                      alt="Publish"
+                    />
+                  </button>
+                </div>
+
+                {/* Prévisualisation de l'image */}
+                {imagePreview && (
+                  <div className="relative w-fit">
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="max-h-48 rounded-lg mt-2"
+                    />
+                    <button
+                      className="absolute top-0 right-0 bg-black/60 text-white p-1 rounded-full"
+                      onClick={() => {
+                        setImage(null);
+                        setImagePreview(null);
+                      }}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </>

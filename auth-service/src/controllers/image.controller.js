@@ -16,7 +16,6 @@ exports.uploadImage = async (req, res) => {
 
     await user.update({ image });
 
-    // Ici, tu peux enregistrer l'image dans ta base ou autre
     res
       .status(200)
       .json({ message: "Image uploaded", filename: req.file.filename });

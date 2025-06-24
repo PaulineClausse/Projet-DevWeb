@@ -1,7 +1,7 @@
 services:
-  likes:
+  like-service:
     build: .
-    container_name: likes
+    container_name: like-service
     restart: unless-stopped
     depends_on:
       - mongo

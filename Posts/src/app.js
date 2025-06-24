@@ -7,6 +7,7 @@ require("dotenv").config();
 const app = express();
 const cookieParser = require("cookie-parser");
 const port = 3000;
+const path = require("path");
 
 app.use(
   cors({
@@ -18,6 +19,8 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 app.use("/api/posts", verifyToken, postsRoutes);
+
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 const mongoUri =
   process.env.MONGO_URI ||

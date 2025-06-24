@@ -2,6 +2,9 @@ services:
   auth:
     build: ./auth-service
     container_name: auth-service
+    volumes:
+      - ./auth-service/uploads:/app/uploads
+
     ports:
       - "5000:5000"
     environment:
@@ -44,6 +47,8 @@ services:
     restart: unless-stopped
     depends_on:
       - mongo-profil-page
+    volumes:
+      - ./posts/uploads:/app/uploads
     ports:
       - "3000:3000"
     environment:
@@ -64,7 +69,6 @@ services:
       - "27018:27017"
     networks:
       - microservices-network
-
 
   comment-service:
     build: ./comment-service
@@ -92,7 +96,6 @@ services:
     networks:
       - microservices-network
 
-
   like-service:
     build: ./like-service
     container_name: like-service
@@ -118,7 +121,6 @@ services:
       - "27019:27017"
     networks:
       - microservices-network
-
 
   followers:
     build: ./followers

@@ -48,9 +48,7 @@ const ProfilPage = () => {
 
   const deletePost = async (id) => {
     try {
-      const res = await axios.delete(
-        `https://zing.com/posts/delete/${id}`
-      );
+      const res = await axios.delete(`https://zing.com/posts/delete/${id}`);
       console.log("Résultat de la requête DELETE :", res);
       getUserPosts();
     } catch (error) {
@@ -64,10 +62,7 @@ const ProfilPage = () => {
       image,
     };
     try {
-      const res = await axios.put(
-        `https://zing.com/posts/modify/${id}`,
-        data
-      );
+      const res = await axios.put(`https://zing.com/posts/modify/${id}`, data);
       console.log("Résultat de la requête PUT :", res);
       getUserPosts();
       setIsInputVisible(false);
@@ -96,10 +91,7 @@ const ProfilPage = () => {
         setIsInputVisible(false);
         return;
       }
-      const res = await axios.post(
-        "https://zing.com/posts/create",
-        data
-      );
+      const res = await axios.post("https://zing.com/posts/create", data);
       console.log("Résultat de la requête POST :", res);
       getUserPosts();
       setIsInputVisible(false);
@@ -134,10 +126,9 @@ const ProfilPage = () => {
   const getUserPosts = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.get(
-        `https://zing.com/posts/user/${id}`,
-        { withCredentials: true }
-      );
+      const response = await axios.get(`https://zing.com/posts/user/${id}`, {
+        withCredentials: true,
+      });
       console.log(response.data);
       setPosts(response.data);
       setIsLoading(false);
@@ -432,6 +423,7 @@ const ProfilPage = () => {
                           xmlns="http://www.w3.org/2000/svg"
                           className="w-6 h-6 text-green-500"
                           viewBox="0 0 512 512"
+                          fill="rgb(255, 255, 255)"
                         >
                           <path d="M504 256c0 136.967-111.033 248-248 248S8 392.967 8 256 119.033 8 256 8s248 111.033 248 248zm-277.02 97.941l184-184c4.686-4.686 4.686-12.284 0-16.971l-28.284-28.284c-4.686-4.686-12.284-4.686-16.971 0L216 284.118l-70.745-70.745c-4.686-4.686-12.284-4.686-16.971 0L100 241.657c-4.686 4.686-4.686 12.284 0 16.971l100 100c4.686 4.686 12.284 4.686 16.971.001z" />
                         </svg>
@@ -440,6 +432,7 @@ const ProfilPage = () => {
                           xmlns="http://www.w3.org/2000/svg"
                           className="w-6 h-6"
                           viewBox="0 0 640 512"
+                          fill="rgb(255, 255, 255)"
                         >
                           <path d="M96 128a128 128 0 1 1 256 0A128 128 0 1 1 96 128zM0 482.3C0 383.8 79.8 304 178.3 304l91.4 0C368.2 304 448 383.8 448 482.3c0 16.4-13.3 29.7-29.7 29.7L29.7 512C13.3 512 0 498.7 0 482.3zM504 312l0-64-64 0c-13.3 0-24-10.7-24-24s10.7-24 24-24l64 0 0-64c0-13.3 10.7-24 24-24s24 10.7 24 24l0 64 64 0c13.3 0 24 10.7 24 24s-10.7 24-24 24l-64 0 0 64c0 13.3-10.7 24-24 24s-24-10.7-24-24z" />
                         </svg>
@@ -458,6 +451,7 @@ const ProfilPage = () => {
                       xmlns="http://www.w3.org/2000/svg"
                       className="w-6 h-6"
                       viewBox="0 0 448 512"
+                      fill="rgb(255, 255, 255)"
                     >
                       <path d="M224 256A128 128 0 1 0 224 0a128 128 0 1 0 0 256zm-45.7 48C79.8 304 0 383.8 0 482.3C0 498.7 13.3 512 29.7 512l388.6 0c16.4 0 29.7-13.3 29.7-29.7C448 383.8 368.2 304 269.7 304l-91.4 0z" />
                     </svg>
@@ -472,6 +466,7 @@ const ProfilPage = () => {
                       xmlns="http://www.w3.org/2000/svg"
                       xmlns:xlink="http://www.w3.org/1999/xlink"
                       viewBox="0 0 310.745 310.745"
+                      fill="rgb(255, 255, 255)"
                       xml:space="preserve"
                     >
                       <g id="XMLID_341_">
@@ -509,7 +504,7 @@ const ProfilPage = () => {
             className=" absolute lg:w-24 lg:h-24/12 md:w-24 md:h-24 right-2 mt-2  rounded-full w-28 h-28  object-cover border-2 border-white"
             src={
               user?.image
-                ? `http://localhost:5000/uploads/${user.image}`
+                ? `https://zing.com/auth/uploads/${user.image}`
                 : "/images/pdp_basique.jpeg"
             }
             alt="Profile"
@@ -532,7 +527,7 @@ const ProfilPage = () => {
                         <img
                           src={
                             user?.image
-                              ? `http://localhost:5000/uploads/${user.image}`
+                              ? `https://zing.com/auth/uploads/${user.image}`
                               : "/images/pdp_basique.jpeg"
                           }
                           alt="Avatar"
