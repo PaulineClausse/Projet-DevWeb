@@ -10,6 +10,7 @@ function verifyToken(req, res, next) {
   }
 
   try {
+    
     const decoded = jwt.verify(token, process.env.ACCESS_JWT_KEY);
     console.log("✅ Token valide:", decoded);
     req.user = decoded;
