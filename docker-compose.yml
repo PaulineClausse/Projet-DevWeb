@@ -1,5 +1,7 @@
+version: "3.8"
+
 services:
-  auth:
+  auth-service:
     build: ./auth-service
     container_name: auth-service
     ports:
@@ -16,8 +18,6 @@ services:
       - mysql
     networks:
       - microservices-network
-    # volumes:
-    #   - ./auth-service:/app
 
   mysql:
     image: mysql:latest
@@ -25,7 +25,6 @@ services:
     restart: unless-stopped
     environment:
       - MYSQL_ROOT_PASSWORD=Authpassword1!!
-      - MYSQL_HOST=mysql
       - MYSQL_DATABASE=authdb
       - MYSQL_USER=authuser
       - MYSQL_PASSWORD=Authpassword1!!
@@ -52,19 +51,15 @@ services:
       - ACCESS_JWT_KEY=your_secret_key
     networks:
       - microservices-network
-    # volumes:
-    #   - ./Posts:/app
+
   mongo-profil-page:
     image: mongo
     container_name: mongo-profil-page
     restart: unless-stopped
-    # volumes:
-    #   - mongo-profil-page_data:/data/db
     ports:
       - "27018:27017"
     networks:
       - microservices-network
-
 
   comment-service:
     build: ./comment-service
@@ -79,19 +74,15 @@ services:
       - ACCESS_JWT_KEY=your_secret_key
     networks:
       - microservices-network
-    # volumes:
-    #   - ./comment-service:/app
+
   mongo:
     image: mongo
     container_name: mongo
     restart: unless-stopped
-    volumes:
-      - mongo-data:/data/db
     ports:
       - "27017:27017"
     networks:
       - microservices-network
-
 
   like-service:
     build: ./like-service
@@ -106,19 +97,15 @@ services:
       - ACCESS_JWT_KEY=your_secret_key
     networks:
       - microservices-network
-    # volumes:
-    #   - ./like-service:/app
+
   mongo-like:
     image: mongo
     container_name: mongo-like
     restart: unless-stopped
-    volumes:
-      - mongo-like_data:/data/db
     ports:
       - "27019:27017"
     networks:
       - microservices-network
-
 
   followers:
     build: ./followers
@@ -133,14 +120,36 @@ services:
       - MONGO_URI=mongodb://mongofollowers:27017/followers-api
     networks:
       - microservices-network
+
   mongofollowers:
     image: mongo
     container_name: mongofollowers
     restart: unless-stopped
-    volumes:
-      - mongodb-follower-data:/data/db
     ports:
       - "27020:27017"
+    networks:
+      - microservices-network
+
+  notification-service:
+    build: ./notification-service
+    container_name: notification-service
+    restart: unless-stopped
+    depends_on:
+      - notification-mongo
+    ports:
+      - "4004:4004"
+    environment:
+      - MONGO_URI=mongodb://notification-mongo:27017/notification
+      - ACCESS_JWT_KEY=your_secret_key
+    networks:
+      - microservices-network
+
+  notification-mongo:
+    image: mongo
+    container_name: notification-mongo
+    restart: unless-stopped
+    ports:
+      - "27021:27017"
     networks:
       - microservices-network
 
@@ -154,8 +163,6 @@ services:
       - microservices-network
     environment:
       - NODE_ENV=development
-    # volumes:
-    #   - ./frontend:/app
 
   nginx:
     build: ./Nginx
@@ -167,6 +174,14 @@ services:
       - ./Nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./Nginx/certs/selfsigned.crt:/etc/nginx/selfsigned.crt
       - ./Nginx/certs/selfsigned.key:/etc/nginx/selfsigned.key
+    depends_on:
+      - frontend
+      - auth-service
+      - posts
+      - comment-service
+      - like-service
+      - followers
+      - notification-service
     networks:
       - microservices-network
 
@@ -180,3 +195,4 @@ volumes:
   mongo-data:
   mongo-like_data:
   mongodb-follower-data:
+  notification-mongo-data:

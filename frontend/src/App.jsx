@@ -7,6 +7,7 @@ import Following from "./pages/Following";
 import NewAccount from "./pages/NewAccount";
 import { Route, Routes } from "react-router-dom";
 import LandingPage from "./pages/LandingPage";
+import NotificationPage from "./pages/NotificationPage";  
 
 const App = () => {
   return (
@@ -18,6 +19,7 @@ const App = () => {
       <Route path="/followers/:id" element={<Followers />} />
       <Route path="/following/:id" element={<Following />} />
       <Route path="/register" element={<NewAccount />} />
+      <Route path="/notifications" element={<NotificationPage />} />
       <Route path="/landing" element={<LandingPage />} />
     </Routes>
   );

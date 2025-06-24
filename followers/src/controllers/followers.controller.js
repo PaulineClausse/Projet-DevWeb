@@ -1,6 +1,5 @@
-const followersList = [];
-const { get } = require("mongoose");
 const Follower = require("../models/followers.model");
+const axios = require("axios");
 
 module.exports = {
   getAllFollowers: async (req, res) => {
@@ -40,6 +39,20 @@ module.exports = {
         return res.status(400).json({ error: "Follower already exists" });
       } else {
         const follower = await Follower.create({ followerId, followingId });
+
+        // --- Notification ---
+        try {
+          const userRes = await axios.get(`http://auth-service:5000/user/${followerId}`);
+          const username = userRes.data.user?.username || "Quelqu'un";
+          await axios.post("http://notification-service:4004/notification", {
+            userId: followingId,
+            type: "follow",
+            message: `${username} s'est abonné à votre profil.`,
+          });
+        } catch (notifErr) {
+          console.error("Erreur notification follow :", notifErr.message);
+        }
+
         res.status(201).json(follower);
       }
     } catch (error) {
@@ -62,7 +75,6 @@ module.exports = {
 
   isFollowing: async (req, res) => {
     const { followerId, followingId } = req.params;
-
     try {
       const isFollowing = await Follower.exists({ followerId, followingId });
       return res.status(200).json({ isFollowing: !!isFollowing });

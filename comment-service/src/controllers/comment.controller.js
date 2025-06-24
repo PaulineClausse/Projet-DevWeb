@@ -1,4 +1,3 @@
-// filepath: [comment.controller.js](http://_vscodecontentref_/4)
 const Comment = require("../models/comment.model");
 const axios = require("axios");
 
@@ -14,6 +13,25 @@ exports.createComment = async (req, res) => {
   try {
     const newComment = new Comment({ post_id, user_id, content });
     await newComment.save();
+
+    // --- Notification ---
+    try {
+      // Récupère l'auteur du post
+      const postRes = await axios.get(`http://posts:3000/${post_id}`);
+      const postOwnerId = postRes.data.userId;
+      if (postOwnerId && postOwnerId !== user_id) {
+        const userRes = await axios.get(`http://auth-service:5000/user/${user_id}`);
+        const username = userRes.data.user?.username || "Quelqu'un";
+        await axios.post("http://notification-service:4004/notification", {
+          userId: postOwnerId,
+          type: "comment",
+          message: `${username} a commenté votre post.`,
+        });
+      }
+    } catch (notifErr) {
+      console.error("Erreur notification commentaire :", notifErr.message);
+    }
+
     res.status(201).json(newComment); // Retourne le commentaire créé
   } catch (err) {
     res.status(500).json({ message: "Erreur lors de la création du commentaire", error: err });
@@ -88,6 +106,24 @@ exports.replyToComment = async (req, res) => {
       parent_id: commentId,
     });
     await reply.save();
+
+    // --- Notification pour la réponse ---
+    try {
+      // Récupère le commentaire parent pour trouver l'auteur à notifier
+      const parentComment = await Comment.findById(commentId);
+      if (parentComment && parentComment.user_id !== user_id) {
+        const userRes = await axios.get(`http://auth-service:5000/user/${user_id}`);
+        const username = userRes.data.user?.username || "Quelqu'un";
+        await axios.post("http://notification-service:4004/notification", {
+          userId: parentComment.user_id,
+          type: "comment-reply",
+          message: `${username} a répondu à votre commentaire.`,
+        });
+      }
+    } catch (notifErr) {
+      console.error("Erreur notification réponse commentaire :", notifErr.message);
+    }
+
     res.status(201).json(reply);
   } catch (err) {
     res.status(500).json({ message: "Erreur lors de la création de la réponse", error: err });

@@ -25,6 +25,7 @@ const HomePage = () => {
   const [likesUsers, setLikesUsers] = useState({});
   const [users, setUsers] = useState({});
   const [showLikesList, setShowLikesList] = useState(null);
+  const [newComments, setNewComments] = useState({});
 
   const fetchUser = async (userId) => {
     if (!userId || users[userId]) return;
@@ -95,11 +96,11 @@ const HomePage = () => {
           [postId]: [],
         }));
       } else {
-        console.log("Erreur lors de la récupération des commentaires:", error);
+        console.log(error);
       }
     }
   };
-
+  
   const getLikes = async (postId) => {
     try {
       const response = await axios.get(
@@ -129,16 +130,17 @@ const HomePage = () => {
   };
 
   const addComment = async (postId) => {
-    if (!newComment) return alert("Le commentaire ne peut pas être vide");
+    const commentText = newComments[postId];
+    if (!commentText) return alert("Le commentaire ne peut pas être vide");
     const commentData = {
       post_id: postId,
-      content: newComment,
+      content: commentText,
     };
     try {
       await axios.post("https://zing.com/comments/", commentData, {
         withCredentials: true,
       });
-      setNewComment("");
+      setNewComments((prev) => ({ ...prev, [postId]: "" }));
       getComments(postId);
     } catch (error) {
       console.error("Erreur lors de l'ajout du commentaire :", error);
@@ -517,8 +519,13 @@ const HomePage = () => {
                         </div>
                         <div className="mt-6 flex flex-col gap-2">
                           <textarea
-                            value={newComment}
-                            onChange={(e) => setNewComment(e.target.value)}
+                            value={newComments[post._id] || ""}
+                            onChange={(e) =>
+                              setNewComments((prev) => ({
+                                ...prev,
+                                [post._id]: e.target.value,
+                              }))
+                            }
                             placeholder="Ajouter un commentaire"
                             className="w-full p-3 rounded-xl border-2 border-[rgba(119,191,199,0.5)] bg-[rgba(38,38,38,0.8)] text-gray-100 focus:outline-none focus:ring-2 focus:ring-[rgba(119,191,199,0.7)] transition"
                             rows={2}
