@@ -11,7 +11,7 @@ const ProfilModify = () => {
   const [previewImage, setPreviewImage] = useState(null);
   const getUser = async () => {
     try {
-      const res = await axios.get(`http://localhost:5000/user/${id}`, {
+      const res = await axios.get(`https://zing.com/auth/user/${id}`, {
         withCredentials: true,
       });
       setUser(res.data.user);
@@ -40,7 +40,7 @@ const ProfilModify = () => {
     formData.append("image", file);
 
     try {
-      const res = await axios.post("http://localhost:5000/upload", formData, {
+      const res = await axios.post("https://zing.com/auth/upload", formData, {
         headers: { "Content-Type": "multipart/form-data" },
         withCredentials: true,
       });
@@ -63,7 +63,7 @@ const ProfilModify = () => {
     e.preventDefault();
     console.log("Infos modifiées :", formData);
     try {
-      axios.put(`http://localhost:5000/update`, formData, {
+      axios.put(`https://zing.com/auth/update`, formData, {
         withCredentials: true,
       });
     } catch (error) {
@@ -144,7 +144,7 @@ const ProfilModify = () => {
                 previewImage
                   ? previewImage
                   : user?.image
-                  ? `http://localhost:5000/uploads/${user.image}`
+                  ? `https://zing.com/auth/uploads/${user.image}`
                   : "../public/images/pdp_basique.jpeg"
               }
               className=" w-full h-full object-cover"

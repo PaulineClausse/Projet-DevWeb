@@ -141,6 +141,7 @@ const ProfilPage = () => {
       console.log(response.data);
       setPosts(response.data);
       setIsLoading(false);
+
     } catch (error) {
       console.error(
         `Erreur lors de la recherche des posts de l'utilisateur : ${error}`
@@ -374,6 +375,14 @@ const ProfilPage = () => {
   };
 
   useEffect(() => {
+    if (posts.length > 0) {
+      posts.forEach((post) => {
+        getLikes(post._id);
+      });
+    }
+  }, [posts]);
+
+  useEffect(() => {
     getUserPosts();
     getUserInfo();
     getUserActual();
@@ -385,396 +394,396 @@ const ProfilPage = () => {
     }
   }, [userActual]);
 
-  return (
-    <div className="min-h-screen ">
-      <Navbar />
-      <div className="fixed inset-0 backdrop-blur-md z-0" />
+    return (
+      <div className="min-h-screen ">
+        <Navbar />
+        <div className="fixed inset-0 backdrop-blur-md z-0" />
 
-      <div className="flex flex-col">
-        <div className="mt-20 flex  justify-center">
-          <div className=" shadow-2xl  bg-[rgb(38,38,38,0.7)] text-white p-16 w-10/12 right-10 md:w-9/12 top-36 absolute rounded-lg">
-            <h1 className="absolute -top-10 left-0 text-3xl font-bold text-white">
-              Profil
-            </h1>
-            {userActual.user_id == user.user_id && (
-              <button
-                onClick={() => setIsModifyingVisible(!isModifyingVisible)}
-                className="absolute -top-9 left-24"
-              >
-                <img src="../public/icons/modify.png" className="w-7 h-7"></img>
-              </button>
-            )}
-            <input
-              type="file"
-              accept="image/*"
-              ref={fileInputRef}
-              onChange={handleFileChange}
-              style={{ display: "none" }}
-            />
+        <div className="flex flex-col">
+          <div className="mt-20 flex  justify-center">
+            <div className=" shadow-2xl  bg-[rgb(38,38,38,0.7)] text-white p-16 w-10/12 right-10 md:w-9/12 top-36 absolute rounded-lg">
+              <h1 className="absolute -top-10 left-0 text-3xl font-bold text-white">
+                Profil
+              </h1>
+              {userActual.user_id == user.user_id && (
+                <button
+                  onClick={() => setIsModifyingVisible(!isModifyingVisible)}
+                  className="absolute -top-9 left-24"
+                >
+                  <img src="../public/icons/modify.png" className="w-7 h-7"></img>
+                </button>
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                style={{ display: "none" }}
+              />
 
-            <div className="flex flex-col ">
-              <div className="absolute  top-4 left-4 flex flex-row items-center gap-8">
-                <p className="font-bold text-xl ">{user.name} </p>
+              <div className="flex flex-col ">
+                <div className="absolute  top-4 left-4 flex flex-row items-center gap-8">
+                  <p className="font-bold text-xl ">{user.name} </p>
 
-                <p className=" text-gray-300 text-lg ">@{user.username}</p>
-              </div>
-              <div>
-                <p className="absolute left-4 top-12">{user.biography}</p>
+                  <p className=" text-gray-300 text-lg ">@{user.username}</p>
+                </div>
+                <div>
+                  <p className="absolute left-4 top-12">{user.biography}</p>
 
-                <div className="absolute flex flex-row  left-3 gap-3 mt-5 ">
-                  {userActual.user_id != user.user_id && (
+                  <div className="absolute flex flex-row  left-3 gap-3 mt-5 ">
+                    {userActual.user_id != user.user_id && (
+                      <button
+                        onClick={() => handlefollow()}
+                        className="text-sm font-medium flex flex-col items-center "
+                      >
+                        {isFollowing ? (
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="w-6 h-6 text-green-500"
+                            viewBox="0 0 512 512"
+                          >
+                            <path d="M504 256c0 136.967-111.033 248-248 248S8 392.967 8 256 119.033 8 256 8s248 111.033 248 248zm-277.02 97.941l184-184c4.686-4.686 4.686-12.284 0-16.971l-28.284-28.284c-4.686-4.686-12.284-4.686-16.971 0L216 284.118l-70.745-70.745c-4.686-4.686-12.284-4.686-16.971 0L100 241.657c-4.686 4.686-4.686 12.284 0 16.971l100 100c4.686 4.686 12.284 4.686 16.971.001z" />
+                          </svg>
+                        ) : (
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="w-6 h-6"
+                            viewBox="0 0 640 512"
+                          >
+                            <path d="M96 128a128 128 0 1 1 256 0A128 128 0 1 1 96 128zM0 482.3C0 383.8 79.8 304 178.3 304l91.4 0C368.2 304 448 383.8 448 482.3c0 16.4-13.3 29.7-29.7 29.7L29.7 512C13.3 512 0 498.7 0 482.3zM504 312l0-64-64 0c-13.3 0-24-10.7-24-24s10.7-24 24-24l64 0 0-64c0-13.3 10.7-24 24-24s24 10.7 24 24l0 64 64 0c13.3 0 24 10.7 24 24s-10.7 24-24 24l-64 0 0 64c0 13.3-10.7 24-24 24s-24-10.7-24-24z" />
+                          </svg>
+                        )}
+
+                        <span className="text-xs font-medium">
+                          {isFollowing ? "Following" : "Follow"}
+                        </span>
+                      </button>
+                    )}
                     <button
-                      onClick={() => handlefollow()}
+                      onClick={() => navigate("/followers/" + user.user_id)}
                       className="text-sm font-medium flex flex-col items-center "
                     >
-                      {isFollowing ? (
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="w-6 h-6 text-green-500"
-                          viewBox="0 0 512 512"
-                        >
-                          <path d="M504 256c0 136.967-111.033 248-248 248S8 392.967 8 256 119.033 8 256 8s248 111.033 248 248zm-277.02 97.941l184-184c4.686-4.686 4.686-12.284 0-16.971l-28.284-28.284c-4.686-4.686-12.284-4.686-16.971 0L216 284.118l-70.745-70.745c-4.686-4.686-12.284-4.686-16.971 0L100 241.657c-4.686 4.686-4.686 12.284 0 16.971l100 100c4.686 4.686 12.284 4.686 16.971.001z" />
-                        </svg>
-                      ) : (
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="w-6 h-6"
-                          viewBox="0 0 640 512"
-                        >
-                          <path d="M96 128a128 128 0 1 1 256 0A128 128 0 1 1 96 128zM0 482.3C0 383.8 79.8 304 178.3 304l91.4 0C368.2 304 448 383.8 448 482.3c0 16.4-13.3 29.7-29.7 29.7L29.7 512C13.3 512 0 498.7 0 482.3zM504 312l0-64-64 0c-13.3 0-24-10.7-24-24s10.7-24 24-24l64 0 0-64c0-13.3 10.7-24 24-24s24 10.7 24 24l0 64 64 0c13.3 0 24 10.7 24 24s-10.7 24-24 24l-64 0 0 64c0 13.3-10.7 24-24 24s-24-10.7-24-24z" />
-                        </svg>
-                      )}
-
-                      <span className="text-xs font-medium">
-                        {isFollowing ? "Following" : "Follow"}
-                      </span>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="w-6 h-6"
+                        viewBox="0 0 448 512"
+                      >
+                        <path d="M224 256A128 128 0 1 0 224 0a128 128 0 1 0 0 256zm-45.7 48C79.8 304 0 383.8 0 482.3C0 498.7 13.3 512 29.7 512l388.6 0c16.4 0 29.7-13.3 29.7-29.7C448 383.8 368.2 304 269.7 304l-91.4 0z" />
+                      </svg>
+                      <span className="text-xs">Followers</span>
                     </button>
-                  )}
-                  <button
-                    onClick={() => navigate("/followers/" + user.user_id)}
-                    className="text-sm font-medium flex flex-col items-center "
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="w-6 h-6"
-                      viewBox="0 0 448 512"
+                    <button
+                      onClick={() => navigate("/following/" + user.user_id)}
+                      className="text-sm font-medium flex flex-col items-center"
                     >
-                      <path d="M224 256A128 128 0 1 0 224 0a128 128 0 1 0 0 256zm-45.7 48C79.8 304 0 383.8 0 482.3C0 498.7 13.3 512 29.7 512l388.6 0c16.4 0 29.7-13.3 29.7-29.7C448 383.8 368.2 304 269.7 304l-91.4 0z" />
-                    </svg>
-                    <span className="text-xs">Followers</span>
-                  </button>
-                  <button
-                    onClick={() => navigate("/following/" + user.user_id)}
-                    className="text-sm font-medium flex flex-col items-center"
-                  >
-                    <svg
-                      className="w-6 h-6 "
-                      xmlns="http://www.w3.org/2000/svg"
-                      xmlns:xlink="http://www.w3.org/1999/xlink"
-                      viewBox="0 0 310.745 310.745"
-                      xml:space="preserve"
-                    >
-                      <g id="XMLID_341_">
-                        <path
-                          id="XMLID_348_"
-                          d="M77.622,120.372c9.942,0,19.137-3.247,26.593-8.728c11.382,16.007,30.063,26.479,51.157,26.479
-		c21.093,0,39.774-10.472,51.157-26.479c7.456,5.481,16.651,8.728,26.593,8.728c24.813,0,45-20.187,45-44.999
-		c0-24.814-20.187-45.001-45-45.001c-9.943,0-19.138,3.248-26.594,8.729c-11.383-16.006-30.063-26.478-51.156-26.478
-		c-21.093,0-39.773,10.472-51.156,26.478c-7.456-5.481-16.651-8.729-26.594-8.729c-24.813,0-45,20.187-45,45.001
-		C32.622,100.186,52.809,120.372,77.622,120.372z M233.122,60.372c8.271,0,15,6.73,15,15.001c0,8.271-6.729,14.999-15,14.999
-		c-8.271,0-15-6.729-15-14.999C218.122,67.102,224.851,60.372,233.122,60.372z M155.372,42.623c18.059,0,32.75,14.691,32.75,32.75
-		s-14.691,32.75-32.75,32.75c-18.059,0-32.75-14.691-32.75-32.75S137.313,42.623,155.372,42.623z M77.622,60.372
-		c8.271,0,15,6.73,15,15.001c0,8.271-6.729,14.999-15,14.999s-15-6.729-15-14.999C62.622,67.102,69.351,60.372,77.622,60.372z"
-                        />
-                        <path
-                          id="XMLID_440_"
-                          d="M233.122,150.372c-19.643,0-38.329,7.388-52.584,20.532c-8.103-1.816-16.523-2.781-25.166-2.781
-		c-8.643,0-17.063,0.965-25.165,2.781c-14.255-13.144-32.942-20.532-52.585-20.532C34.821,150.372,0,185.194,0,227.995
-		c0,8.284,6.716,15,15,15h32.6c-4.669,12.5-7.228,26.019-7.228,40.127c0,8.284,6.716,15,15,15h200c8.284,0,15-6.716,15-15
-		c0-14.108-2.559-27.627-7.229-40.127h32.602c8.284,0,15-6.716,15-15C310.745,185.194,275.923,150.372,233.122,150.372z
-		 M32.42,212.995c6.298-18.934,24.181-32.623,45.202-32.623c6.617,0,13.052,1.382,18.964,3.95
-		c-12.484,7.456-23.443,17.209-32.29,28.673H32.42z M71.697,268.122c7.106-39.739,41.923-69.999,83.675-69.999
-		c41.751,0,76.569,30.26,83.675,69.999H71.697z M246.449,212.995c-8.848-11.464-19.806-21.217-32.29-28.673
-		c5.912-2.567,12.347-3.95,18.964-3.95c21.021,0,38.905,13.689,45.203,32.623H246.449z"
-                        />
-                      </g>
-                    </svg>
-                    <span className="text-xs">Following</span>
-                  </button>
+                      <svg
+                        className="w-6 h-6 "
+                        xmlns="http://www.w3.org/2000/svg"
+                        xmlns:xlink="http://www.w3.org/1999/xlink"
+                        viewBox="0 0 310.745 310.745"
+                        xml:space="preserve"
+                      >
+                        <g id="XMLID_341_">
+                          <path
+                            id="XMLID_348_"
+                            d="M77.622,120.372c9.942,0,19.137-3.247,26.593-8.728c11.382,16.007,30.063,26.479,51.157,26.479
+      c21.093,0,39.774-10.472,51.157-26.479c7.456,5.481,16.651,8.728,26.593,8.728c24.813,0,45-20.187,45-44.999
+      c0-24.814-20.187-45.001-45-45.001c-9.943,0-19.138,3.248-26.594,8.729c-11.383-16.006-30.063-26.478-51.156-26.478
+      c-21.093,0-39.773,10.472-51.156,26.478c-7.456-5.481-16.651-8.729-26.594-8.729c-24.813,0-45,20.187-45,45.001
+      C32.622,100.186,52.809,120.372,77.622,120.372z M233.122,60.372c8.271,0,15,6.73,15,15.001c0,8.271-6.729,14.999-15,14.999
+      c-8.271,0-15-6.729-15-14.999C218.122,67.102,224.851,60.372,233.122,60.372z M155.372,42.623c18.059,0,32.75,14.691,32.75,32.75
+      s-14.691,32.75-32.75,32.75c-18.059,0-32.75-14.691-32.75-32.75S137.313,42.623,155.372,42.623z M77.622,60.372
+      c8.271,0,15,6.73,15,15.001c0,8.271-6.729,14.999-15,14.999s-15-6.729-15-14.999C62.622,67.102,69.351,60.372,77.622,60.372z"
+                          />
+                          <path
+                            id="XMLID_440_"
+                            d="M233.122,150.372c-19.643,0-38.329,7.388-52.584,20.532c-8.103-1.816-16.523-2.781-25.166-2.781
+      c-8.643,0-17.063,0.965-25.165,2.781c-14.255-13.144-32.942-20.532-52.585-20.532C34.821,150.372,0,185.194,0,227.995
+      c0,8.284,6.716,15,15,15h32.6c-4.669,12.5-7.228,26.019-7.228,40.127c0,8.284,6.716,15,15,15h200c8.284,0,15-6.716,15-15
+      c0-14.108-2.559-27.627-7.229-40.127h32.602c8.284,0,15-6.716,15-15C310.745,185.194,275.923,150.372,233.122,150.372z
+      M32.42,212.995c6.298-18.934,24.181-32.623,45.202-32.623c6.617,0,13.052,1.382,18.964,3.95
+      c-12.484,7.456-23.443,17.209-32.29,28.673H32.42z M71.697,268.122c7.106-39.739,41.923-69.999,83.675-69.999
+      c41.751,0,76.569,30.26,83.675,69.999H71.697z M246.449,212.995c-8.848-11.464-19.806-21.217-32.29-28.673
+      c5.912-2.567,12.347-3.95,18.964-3.95c21.021,0,38.905,13.689,45.203,32.623H246.449z"
+                          />
+                        </g>
+                      </svg>
+                      <span className="text-xs">Following</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
+            <img
+              className=" absolute lg:w-24 lg:h-24/12 md:w-24 md:h-24 right-2 mt-2  rounded-full w-28 h-28  object-cover border-2 border-white"
+              src={
+                user?.image
+                  ? `https://zing.com/auth/uploads/${user.image}`
+                  : "../public/images/pdp_basique.jpeg"
+              }
+              alt="Profile"
+            />
           </div>
-          <img
-            className=" absolute lg:w-24 lg:h-24/12 md:w-24 md:h-24 right-2 mt-2  rounded-full w-28 h-28  object-cover border-2 border-white"
-            src={
-              user?.image
-                ? `http://localhost:5000/uploads/${user.image}`
-                : "/images/pdp_basique.jpeg"
-            }
-            alt="Profile"
-          />
-        </div>
-        <div className=" flex-grow  pb-32 px-4 py-60">
-          {isloading ? (
-            "Loading..."
-          ) : (
-            <>
-              {posts.length > 0 ? (
-                posts.map((post) => (
-                  <div
-                    key={post._id}
-                    className=" relative mt-5 top-16  bg-[rgba(38,38,38,0.5)]   bg-opacity-80 rounded-lg p-5 shadow-[2px_1px_8px_rgba(255,255,255,0.15)]  max-w-md mx-auto"
-                  >
-                    {/* En-tête : avatar + pseudo + date */}
-                    <header className="flex items-center justify-between mb-1">
-                      <div className="flex items-center space-x-3">
-                        <img
-                          src={
-                            user?.image
-                              ? `http://localhost:5000/uploads/${user.image}`
-                              : "/images/pdp_basique.jpeg"
-                          }
-                          alt="Avatar"
-                          className="w-12 h-12 rounded-full border-2 border-white object-cover"
-                        />
-                        <div className="flex flex-col">
-                          <div className="flex items-center justify-between space-x-3">
-                            <div>
-                              <h3 className=" text-[rgba(119,191,199,0.5)] font-semibold text-lg">
-                                {user.username || "Pseudo"}
-                              </h3>
-                              <time className="text-gray-400 text-xs">
-                                {new Date(post.date).toLocaleString("fr-FR")}
-                              </time>
+          <div className=" flex-grow  pb-32 px-4 py-60">
+            {isloading ? (
+              "Loading..."
+            ) : (
+              <>
+                {posts.length > 0 ? (
+                  posts.map((post) => (
+                    <div
+                      key={post._id}
+                      className=" relative mt-5 top-16  bg-[rgba(38,38,38,0.5)]   bg-opacity-80 rounded-lg p-5 shadow-[2px_1px_8px_rgba(255,255,255,0.15)]  max-w-md mx-auto"
+                    >
+                      {/* En-tête : avatar + pseudo + date */}
+                      <header className="flex items-center justify-between mb-1">
+                        <div className="flex items-center space-x-3">
+                          <img
+                            src={
+                              user?.image
+                                ? `https://zing.com/auth/uploads/${user.image}`
+                                : "../public/images/pdp_basique.jpeg"
+                            }
+                            alt="Avatar"
+                            className="w-12 h-12 rounded-full border-2 border-white object-cover"
+                          />
+                          <div className="flex flex-col">
+                            <div className="flex items-center justify-between space-x-3">
+                              <div>
+                                <h3 className=" text-[rgba(119,191,199,0.5)] font-semibold text-lg">
+                                  {user.username || "Pseudo"}
+                                </h3>
+                                <time className="text-gray-400 text-xs">
+                                  {new Date(post.date).toLocaleString("fr-FR")}
+                                </time>
+                                {userActual.user_id == post.userId && (
+                                  <svg
+                                    onClick={handleEditClick.bind(null, post)}
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 512 512"
+                                    fill="rgb(38, 38, 38)"
+                                    className="absolute top-3 right-12 w-6 h-6   cursor-pointer"
+                                  >
+                                    <path
+                                      d="M362.7 19.3L314.3 67.7 444.3 197.7l48.4-48.4c25-25 25-65.5 0-90.5L453.3 19.3c-25-25-65.5-25-90.5 0zm-71 71L58.6 323.5c-10.4 10.4-18 23.3-22.2 37.4L1 481.2C-1.5 489.7 .8 498.8 7 505s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L421.7 220.3 291.7 90.3z"
+                                      stroke="rgb(191, 191, 199)"
+                                      stroke-width="40"
+                                    />
+                                  </svg>
+                                )}
+                              </div>
                               {userActual.user_id == post.userId && (
-                                <svg
-                                  onClick={handleEditClick.bind(null, post)}
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  viewBox="0 0 512 512"
-                                  fill="rgb(38, 38, 38)"
-                                  className="absolute top-3 right-12 w-6 h-6   cursor-pointer"
-                                >
-                                  <path
-                                    d="M362.7 19.3L314.3 67.7 444.3 197.7l48.4-48.4c25-25 25-65.5 0-90.5L453.3 19.3c-25-25-65.5-25-90.5 0zm-71 71L58.6 323.5c-10.4 10.4-18 23.3-22.2 37.4L1 481.2C-1.5 489.7 .8 498.8 7 505s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L421.7 220.3 291.7 90.3z"
-                                    stroke="rgb(191, 191, 199)"
-                                    stroke-width="40"
-                                  />
-                                </svg>
+                                <div className="flex items-center">
+                                  <svg
+                                    onClick={() => deletePost(post._id)}
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 448 512"
+                                    fill="rgb(38, 38, 38)"
+                                    className="absolute top-3 right-3 w-5 h-6   cursor-pointer"
+                                  >
+                                    <path
+                                      d="M135.2 17.7L128 32 32 32C14.3 32 0 46.3 0 64S14.3 96 32 96l384 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0-7.2-14.3C307.4 6.8 296.3 0 284.2 0L163.8 0c-12.1 0-23.2 6.8-28.6 17.7zM416 128L32 128 53.2 467c1.6 25.3 22.6 45 47.9 45l245.8 0c25.3 0 46.3-19.7 47.9-45L416 128z"
+                                      stroke="rgb(191, 191, 199)"
+                                      stroke-width="40"
+                                    />
+                                  </svg>
+                                </div>
                               )}
                             </div>
-                            {userActual.user_id == post.userId && (
-                              <div className="flex items-center">
-                                <svg
-                                  onClick={() => deletePost(post._id)}
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  viewBox="0 0 448 512"
-                                  fill="rgb(38, 38, 38)"
-                                  className="absolute top-3 right-3 w-5 h-6   cursor-pointer"
-                                >
-                                  <path
-                                    d="M135.2 17.7L128 32 32 32C14.3 32 0 46.3 0 64S14.3 96 32 96l384 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0-7.2-14.3C307.4 6.8 296.3 0 284.2 0L163.8 0c-12.1 0-23.2 6.8-28.6 17.7zM416 128L32 128 53.2 467c1.6 25.3 22.6 45 47.9 45l245.8 0c25.3 0 46.3-19.7 47.9-45L416 128z"
-                                    stroke="rgb(191, 191, 199)"
-                                    stroke-width="40"
-                                  />
-                                </svg>
-                              </div>
-                            )}
                           </div>
                         </div>
-                      </div>
-                    </header>
+                      </header>
 
-                    {post.title && (
-                      <h2 className="text-white text-xl font-bold mb-2">
-                        {post.title}
-                      </h2>
-                    )}
+                      {post.title && (
+                        <h2 className="text-white text-xl font-bold mb-2">
+                          {post.title}
+                        </h2>
+                      )}
 
-                    <p className="text-gray-200 text-base leading-relaxed mb-4">
-                      {post.content}
-                    </p>
+                      <p className="text-gray-200 text-base leading-relaxed mb-4">
+                        {post.content}
+                      </p>
 
-                    <section className="flex items-center justify-between text-gray-300">
-                      <div className="flex space-x-6">
-                        <button className="flex items-center space-x-1 hover:text-blue-400 transition-colors duration-200">
-                          <img
-                            className="w-6 h-6"
-                            src="/icons/like.png"
-                            alt="Like"
-                            onClick={() => toggleLike(post._id)}
-                          />
-                          <span>Like</span>
-                          <span
-                            className="ml-2 cursor-pointer"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setShowLikesList(
-                                showLikesList === post._id ? null : post._id
-                              );
-                            }}
-                          >
-                            {likes[post._id] || 0}
-                          </span>
-                        </button>
-
-                        <button
-                          onClick={() => toggleComments(post._id)}
-                          className="flex items-center space-x-1 hover:text-green-400 transition-colors duration-200"
-                        >
-                          <img
-                            className="w-6 h-6"
-                            src="/icons/comment.png"
-                            alt="Comment"
-                          />
-                          <span>Comment</span>
-                        </button>
-
-                        <button className="flex items-center space-x-1 hover:text-purple-400 transition-colors duration-200">
-                          <img
-                            className="w-6 h-6"
-                            src="/icons/share.png"
-                            alt="Share"
-                          />
-                          <span>Share</span>
-                        </button>
-                      </div>
-                    </section>
-                    {/* Liste des utilisateurs ayant liké */}
-                    {showLikesList === post._id && (
-                      <div className="absolute bg-gray-800 text-white rounded p-2 z-50 mt-2 left-0 right-0 max-w-xs mx-auto">
-                        <h4 className="font-bold mb-2">Likes</h4>
-                        <ul>
-                          {(likesUsers[post._id] || []).map((userId) => (
-                            <li
-                              key={userId}
-                              className="flex items-center gap-2 mb-1"
+                      <section className="flex items-center justify-between text-gray-300">
+                        <div className="flex space-x-6">
+                          <button className="flex items-center space-x-1 hover:text-blue-400 transition-colors duration-200">
+                            <img
+                              className="w-6 h-6"
+                              src="/icons/like.png"
+                              alt="Like"
+                              onClick={() => toggleLike(post._id)}
+                            />
+                            <span>Like</span>
+                            <span
+                              className="ml-2 cursor-pointer"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setShowLikesList(
+                                  showLikesList === post._id ? null : post._id
+                                );
+                              }}
                             >
-                              <img
-                                src={
-                                  users[userId]?.image || "/images/pdp_test.jpg"
-                                }
-                                alt="Avatar"
-                                className="w-6 h-6 rounded-full border"
-                              />
-                              <span>
-                                {users[userId]?.username || "Utilisateur"}
-                              </span>
-                            </li>
-                          ))}
-                        </ul>
-                        <button
-                          className="mt-2 text-sm text-blue-400"
-                          onClick={() => setShowLikesList(null)}
-                        >
-                          Fermer
-                        </button>
-                      </div>
-                    )}
-                    {activePostId === post._id && (
-                      <div className="comments-section">
-                        <div className="pt-4">
-                          {buildCommentsTree(comments[post._id] || []).map(
-                            (comment) => (
-                              <CommentTree
-                                key={comment._id}
-                                comment={comment}
-                                postId={post._id}
-                                replyTarget={replyTarget}
-                                setReplyTarget={setReplyTarget}
-                                addReply={addReply}
-                                deleteComment={deleteComment}
-                                level={0}
-                              />
-                            )
-                          )}
-                        </div>
-                        <div className="mt-6 flex flex-col gap-2">
-                          <textarea
-                            value={newComment}
-                            onChange={(e) => setNewComment(e.target.value)}
-                            placeholder="Ajouter un commentaire"
-                            className="w-full p-3 rounded-xl border-2 border-[rgba(119,191,199,0.5)] bg-[rgba(38,38,38,0.8)] text-gray-100 focus:outline-none focus:ring-2 focus:ring-[rgba(119,191,199,0.7)] transition"
-                            rows={2}
-                          />
+                              {likes[post._id] || 0}
+                            </span>
+                          </button>
+
                           <button
-                            onClick={() => addComment(post._id)}
-                            className="self-end px-5 py-2 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-xl font-semibold shadow-md hover:from-blue-700 hover:to-cyan-600 transition"
+                            onClick={() => toggleComments(post._id)}
+                            className="flex items-center space-x-1 hover:text-green-400 transition-colors duration-200"
                           >
-                            Ajouter un commentaire
+                            <img
+                              className="w-6 h-6"
+                              src="/icons/comment.png"
+                              alt="Comment"
+                            />
+                            <span>Comment</span>
+                          </button>
+
+                          <button className="flex items-center space-x-1 hover:text-purple-400 transition-colors duration-200">
+                            <img
+                              className="w-6 h-6"
+                              src="/icons/share.png"
+                              alt="Share"
+                            />
+                            <span>Share</span>
                           </button>
                         </div>
-                      </div>
-                    )}
-                  </div>
-                ))
-              ) : (
-                <p className="text-center text-zinc-600 px-10 py-20 min-h-[400px]">
-                  {" "}
-                  You don't have any posts to view.
-                </p>
-              )}
-            </>
-          )}
+                      </section>
+                      {/* Liste des utilisateurs ayant liké */}
+                      {showLikesList === post._id && (
+                        <div className="absolute bg-gray-800 text-white rounded p-2 z-50 mt-2 left-0 right-0 max-w-xs mx-auto">
+                          <h4 className="font-bold mb-2">Likes</h4>
+                          <ul>
+                            {(likesUsers[post._id] || []).map((userId) => (
+                              <li
+                                key={userId}
+                                className="flex items-center gap-2 mb-1"
+                              >
+                                <img
+                                  src={
+                                    users[userId]?.image || "../public/images/pdp_basique.jpeg"
+                                  }
+                                  alt="Avatar"
+                                  className="w-6 h-6 rounded-full border"
+                                />
+                                <span>
+                                  {users[userId]?.username || "Utilisateur"}
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                          <button
+                            className="mt-2 text-sm text-blue-400"
+                            onClick={() => setShowLikesList(null)}
+                          >
+                            Fermer
+                          </button>
+                        </div>
+                      )}
+                      {activePostId === post._id && (
+                        <div className="comments-section">
+                          <div className="pt-4">
+                            {buildCommentsTree(comments[post._id] || []).map(
+                              (comment) => (
+                                <CommentTree
+                                  key={comment._id}
+                                  comment={comment}
+                                  postId={post._id}
+                                  replyTarget={replyTarget}
+                                  setReplyTarget={setReplyTarget}
+                                  addReply={addReply}
+                                  deleteComment={deleteComment}
+                                  level={0}
+                                />
+                              )
+                            )}
+                          </div>
+                          <div className="mt-6 flex flex-col gap-2">
+                            <textarea
+                              value={newComment}
+                              onChange={(e) => setNewComment(e.target.value)}
+                              placeholder="Ajouter un commentaire"
+                              className="w-full p-3 rounded-xl border-2 border-[rgba(119,191,199,0.5)] bg-[rgba(38,38,38,0.8)] text-gray-100 focus:outline-none focus:ring-2 focus:ring-[rgba(119,191,199,0.7)] transition"
+                              rows={2}
+                            />
+                            <button
+                              onClick={() => addComment(post._id)}
+                              className="self-end px-5 py-2 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-xl font-semibold shadow-md hover:from-blue-700 hover:to-cyan-600 transition"
+                            >
+                              Ajouter un commentaire
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-center text-zinc-600 px-10 py-20 min-h-[400px]">
+                    {" "}
+                    You don't have any posts to view.
+                  </p>
+                )}
+              </>
+            )}
+          </div>
         </div>
-      </div>
-      {isInputVisible && (
-        <>
-          <div
-            className="fixed inset-0 bg-black/30 backdrop-blur-sm z-10"
-            onClick={handleClose}
-          ></div>
+        {isInputVisible && (
+          <>
+            <div
+              className="fixed inset-0 bg-black/30 backdrop-blur-sm z-10"
+              onClick={handleClose}
+            ></div>
 
-          <div
-            className="
-    relative fixed bottom-8 left-1/2 transform -translate-x-1/2 
-    w-5/6 max-w-md px-4 py-3 gap-4 flex flex-col 
-    bg-[rgb(50,50,50)] rounded-3xl shadow-2xl z-20
-    sm:flex-row sm:items-center
-  "
-            onClick={(e) => e.stopPropagation()}
-          >
-            <img
-              src="./images/pdp_test.jpg"
-              alt="Avatar"
-              className="absolute -top-5 -left-3 w-12 h-12 rounded-full border-2 border-white object-cover"
-            />
+            <div
+              className="
+      relative fixed bottom-8 left-1/2 transform -translate-x-1/2 
+      w-5/6 max-w-md px-4 py-3 gap-4 flex flex-col 
+      bg-[rgb(50,50,50)] rounded-3xl shadow-2xl z-20
+      sm:flex-row sm:items-center
+    "
+              onClick={(e) => e.stopPropagation()}
+            >
+              <img
+                src="./images/pdp_test.jpg"
+                alt="Avatar"
+                className="absolute -top-5 -left-3 w-12 h-12 rounded-full border-2 border-white object-cover"
+              />
 
-            <input
-              type="text"
-              placeholder="Titre"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-6 text-2xl sm:text-4xl font-bold outline-none placeholder-gray-400 bg-transparent mb-2 sm:mb-0"
-            />
-
-            <div className="flex items-center bg-black/10 backdrop-blur-sm rounded-3xl px-4 py-3 flex-1">
               <input
                 type="text"
-                id="content"
-                placeholder="Écris quelque chose..."
-                autoFocus
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                className="flex-1 text-white placeholder-gray-400 outline-none bg-transparent"
+                placeholder="Titre"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="w-full px-6 text-2xl sm:text-4xl font-bold outline-none placeholder-gray-400 bg-transparent mb-2 sm:mb-0"
               />
-              <button
-                className="ml-3 p-2 hover:bg-white/20 rounded-full transition flex-shrink-0"
-                onClick={handleClick}
-              >
-                <img
-                  className="w-6 h-6"
-                  src="/icons/publish.png"
-                  alt="Publish icon"
-                />
-              </button>
-            </div>
-          </div>
-        </>
-      )}
-      {isModifyingVisible && <ProfilModify />}
-    </div>
-  );
-};
 
-export default ProfilPage;
+              <div className="flex items-center bg-black/10 backdrop-blur-sm rounded-3xl px-4 py-3 flex-1">
+                <input
+                  type="text"
+                  id="content"
+                  placeholder="Écris quelque chose..."
+                  autoFocus
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  className="flex-1 text-white placeholder-gray-400 outline-none bg-transparent"
+                />
+                <button
+                  className="ml-3 p-2 hover:bg-white/20 rounded-full transition flex-shrink-0"
+                  onClick={handleClick}
+                >
+                  <img
+                    className="w-6 h-6"
+                    src="/icons/publish.png"
+                    alt="Publish icon"
+                  />
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+        {isModifyingVisible && <ProfilModify />}
+      </div>
+    );
+  };
+
+  export default ProfilPage;

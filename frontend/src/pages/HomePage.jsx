@@ -344,7 +344,7 @@ const HomePage = () => {
                 posts.map((post) => (
                   <div
                     key={post._id}
-                    className=" relative opacity-0 translate-y-4 animate-fadeInUp delay-300 transition duration-200 ease-in-out transform hover:scale-105 hover:bg-[rgb(55,134,148)] mt-8 border-[2px] bg-[rgba(38,38,38,0.5)] border-[rgba(119,191,199,0.5)] bg-opacity-80 rounded-lg p-5 shadow-[2px_1px_8px_rgba(255,255,255,0.15)]  max-w-md mx-auto"
+                    className=" relative opacity-0 translate-y-4 animate-fadeInUp delay-10 transition duration-200 ease-in-out transform hover:scale-105 hover:bg-[rgb(55,134,148)] mt-8 border-[2px] bg-[rgba(38,38,38,0.5)] border-[rgba(119,191,199,0.5)] bg-opacity-80 rounded-lg p-5 shadow-[2px_1px_8px_rgba(255,255,255,0.15)]  max-w-md mx-auto"
                   >
                     <header className="flex items-center justify-between mb-4">
                       <div className="flex items-center space-x-3">
@@ -465,7 +465,7 @@ const HomePage = () => {
                       </div>
                     </section>
                     {showLikesList === post._id && (
-                      <div className="absolute bg-gray-800 text-white rounded p-2 z-50 mt-2 left-0 right-0 max-w-xs mx-auto">
+                      <div className="fixed bg-gray-800 bg-opacity-95 text-white rounded p-4 z-[999] top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 max-w-xs w-full shadow-xl">
                         <h4 className="font-bold mb-2">Likes</h4>
                         <ul>
                           {(likesUsers[post._id] || []).map((userId) => (
