@@ -59,15 +59,22 @@ const Navbar = () => {
                 className=" rounded-full w-full h-full  object-cover border-2 border-white"
                 src={
                   user?.image
-                    ? `https://zing.com/auth/upload/${user.image}`
+                    ? `https://zing.com/auth/uploads/${user.image}`
                     : "../public/images/pdp_basique.jpeg"
                 }
                 alt="Profil"
               />
             </button>
           </div>
+          
         )}
-
+        {/* Bouton Déconnexion visible uniquement sur mobile, en haut à droite */}
+          <button
+            className="fixed top-4 right-4 text-red-500 font-bold md:hidden z-50"
+            onClick={handleLogout}
+          >
+            Déconnexion
+          </button>
         {/* <button
           onClick={() => navigate("/profil/" + user.user_id)}
           
@@ -209,7 +216,7 @@ const Navbar = () => {
               className="w-10 h-10 rounded-full object-cover border-2 border-white"
               src={
                 user?.image
-                  ? `https://zing.com/auth/upload/${user.image}`
+                  ? `https://zing.com/auth/uploads/${user.image}`
                   : "../public/images/pdp_basique.jpeg"
               }
               alt="Profil"
