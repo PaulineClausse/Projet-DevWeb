@@ -30,7 +30,7 @@ const ProfilPage = () => {
   const [showLikesList, setShowLikesList] = useState(null);
   const [replyTarget, setReplyTarget] = useState(null);
   const [isModifyingVisible, setIsModifyingVisible] = useState(false);
-
+  const [imagePreview, setImagePreview] = useState(null);
   const fetchUser = async (userId) => {
     if (!userId || users[userId]) return;
     try {
@@ -56,13 +56,27 @@ const ProfilPage = () => {
     }
   };
   const putPost = async (id) => {
-    const data = {
-      title,
-      content,
-      image,
-    };
+    const formData = new FormData();
+    formData.append("title", title);
+    formData.append("content", content);
+    formData.append("userId", user.user_id);
+    if (image) {
+      formData.append("image", image);
+    } else {
+      formData.append("deleteImage", true);
+    }
     try {
-      const res = await axios.put(`https://zing.com/posts/modify/${id}`, data);
+      const res = await axios.put(
+        `https://zing.com/posts/modify/${id}`,
+        formData,
+        {
+          withCredentials: true,
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      console.log("Données envoyées dans le PUT :", formData);
       console.log("Résultat de la requête PUT :", res);
       getUserPosts();
       setIsInputVisible(false);
@@ -75,11 +89,13 @@ const ProfilPage = () => {
   };
 
   const handleClick = async () => {
-    const data = {
-      title,
-      content,
-      image,
-    };
+    const formData = new FormData();
+    formData.append("title", title);
+    formData.append("content", content);
+    formData.append("userId", user.user_id);
+    if (image) {
+      formData.append("image", image);
+    }
 
     try {
       if (editingPostId) {
@@ -91,24 +107,40 @@ const ProfilPage = () => {
         setIsInputVisible(false);
         return;
       }
-      const res = await axios.post("https://zing.com/posts/create", data);
+      const res = await axios.post("https://zing.com/posts/create", formData, {
+        withCredentials: true,
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
       console.log("Résultat de la requête POST :", res);
       getUserPosts();
       setIsInputVisible(false);
       setTitle("");
       setContent("");
-      setImage("");
+      setImage(null);
+      setImagePreview(null);
     } catch (error) {
       console.error("Erreur lors de la création :", error.message);
     }
   };
-
+  const isVideo = (fileOrUrl) => {
+    if (fileOrUrl instanceof File) {
+      return fileOrUrl.type.startsWith("video/");
+    } else if (typeof fileOrUrl === "string") {
+      return fileOrUrl.match(/\.(mp4|webm|ogg)$/i);
+    }
+    return false;
+  };
   const handleEditClick = (post) => {
     setEditingPostId(post._id);
     setTitle(post.title);
     setContent(post.content);
     setImage(post.image);
     setIsInputVisible(true);
+    {
+      post.image && setImagePreview(`https://zing.com/uploads/${post.image}`);
+    }
   };
 
   const getUserActual = async () => {
@@ -590,6 +622,25 @@ const ProfilPage = () => {
                       {post.content}
                     </p>
 
+                    {post.image?.trim() !== "" &&
+                      (post.image.endsWith(".mp4") ? (
+                        <video
+                          controls
+                          className="max-w-full max-h-80 rounded-lg mb-4 object-contain"
+                        >
+                          <source
+                            src={`https://zing.com/uploads/${post.image}`}
+                            type="video/mp4"
+                          />
+                          Your browser does not support the video tag.
+                        </video>
+                      ) : (
+                        <img
+                          src={`https://zing.com/uploads/${post.image}`}
+                          alt="Post"
+                          className="max-w-full max-h-80 rounded-lg mb-4 object-contain"
+                        />
+                      ))}
                     <section className="flex items-center justify-between text-gray-300">
                       <div className="flex space-x-6">
                         <button className="flex items-center space-x-1 hover:text-blue-400 transition-colors duration-200">
@@ -730,7 +781,11 @@ const ProfilPage = () => {
             onClick={(e) => e.stopPropagation()}
           >
             <img
-              src="./images/pdp_test.jpg"
+              src={
+                user?.image
+                  ? `https://zing.com/auth/uploads/${user.image}`
+                  : "../public/images/pdp_basique.jpeg"
+              }
               alt="Avatar"
               className="absolute -top-5 -left-3 w-12 h-12 rounded-full border-2 border-white object-cover"
             />
@@ -753,6 +808,27 @@ const ProfilPage = () => {
                 onChange={(e) => setContent(e.target.value)}
                 className="flex-1 text-white placeholder-gray-400 outline-none bg-transparent"
               />
+
+              <label className="relative ml-2 cursor-pointer flex w-6 h-6 flex-shrink-0">
+                <img
+                  src="/images/image.png"
+                  alt="Add"
+                  className="w-5 h-5 opacity-70 hover:opacity-100 transition duration-200 brightness-0 invert"
+                />
+                <input
+                  type="file"
+                  accept="image/*,video/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      setImage(file);
+                      setImagePreview(URL.createObjectURL(file));
+                    }
+                  }}
+                />
+              </label>
+
               <button
                 className="ml-3 p-2 hover:bg-white/20 rounded-full transition flex-shrink-0"
                 onClick={handleClick}
@@ -765,6 +841,32 @@ const ProfilPage = () => {
               </button>
             </div>
           </div>
+          {imagePreview && (
+            <div className="relative z-20 mt-4 mx-auto w-5/6 max-w-md">
+              {isVideo(image) ? (
+                <video
+                  src={imagePreview}
+                  controls
+                  className="max-h-48 rounded-lg w-full object-contain"
+                />
+              ) : (
+                <img
+                  src={imagePreview}
+                  alt="Preview"
+                  className="max-h-48 rounded-lg w-full object-contain"
+                />
+              )}
+              <button
+                className="absolute top-2 right-2 bg-black/60 text-white p-1 rounded-full"
+                onClick={() => {
+                  setImage(null);
+                  setImagePreview(null);
+                }}
+              >
+                ✕
+              </button>
+            </div>
+          )}
         </>
       )}
       {isModifyingVisible && <ProfilModify />}

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import Navbar from "../components/Navbar";
 import CommentWithRepliesView from "../components/CommentWithRepliesView";
-
+import ThemeSwitcher from "../components/ThemeSwitcher.jsx";
 import { useNavigate } from "react-router-dom";
 
 const HomePage = () => {
@@ -210,11 +210,23 @@ const HomePage = () => {
     }
   };
 
+  const isVideo = (fileOrUrl) => {
+    if (fileOrUrl instanceof File) {
+      return fileOrUrl.type.startsWith("video/");
+    } else if (typeof fileOrUrl === "string") {
+      return fileOrUrl.match(/\.(mp4|webm|ogg)$/i);
+    }
+    return false;
+  };
   const handleEditClick = (post) => {
     setEditingPostId(post._id);
     setTitle(post.title);
     setContent(post.content);
     setImage(post.image);
+    {
+      post.image && setImagePreview(`https://zing.com/uploads/${post.image}`);
+    }
+
     setIsInputVisible(true);
   };
   const handleClick = async () => {
@@ -298,17 +310,27 @@ const HomePage = () => {
   };
 
   const putPost = async (id) => {
-    const data = {
-      title,
-      content,
-      image,
-      userId: user.user_id,
-    };
+    const formData = new FormData();
+    formData.append("title", title);
+    formData.append("content", content);
+    formData.append("userId", user.user_id);
+    if (image) {
+      formData.append("image", image);
+    } else {
+      formData.append("deleteImage", true);
+    }
     try {
-      const res = await axios.put(`https://zing.com/posts/modify/${id}`, data, {
-        withCredentials: true,
-      });
-      console.log("Données envoyées dans le PUT :", data);
+      const res = await axios.put(
+        `https://zing.com/posts/modify/${id}`,
+        formData,
+        {
+          withCredentials: true,
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      console.log("Données envoyées dans le PUT :", formData);
       console.log("Résultat de la requête PUT :", res);
       getPosts();
       setIsInputVisible(false);
@@ -364,7 +386,7 @@ const HomePage = () => {
   return (
     <div id="" className="min-h-screen  flex flex-col mx-auto px-4 gap-5 ">
       <Navbar />
-
+      <ThemeSwitcher />
       <div className="fixed inset-0 backdrop-blur-md z-0" />
       <div className="mt-16 md:mt-4 md:flex flex-col items-center z-10">
         <div className=" flex-grow  pb-32 px-4 py-9">
@@ -482,17 +504,25 @@ const HomePage = () => {
                     <p className="text-gray-200 text-base leading-relaxed mb-4">
                       {post.content}
                     </p>
-                    {post.image?.trim() !== "" && (
-                      <img
-                        src={`https://zing.com/uploads/${post.image}`}
-                        alt="Post"
-                        className="max-w-full max-h-80 rounded-lg mb-4 object-contain"
-                        onError={(e) => {
-                          e.currentTarget.style.display = "none"; // cache l’image si erreur de chargement
-                        }}
-                      />
-                    )}
-
+                    {post.image?.trim() !== "" &&
+                      (post.image.endsWith(".mp4") ? (
+                        <video
+                          controls
+                          className="max-w-full max-h-80 rounded-lg mb-4 object-contain"
+                        >
+                          <source
+                            src={`https://zing.com/uploads/${post.image}`}
+                            type="video/mp4"
+                          />
+                          Your browser does not support the video tag.
+                        </video>
+                      ) : (
+                        <img
+                          src={`https://zing.com/uploads/${post.image}`}
+                          alt="Post"
+                          className="max-w-full max-h-80 rounded-lg mb-4 object-contain"
+                        />
+                      ))}
                     <section className="flex items-center justify-between text-gray-300">
                       <div className="flex space-x-6">
                         <button
@@ -665,15 +695,15 @@ const HomePage = () => {
                     className="flex-1 text-white placeholder-gray-400 outline-none bg-transparent"
                   />
 
-                  <label className="cursor-pointer ml-2">
+                  <label className="relative ml-2 cursor-pointer flex w-6 h-6 flex-shrink-0">
                     <img
-                      src="/icons/image.svg"
+                      src="/images/image.png"
                       alt="Add"
-                      className="absolute -top-6 -left-4 w-14 h-14 rounded-full border-2 border-[#7ddce6] shadow-lg object-cover ring-2 ring-white/20 transition-transform duration-300 hover:scale-105"
+                      className="w-5 h-5 opacity-70 hover:opacity-100 transition duration-200 brightness-0 invert"
                     />
                     <input
                       type="file"
-                      accept="image/*"
+                      accept="image/*,video/*"
                       className="hidden"
                       onChange={(e) => {
                         const file = e.target.files[0];
@@ -699,11 +729,19 @@ const HomePage = () => {
                 {/* Prévisualisation de l'image */}
                 {imagePreview && (
                   <div className="relative w-fit">
-                    <img
-                      src={imagePreview}
-                      alt="Preview"
-                      className="max-h-48 rounded-lg mt-2"
-                    />
+                    {isVideo(image) ? (
+                      <video
+                        src={imagePreview}
+                        controls
+                        className="max-h-48 rounded-lg mt-2"
+                      />
+                    ) : (
+                      <img
+                        src={imagePreview}
+                        alt="Preview"
+                        className="max-h-48 rounded-lg mt-2"
+                      />
+                    )}
                     <button
                       className="absolute top-0 right-0 bg-black/60 text-white p-1 rounded-full"
                       onClick={() => {

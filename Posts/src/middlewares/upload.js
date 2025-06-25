@@ -4,7 +4,6 @@ const multer = require("multer");
 const postsController = require("../controllers/posts.controller");
 const path = require("path");
 
-
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, path.join(__dirname, "../../uploads"));
@@ -15,10 +14,11 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith("image/")) {
+  const allowedTypes = ["image/", "video/"];
+  if (allowedTypes.some((type) => file.mimetype.startsWith(type))) {
     cb(null, true);
   } else {
-    cb(new Error("Only images are allowed"), false);
+    cb(new Error("Only images and videos are allowed"), false);
   }
 };
 

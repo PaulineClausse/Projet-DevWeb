@@ -56,12 +56,24 @@ module.exports = {
   putPost: async (req, res) => {
     try {
       const { id } = req.params;
-      const post = await Post.findByIdAndUpdate(id, req.body);
-      if (!post) {
-        return res.status(400).send("Post not found");
+      const post = await Post.findById(id);
+      if (!post) return res.status(400).send("Post not found");
+
+      if (req.file) {
+        post.image = req.file.filename;
       }
-      const updatedPost = await Post.findById(id);
-      res.status(200).json(updatedPost);
+
+      if (req.body.deleteImage === "true") {
+        post.image = "";
+      }
+
+      post.title = req.body.title;
+      post.content = req.body.content;
+      post.userId = req.body.userId;
+
+      await post.save();
+
+      res.status(200).json(post);
     } catch (err) {
       res.status(500).json({ message: err.message });
     }

@@ -3,6 +3,25 @@
 @tailwind components;
 
 body {
-  background: linear-gradient(135deg, #0a0f1a, #121d25);
+  background-color: linear-gradient(135deg, #0a0f1a, #121d25);
   background-attachment: fixed;
+  color: var(--text);
+}
+html[data-theme="dark"] {
+  --bg: linear-gradient(135deg, #0a0f1a, #121d25);
+}
+
+html[data-theme="light"] {
+  --bg: #f7f7f7;
+  --text: #000000;
+}
+
+html[data-theme="purple"] {
+  --bg: #6b21a8;
+  --text: #ffffff;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
 }
