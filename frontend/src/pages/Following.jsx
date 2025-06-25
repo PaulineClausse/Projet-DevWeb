@@ -67,7 +67,7 @@ const Following = () => {
                 src={
                   follow?.image
                     ? `https://zing.com/auth/uploads/${follow.image}`
-                    : "/images/pdp_basique.jpeg"
+                    : "../public/images/pdp_basique.jpeg"
                 }
                 alt={`${follow.username} profile`}
               />

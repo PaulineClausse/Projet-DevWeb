@@ -65,7 +65,6 @@ const Follower = () => {
 
   return (
     <div className="relative min-h-screen  text-white">
-      
       <div className="fixed inset-0 backdrop-blur-md z-0" />
 
       {/* Navbar */}
@@ -93,7 +92,7 @@ const Follower = () => {
                 src={
                   follower?.image
                     ? `https://zing.com/auth/uploads/${follower.image}`
-                    : "/images/pdp_basique.jpeg"
+                    : "../public/images/pdp_basique.jpeg"
                 }
                 alt={`${follower.username} profile`}
               />

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import Navbar from "../components/Navbar";
 import CommentWithRepliesView from "../components/CommentWithRepliesView";
-import ThemeSwitcher from "../components/ThemeSwitcher.jsx";
+
 import { useNavigate } from "react-router-dom";
 
 const HomePage = () => {
@@ -386,7 +386,7 @@ const HomePage = () => {
   return (
     <div id="" className="min-h-screen  flex flex-col mx-auto px-4 gap-5 ">
       <Navbar />
-      <ThemeSwitcher />
+      
       <div className="fixed inset-0 backdrop-blur-md z-0" />
       <div className="mt-16 md:mt-4 md:flex flex-col items-center z-10">
         <div className=" flex-grow  pb-32 px-4 py-9">

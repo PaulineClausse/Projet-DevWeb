@@ -3,25 +3,16 @@
 @tailwind components;
 
 body {
-  background-color: linear-gradient(135deg, #0a0f1a, #121d25);
+  background-image: var(--bg);
   background-attachment: fixed;
-  color: var(--text);
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 html[data-theme="dark"] {
   --bg: linear-gradient(135deg, #0a0f1a, #121d25);
 }
 
 html[data-theme="light"] {
-  --bg: #f7f7f7;
+  --bg: linear-gradient(135deg, #6b87c2, #0a9c9c);
   --text: #000000;
-}
-
-html[data-theme="purple"] {
-  --bg: #6b21a8;
-  --text: #ffffff;
-}
-
-body {
-  background-color: var(--bg);
-  color: var(--text);
 }

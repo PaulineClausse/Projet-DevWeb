@@ -12,12 +12,6 @@ export const ThemeProvider = ({ children }) => {
     localStorage.setItem("theme", theme);
   }, [theme]);
 
-/*************  ✨ Windsurf Command ⭐  *************/
-  /**
-   * Toggle the theme between "dark" and "light"
-   * @function
-   */
-/*******  0409f3d5-6158-4213-9d7c-75292a3d07c4  *******/
   const toggleTheme = () =>
     setTheme((prev) => (prev === "dark" ? "light" : "dark"));
 
