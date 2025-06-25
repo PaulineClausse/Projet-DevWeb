@@ -109,7 +109,7 @@ const Navbar = () => {
           </a>
         </button>
 
-        <button className="mt-1 ">
+        <button onClick={() => navigate("/notifications")} className="mt-1 ">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 448 512"
@@ -163,8 +163,9 @@ const Navbar = () => {
             <span> Home</span>
           </Link>
         </a>
+
         <a
-          href="/pages"
+          href="/notifications"
           className="hover:text-blue-400 flex items-center space-x-2"
         >
           <svg
@@ -180,6 +181,7 @@ const Navbar = () => {
           </svg>
           <span>Alerts</span>
         </a>
+
         <a
           href="/pages"
           className="hover:text-blue-400 flex items-center space-x-2"

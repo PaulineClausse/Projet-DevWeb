@@ -27,7 +27,7 @@ const HomePage = () => {
   const [showLikesList, setShowLikesList] = useState(null);
   const [activeTab, setActiveTab] = useState("forYou");
   const [following, setFollowing] = useState([]);
-
+  const [userInfo, setUserInfo] = useState({});
   const [imagePreview, setImagePreview] = useState(null);
   const fetchUser = async (userId) => {
     if (!userId || users[userId]) return;
@@ -113,6 +113,7 @@ const HomePage = () => {
         ...prev,
         [postId]: response.data.users.length,
       }));
+
       setLikesUsers((prev) => ({
         ...prev,
         [postId]: response.data.users,
@@ -184,9 +185,9 @@ const HomePage = () => {
     }
   };
 
-  const toggleLike = async (postId) => {
+  const toggleLike = async (postId, post_user_id) => {
     try {
-      await axios.post(
+      const res = await axios.post(
         "https://zing.com/likes/",
         {
           post_id: postId,
@@ -196,17 +197,21 @@ const HomePage = () => {
         }
       );
       getLikes(postId);
+      if (res.data.message === "Post liké") {
+        postNotification({ userId: post_user_id, type: "like" });
+      }
     } catch (error) {
       console.error("Erreur lors du like :", error);
     }
   };
 
-  const toggleComments = async (postId) => {
+  const toggleComments = async (postId, post_user_id) => {
     if (activePostId === postId) {
       setActivePostId(null);
     } else {
       setActivePostId(postId);
       getComments(postId);
+      postNotification({ userId: post_user_id, type: "comment" });
     }
   };
 
@@ -294,6 +299,57 @@ const HomePage = () => {
       console.log("Utilisateurs suivis :", detailedFollowing);
     } catch (error) {
       console.error("Erreur lors du chargement des followers :", error);
+    }
+  };
+
+  const postNotification = async ({ userId, type }) => {
+    try {
+      const userInfo = await getUserInfo({ id: userId });
+
+      if (!userInfo) return;
+
+      let data;
+
+      if (type === "like") {
+        data = {
+          userId: userId,
+          type: type,
+          message: `${userInfo.username} a liké votre post`,
+        };
+        console.log(data);
+      } else if (type === "comment") {
+        data = {
+          userId: userId,
+          type: type,
+          message: `${userInfo.username} a commenté votre post`,
+        };
+      } else {
+        data = {
+          userId: userId,
+          type: type,
+          message: `${userInfo.username} a fait une action`,
+        };
+      }
+
+      const res = await axios.post(`https://zing.com/notification/`, data, {
+        withCredentials: true,
+      });
+
+      console.log("Résultat de la requête POST :", res);
+    } catch (error) {
+      console.error("Erreur lors de la notification du post :", error.message);
+    }
+  };
+
+  const getUserInfo = async ({ id }) => {
+    try {
+      const response = await axios.get(`https://zing.com/auth/user/${id}`, {
+        withCredentials: true,
+      });
+      return response.data.user;
+    } catch (error) {
+      console.log("Pas d'utilisateur", error);
+      return null;
     }
   };
 
@@ -386,7 +442,7 @@ const HomePage = () => {
   return (
     <div id="" className="min-h-screen  flex flex-col mx-auto px-4 gap-5 ">
       <Navbar />
-      
+
       <div className="fixed inset-0 backdrop-blur-md z-0" />
       <div className="mt-16 md:mt-4 md:flex flex-col items-center z-10">
         <div className=" flex-grow  pb-32 px-4 py-9">
@@ -527,7 +583,7 @@ const HomePage = () => {
                       <div className="flex space-x-6">
                         <button
                           className="flex items-center space-x-1 hover:text-blue-400 transition-colors duration-200"
-                          onClick={() => toggleLike(post._id)}
+                          onClick={() => toggleLike(post._id, post.userId)}
                         >
                           <img
                             className="w-6 h-6"
@@ -548,7 +604,7 @@ const HomePage = () => {
                           </span>
                         </button>
                         <button
-                          onClick={() => toggleComments(post._id)}
+                          onClick={() => toggleComments(post._id, post.userId)}
                           className="flex items-center space-x-1 hover:text-green-400 transition-colors duration-200"
                         >
                           <img

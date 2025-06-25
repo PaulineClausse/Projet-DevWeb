@@ -146,6 +146,31 @@ services:
     networks:
       - microservices-network
 
+  notification-service:
+    build: ./notification-service
+    container_name: notification-service
+    restart: unless-stopped
+    depends_on:
+      - notification-mongo
+    ports:
+      - "4004:4004"
+    environment:
+      - MONGO_URI=mongodb://notification-mongo:27017/notification
+      - ACCESS_JWT_KEY=your_secret_key
+    networks:
+      - microservices-network
+
+  notification-mongo:
+    image: mongo
+    container_name: notification-mongo
+    restart: unless-stopped
+    volumes:
+      - mongodb-notification-data:/data/db
+    ports:
+      - "27021:27017"
+    networks:
+      - microservices-network
+
   frontend:
     build: ./frontend
     container_name: frontend
@@ -182,3 +207,4 @@ volumes:
   mongo-data:
   mongo-like_data:
   mongodb-follower-data:
+  mongodb-notification-data:
