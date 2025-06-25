@@ -11,6 +11,7 @@ router.get("/user/:id", loginController.getUser);
 router.post("/register", loginController.register);
 router.put("/update", authMiddleware, loginController.update);
 router.delete("/delete/:id",authMiddleware, loginController.deleteUser);
+router.get('/admin/users', checkRoles(['admin', 'moderateur']), loginController.getAllUsers);// Autoriser uniquement les admins et modérateurs
 router.post("/logout", (req, res) => {
   res.clearCookie("accessToken", {
     httpOnly: true,

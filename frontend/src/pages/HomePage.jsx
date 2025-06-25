@@ -328,6 +328,20 @@ const HomePage = () => {
     });
   }, [posts]);
 
+  
+
+  const VerifyUser = async(PostUserID) => {
+      const response = await axios.get(`https://zing.com/auth/user/${PostUserID}`, {
+        withCredentials: true,
+      });
+      
+      if (response.data.user) {
+        navigate("/profil/" + PostUserID);
+      } else {
+      alert("Utilisateur supprimé !");
+      }
+  };
+
   return (
     <div id="" className="min-h-screen  flex flex-col mx-auto px-4 gap-5 ">
       <Navbar />
@@ -349,7 +363,8 @@ const HomePage = () => {
                     <header className="flex items-center justify-between mb-4">
                       <div className="flex items-center space-x-3">
                         <button
-                          onClick={() => navigate("/profil/" + post.userId)}
+                          onClick={() => VerifyUser(post.userId)}
+                          // onClick={() => navigate("/profil/" + post.userId)}
                         >
                           <img
                             src={
@@ -483,7 +498,7 @@ const HomePage = () => {
                                 className="w-6 h-6 rounded-full border"
                               />
                               <span>
-                                {users[userId]?.username || "Utilisateur"}
+                                {users[userId]?.username || "Utilisateur inconnu"}
                               </span>
                             </li>
                           ))}

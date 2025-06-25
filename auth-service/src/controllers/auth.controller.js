@@ -125,23 +125,30 @@ exports.authenticate = async (req, res) => {
     const decoded = jwt.verify(token, process.env.ACCESS_JWT_KEY);
 
     const user = await User.findOne({
-      where: { email: decoded.email },
-      attributes: [
-        "email",
-        "username",
-        "user_id",
-        "name",
-        "first_name",
-        "biography",
-        "image",
-      ],
-    });
+    where: { email: decoded.email },
+    attributes: [
+      "email",
+      "username",
+      "user_id",
+      "name",
+      "first_name",
+      "biography",
+      "image",
+    ],
+    include: [{
+      model: Role,
+      attributes: ["role_name"],
+      through: { attributes: [] },
+    }],
+  });
+
     if (!user) {
       return res.status(404).json({ message: "Utilisateur non trouvé" });
     }
 
     // Authentification réussie
     req.user = user;
+    const roleNames = user.Roles.map(role => role.role_name);
     return res.status(200).json({
       message: "Authentification réussie",
       user: {
@@ -152,6 +159,7 @@ exports.authenticate = async (req, res) => {
         first_name: user.first_name,
         biography: user.biography,
         image: user.image,
+        roles: roleNames,
       },
     });
   } catch (err) {
@@ -201,12 +209,14 @@ exports.getUser = async (req, res) => {
   try {
     const { id } = req.params;
     const user = await User.findByPk(id);
-
+    
     res.status(200).json({ user });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
+
+const axios = require('axios');
 
 exports.deleteUser = async (req, res) => {
   try {
@@ -222,14 +232,22 @@ exports.deleteUser = async (req, res) => {
       return res.status(404).json({ message: "Utilisateur non trouvé." });
     }
 
-    // Supprimer les associations user <-> roles
-    await user.setRoles([]); // supprime les liens dans la table pivot
+    // Supprimer les associations user <-> roles dans SQL
+    await user.setRoles([]);
 
-    // Supprimer l'utilisateur
+    // Appeler le service followers pour supprimer les followers liés
+    try {
+      await axios.delete(`https://zing.com/followers/followers/deleteAll/${user_id}`);
+    } catch (err) {
+      console.error("Erreur suppression followers:", err.message);
+      // tu peux choisir d'ignorer cette erreur ou la propager
+    }
+
+    // Supprimer l'utilisateur SQL
     await user.destroy();
 
     return res.status(200).json({
-      message: "Utilisateur et associations rôles supprimés avec succès.",
+      message: "Utilisateur et associations rôles + followers supprimés avec succès.",
     });
   } catch (error) {
     console.error("Erreur suppression :", error);
@@ -238,6 +256,7 @@ exports.deleteUser = async (req, res) => {
       .json({ message: "Erreur serveur", error: error.message });
   }
 };
+
 
 exports.getAllUsers = async (req, res) => {
   const token = req.cookies.accessToken;

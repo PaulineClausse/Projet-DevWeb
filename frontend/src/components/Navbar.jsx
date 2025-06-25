@@ -37,6 +37,8 @@ const Navbar = () => {
     }
   };
 
+
+  
   useEffect(() => {
     getUsers();
   }, []);
@@ -230,12 +232,14 @@ const Navbar = () => {
         >
           Déconnexion
         </button>
-          <a
-            href="/allUsers"
-            className="text-red-600 hover:underline font-semibold"
+        {(user?.roles?.includes("admin") || user?.roles?.includes("moderateur"))  && (
+          <button
+            onClick={() => navigate("/allUsers")}
+            className="mt-4 text-red-500 font-bold"
           >
             Centre d'administration
-          </a>
+          </button>
+          )}
       </nav>
     </div>
   );

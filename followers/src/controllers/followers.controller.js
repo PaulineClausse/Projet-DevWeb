@@ -60,6 +60,8 @@ module.exports = {
     }
   },
 
+  
+
   isFollowing: async (req, res) => {
     const { followerId, followingId } = req.params;
 
@@ -70,4 +72,17 @@ module.exports = {
       return res.status(500).json({ error: error.message });
     }
   },
+
+  deleteAllUserFollowers: async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const result = await Follower.deleteMany({
+      $or: [{ followerId: userId }, { followingId: userId }],
+    });
+    res.status(200).json({ message: "Followers supprimés", deletedCount: result.deletedCount });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+},
 };
+
