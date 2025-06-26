@@ -46,6 +46,19 @@ const ProfilPage = () => {
 
   const handleClose = () => setIsInputVisible(false);
 
+
+  const DeleteUser = async () => {
+    try {
+      const res = await axios.delete(
+        `https://zing.com/auth/delete/${userActual.user_id}`,
+        { withCredentials: true }
+      );
+    } catch (e) {
+      // ignore error
+    }
+    navigate("/authentication");
+  };
+
   const deletePost = async (id) => {
     try {
       const res = await axios.delete(`https://zing.com/posts/delete/${id}`);
@@ -397,6 +410,15 @@ const ProfilPage = () => {
   };
 
   useEffect(() => {
+    if (posts.length > 0) {
+      posts.forEach((post) => {
+        getLikes(post._id);
+      });
+    }
+  }, [posts]);
+
+
+  useEffect(() => {
     getUserPosts();
     getUserInfo();
     getUserActual();
@@ -420,12 +442,21 @@ const ProfilPage = () => {
               Profil
             </h1>
             {userActual.user_id == user.user_id && (
+              <>
               <button
                 onClick={() => setIsModifyingVisible(!isModifyingVisible)}
                 className="absolute -top-9 left-24"
               >
                 <img src="../public/icons/modify.png" className="w-7 h-7"></img>
               </button>
+               {/* Bouton supprimer le compte */} 
+                   <button
+                    onClick={DeleteUser}
+                    className="absolute top-0 right-4 text-red-500 font-semibold bg-red-100 bg-opacity-10 px-4 py-2 rounded hover:bg-opacity-20 transition"
+                  >
+                    Supprimer le compte
+                  </button> 
+                  </>
             )}
             <input
               type="file"
@@ -698,7 +729,7 @@ const ProfilPage = () => {
                             >
                               <img
                                 src={
-                                  users[userId]?.image || "/images/pdp_test.jpg"
+                                  users[userId]?.image || "../public/images/pdp_basique.jpeg"
                                 }
                                 alt="Avatar"
                                 className="w-6 h-6 rounded-full border"

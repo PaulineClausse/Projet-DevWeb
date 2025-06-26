@@ -1,0 +1,32 @@
+require('dotenv').config();
+const jwt = require('jsonwebtoken');
+
+const checkRoles = (allowedRoles) => {
+  return (req, res, next) => {
+    const token = req.cookies.accessToken;
+    if (!token) {
+        return res.status(401).json({ message: "Token manquant" });
+    }
+
+    try {
+      const decoded = jwt.verify(token, process.env.ACCESS_JWT_KEY);
+
+      console.log("début userRoles ");
+      const userRoles = decoded.roles || [];
+      const hasPermission = allowedRoles.some(role => userRoles.includes(role));
+
+      console.log("userRoles :", userRoles);
+      
+      if (!hasPermission) {
+        return res.status(403).json({ message: 'Accès refusé : rôle insuffisant', userRoles });
+      }
+
+      req.user = decoded;
+      next();
+    } catch (err) {
+      return res.status(401).json({ message: 'Token invalide ou expiré', error: err.message, allowedRoles});
+    }
+  };
+};
+
+module.exports = checkRoles;

@@ -1,20 +1,21 @@
-# Utilise la version Node adaptée à ton projet (16 ou 20 selon le service)
 FROM node:20
 
-# Dossier de travail
 WORKDIR /app
 
-# Copie les fichiers de dépendances
 COPY package*.json ./
-
-# Installe toutes les dépendances (prod + dev)
+RUN apt-get update && apt-get install -y netcat-openbsd
 RUN npm install --include=dev
 
-# Copie le reste du code
 COPY . .
 
-# Expose le port utilisé par le service (à adapter pour chaque service)
 EXPOSE 5000
 
-# Commande de démarrage (à adapter pour chaque service)
+# Copier et rendre exécutable l'entrypoint
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
+# Définir l'entrypoint
+ENTRYPOINT ["/app/entrypoint.sh"]
+
+# Commande par défaut exécutée par l'entrypoint
 CMD ["npm", "run", "dev"]

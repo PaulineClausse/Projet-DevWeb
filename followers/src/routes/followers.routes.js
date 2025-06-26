@@ -16,5 +16,5 @@ router.delete(
   postsController.deleteFollower
 );
 router.get("/followers/:followerId/:followingId", postsController.isFollowing);
-
+router.delete('/followers/deleteAll/:userId', postsController.deleteAllUserFollowers);
 module.exports = router;

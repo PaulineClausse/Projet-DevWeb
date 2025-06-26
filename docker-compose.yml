@@ -1,6 +1,8 @@
 services:
   auth:
     build: ./auth-service
+    volumes:
+      - ./auth-service/uploads:/app/uploads
     container_name: auth-service
     volumes:
       - ./auth-service/uploads:/app/uploads

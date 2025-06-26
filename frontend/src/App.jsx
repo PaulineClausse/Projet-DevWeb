@@ -8,6 +8,7 @@ import NewAccount from "./pages/NewAccount";
 import Notifications from "./pages/NotificationPage";
 import { Route, Routes } from "react-router-dom";
 import LandingPage from "./pages/LandingPage";
+import AllUsersPage from "./pages/allUsers";
 
 const App = () => {
   return (
@@ -21,6 +22,7 @@ const App = () => {
       <Route path="/register" element={<NewAccount />} />
       <Route path="/landing" element={<LandingPage />} />
       <Route path="/notifications" element={<Notifications />} />
+      <Route path="/allUsers" element={<AllUsersPage />} />
     </Routes>
   );
 };
