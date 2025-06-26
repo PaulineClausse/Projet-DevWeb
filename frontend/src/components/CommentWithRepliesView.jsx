@@ -12,8 +12,14 @@ function CommentWithRepliesView({
   deleteComment,
   getReplies,
   level = 0,
+  user, // Ajouté
 }) {
   const replies = getReplies(comment, allComments);
+
+  // Affiche le bouton supprimer si admin ou auteur
+  const canDelete =
+    (user?.user_id && comment.user?._id === user.user_id) ||
+    (user?.roles && user.roles.includes("admin"));
 
   return (
     <div
@@ -61,17 +67,19 @@ function CommentWithRepliesView({
         <p className={`text-gray-100 ${level > 0 ? "text-sm" : ""}`}>
           {comment.content}
         </p>
-        <button
-          onClick={() => deleteComment(comment._id, postId, comment.parent_id)}
-          className="ml-4 text-red-400 hover:text-red-600 transition"
-          title="Supprimer le commentaire"
-        >
-          <img
-            src="/icons/delete.png"
-            alt="Supprimer"
-            className={level === 0 ? "w-5 h-5" : "w-4 h-4"}
-          />
-        </button>
+        {canDelete && (
+          <button
+            onClick={() => deleteComment(comment._id, postId, comment.parent_id)}
+            className="ml-4 text-red-400 hover:text-red-600 transition"
+            title="Supprimer le commentaire"
+          >
+            <img
+              src="/icons/delete.png"
+              alt="Supprimer"
+              className={level === 0 ? "w-5 h-5" : "w-4 h-4"}
+            />
+          </button>
+        )}
       </div>
       <button
         className="text-xs text-blue-400 mt-1"
@@ -136,6 +144,7 @@ function CommentWithRepliesView({
               deleteComment={deleteComment}
               getReplies={getReplies}
               level={level + 1}
+              user={user}
             />
           ))}
         </div>

@@ -196,7 +196,7 @@ const ProfilPage = () => {
   const getComments = async (postId) => {
     try {
       const response = await axios.get(
-        `https://zing.com/comment-service/post/${postId}`,
+        `https://zing.com/comments/post/${postId}`,
         { withCredentials: true }
       );
       setComments((prev) => ({
@@ -359,9 +359,10 @@ const ProfilPage = () => {
         { withCredentials: true }
       );
       getLikes(postId);
-      if (res.data.message === "Post liké") {
-        postNotification({ userId: post_user_id, type: "like" });
-      }
+      // Correction : il faut vérifier la réponse ici si besoin
+      // if (res.data.message === "Post liké") {
+      //   postNotification({ userId: post_user_id, type: "like" });
+      // }
     } catch (error) {
       console.error("Erreur lors du like :", error);
     }
@@ -456,8 +457,9 @@ const ProfilPage = () => {
       console.error("Erreur lors de la réponse :", error);
     }
   };
-  // Transforme les commentaires en structure d'arbre pour affichage
+  
   const buildCommentsTree = (commentsArr) => {
+    if (!Array.isArray(commentsArr)) return [];
     const map = {};
     const roots = [];
     commentsArr.forEach((comment) => {
@@ -593,33 +595,33 @@ const ProfilPage = () => {
                     <svg
                       className="w-6 h-6 "
                       xmlns="http://www.w3.org/2000/svg"
-                      xmlns:xlink="http://www.w3.org/1999/xlink"
+                      xmlnsXlink="http://www.w3.org/1999/xlink"
                       viewBox="0 0 310.745 310.745"
                       fill="rgb(255, 255, 255)"
-                      xml:space="preserve"
+                      xmlSpace="preserve"
                     >
                       <g id="XMLID_341_">
                         <path
                           id="XMLID_348_"
                           d="M77.622,120.372c9.942,0,19.137-3.247,26.593-8.728c11.382,16.007,30.063,26.479,51.157,26.479
-		c21.093,0,39.774-10.472,51.157-26.479c7.456,5.481,16.651,8.728,26.593,8.728c24.813,0,45-20.187,45-44.999
-		c0-24.814-20.187-45.001-45-45.001c-9.943,0-19.138,3.248-26.594,8.729c-11.383-16.006-30.063-26.478-51.156-26.478
-		c-21.093,0-39.773,10.472-51.156,26.478c-7.456-5.481-16.651-8.729-26.594-8.729c-24.813,0-45,20.187-45,45.001
-		C32.622,100.186,52.809,120.372,77.622,120.372z M233.122,60.372c8.271,0,15,6.73,15,15.001c0,8.271-6.729,14.999-15,14.999
-		c-8.271,0-15-6.729-15-14.999C218.122,67.102,224.851,60.372,233.122,60.372z M155.372,42.623c18.059,0,32.75,14.691,32.75,32.75
-		s-14.691,32.75-32.75,32.75c-18.059,0-32.75-14.691-32.75-32.75S137.313,42.623,155.372,42.623z M77.622,60.372
-		c8.271,0,15,6.73,15,15.001c0,8.271-6.729,14.999-15,14.999s-15-6.729-15-14.999C62.622,67.102,69.351,60.372,77.622,60.372z"
+        c21.093,0,39.774-10.472,51.157-26.479c7.456,5.481,16.651,8.728,26.593,8.728c24.813,0,45-20.187,45-44.999
+        c0-24.814-20.187-45.001-45-45.001c-9.943,0-19.138,3.248-26.594,8.729c-11.383-16.006-30.063-26.478-51.156-26.478
+        c-21.093,0-39.773,10.472-51.156,26.478c-7.456-5.481-16.651-8.729-26.594-8.729c-24.813,0-45,20.187-45,45.001
+        C32.622,100.186,52.809,120.372,77.622,120.372z M233.122,60.372c8.271,0,15,6.73,15,15.001c0,8.271-6.729,14.999-15,14.999
+        c-8.271,0-15-6.729-15-14.999C218.122,67.102,224.851,60.372,233.122,60.372z M155.372,42.623c18.059,0,32.75,14.691,32.75,32.75
+        s-14.691,32.75-32.75,32.75c-18.059,0-32.75-14.691-32.75-32.75S137.313,42.623,155.372,42.623z M77.622,60.372
+        c8.271,0,15,6.73,15,15.001c0,8.271-6.729,14.999-15,14.999s-15-6.729-15-14.999C62.622,67.102,69.351,60.372,77.622,60.372z"
                         />
                         <path
                           id="XMLID_440_"
                           d="M233.122,150.372c-19.643,0-38.329,7.388-52.584,20.532c-8.103-1.816-16.523-2.781-25.166-2.781
-		c-8.643,0-17.063,0.965-25.165,2.781c-14.255-13.144-32.942-20.532-52.585-20.532C34.821,150.372,0,185.194,0,227.995
-		c0,8.284,6.716,15,15,15h32.6c-4.669,12.5-7.228,26.019-7.228,40.127c0,8.284,6.716,15,15,15h200c8.284,0,15-6.716,15-15
-		c0-14.108-2.559-27.627-7.229-40.127h32.602c8.284,0,15-6.716,15-15C310.745,185.194,275.923,150.372,233.122,150.372z
-		 M32.42,212.995c6.298-18.934,24.181-32.623,45.202-32.623c6.617,0,13.052,1.382,18.964,3.95
-		c-12.484,7.456-23.443,17.209-32.29,28.673H32.42z M71.697,268.122c7.106-39.739,41.923-69.999,83.675-69.999
-		c41.751,0,76.569,30.26,83.675,69.999H71.697z M246.449,212.995c-8.848-11.464-19.806-21.217-32.29-28.673
-		c5.912-2.567,12.347-3.95,18.964-3.95c21.021,0,38.905,13.689,45.203,32.623H246.449z"
+        c-8.643,0-17.063,0.965-25.165,2.781c-14.255-13.144-32.942-20.532-52.585-20.532C34.821,150.372,0,185.194,0,227.995
+        c0,8.284,6.716,15,15,15h32.6c-4.669,12.5-7.228,26.019-7.228,40.127c0,8.284,6.716,15,15,15h200c8.284,0,15-6.716,15-15
+        c0-14.108-2.559-27.627-7.229-40.127h32.602c8.284,0,15-6.716,15-15C310.745,185.194,275.923,150.372,233.122,150.372z
+         M32.42,212.995c6.298-18.934,24.181-32.623,45.202-32.623c6.617,0,13.052,1.382,18.964,3.95
+        c-12.484,7.456-23.443,17.209-32.29,28.673H32.42z M71.697,268.122c7.106-39.739,41.923-69.999,83.675-69.999
+        c41.751,0,76.569,30.26,83.675,69.999H71.697z M246.449,212.995c-8.848-11.464-19.806-21.217-32.29-28.673
+        c5.912-2.567,12.347-3.95,18.964-3.95c21.021,0,38.905,13.689,45.203,32.623H246.449z"
                         />
                       </g>
                     </svg>
@@ -682,7 +684,7 @@ const ProfilPage = () => {
                                   <path
                                     d="M362.7 19.3L314.3 67.7 444.3 197.7l48.4-48.4c25-25 25-65.5 0-90.5L453.3 19.3c-25-25-65.5-25-90.5 0zm-71 71L58.6 323.5c-10.4 10.4-18 23.3-22.2 37.4L1 481.2C-1.5 489.7 .8 498.8 7 505s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L421.7 220.3 291.7 90.3z"
                                     stroke="rgb(191, 191, 199)"
-                                    stroke-width="40"
+                                    strokeWidth="40"
                                   />
                                 </svg>
                               )}
@@ -699,7 +701,7 @@ const ProfilPage = () => {
                                   <path
                                     d="M135.2 17.7L128 32 32 32C14.3 32 0 46.3 0 64S14.3 96 32 96l384 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0-7.2-14.3C307.4 6.8 296.3 0 284.2 0L163.8 0c-12.1 0-23.2 6.8-28.6 17.7zM416 128L32 128 53.2 467c1.6 25.3 22.6 45 47.9 45l245.8 0c25.3 0 46.3-19.7 47.9-45L416 128z"
                                     stroke="rgb(191, 191, 199)"
-                                    stroke-width="40"
+                                    strokeWidth="40"
                                   />
                                 </svg>
                               </div>
@@ -719,8 +721,12 @@ const ProfilPage = () => {
                       {post.content}
                     </p>
 
-                    {post.image?.trim() !== "" &&
-                      (post.image?.endsWith(".mp4") ? (
+                    {post.image &&
+                      typeof post.image === "string" &&
+                      post.image.trim() !== "" &&
+                      post.image.trim().toLowerCase() !== "undefined" &&
+                      post.image.trim().toLowerCase() !== "null" &&
+                      (post.image.endsWith(".mp4") ? (
                         <video
                           controls
                           className="max-w-full max-h-80 rounded-lg mb-4 object-contain"
@@ -818,7 +824,7 @@ const ProfilPage = () => {
                     {activePostId === post._id && (
                       <div className="comments-section">
                         <div className="pt-4">
-                          {buildCommentsTree(comments[post._id] || []).map(
+                          {buildCommentsTree(Array.isArray(comments[post._id]) ? comments[post._id] : []).map(
                             (comment) => (
                               <CommentTree
                                 key={comment._id}
@@ -833,21 +839,24 @@ const ProfilPage = () => {
                             )
                           )}
                         </div>
-                        <div className="mt-6 flex flex-col gap-2">
-                          <textarea
-                            value={newComment}
-                            onChange={(e) => setNewComment(e.target.value)}
-                            placeholder="Ajouter un commentaire"
-                            className="w-full p-3 rounded-xl border-2 border-[rgba(119,191,199,0.5)] bg-[rgba(38,38,38,0.8)] text-gray-100 focus:outline-none focus:ring-2 focus:ring-[rgba(119,191,199,0.7)] transition"
-                            rows={2}
-                          />
-                          <button
-                            onClick={() => addComment(post._id)}
-                            className="self-end px-5 py-2 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-xl font-semibold shadow-md hover:from-blue-700 hover:to-cyan-600 transition"
-                          >
-                            Ajouter un commentaire
-                          </button>
-                        </div>
+                        {/* Affiche la zone de commentaire si l'utilisateur est connecté */}
+                        {userActual.user_id && (
+                          <div className="mt-6 flex flex-col gap-2">
+                            <textarea
+                              value={newComment}
+                              onChange={(e) => setNewComment(e.target.value)}
+                              placeholder="Ajouter un commentaire"
+                              className="w-full p-3 rounded-xl border-2 border-[rgba(119,191,199,0.5)] bg-[rgba(38,38,38,0.8)] text-gray-100 focus:outline-none focus:ring-2 focus:ring-[rgba(119,191,199,0.7)] transition"
+                              rows={2}
+                            />
+                            <button
+                              onClick={() => addComment(post._id)}
+                              className="self-end px-5 py-2 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-xl font-semibold shadow-md hover:from-blue-700 hover:to-cyan-600 transition"
+                            >
+                              Ajouter un commentaire
+                            </button>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
@@ -969,7 +978,7 @@ const ProfilPage = () => {
       )}
       {isModifyingVisible && <ProfilModify />}
     </div>
-  );
+    );
 };
 
 export default ProfilPage;

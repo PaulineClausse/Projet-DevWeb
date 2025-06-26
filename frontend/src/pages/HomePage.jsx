@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import Navbar from "../components/Navbar";
 import CommentWithRepliesView from "../components/CommentWithRepliesView";
-
 import { useNavigate } from "react-router-dom";
 
 const HomePage = () => {
@@ -29,6 +28,7 @@ const HomePage = () => {
   const [following, setFollowing] = useState([]);
   const [userInfo, setUserInfo] = useState({});
   const [imagePreview, setImagePreview] = useState(null);
+
   const fetchUser = async (userId) => {
     if (!userId || users[userId]) return;
     try {
@@ -36,7 +36,6 @@ const HomePage = () => {
         withCredentials: true,
       });
       setUsers((prev) => ({ ...prev, [userId]: res.data.user }));
-      // eslint-disable-next-line no-unused-vars
     } catch (e) {
       setUsers((prev) => ({ ...prev, [userId]: { username: "Utilisateur" } }));
     }
@@ -49,8 +48,6 @@ const HomePage = () => {
         withCredentials: true,
       });
 
-      console.log(response.data);
-      setPosts(response.data);
       const post = response.data;
       const postsWithUsernames = await Promise.all(
         post.map(async (post) => {
@@ -65,7 +62,6 @@ const HomePage = () => {
             const imageUser = userResponse.data.user.image;
             return { ...post, username, imageUser };
           } catch (error) {
-            console.error(`Erreur pour l'user ${post.userId} :`, error.message);
             return { ...post, username: "Utilisateur inconnu" };
           }
         })
@@ -119,7 +115,6 @@ const HomePage = () => {
         [postId]: response.data.users,
       }));
       response.data.users.forEach((userId) => fetchUser(userId));
-      // eslint-disable-next-line no-unused-vars
     } catch (error) {
       setLikes((prev) => ({
         ...prev,
@@ -223,6 +218,7 @@ const HomePage = () => {
     }
     return false;
   };
+
   const handleEditClick = (post) => {
     setEditingPostId(post._id);
     setTitle(post.title);
@@ -231,9 +227,9 @@ const HomePage = () => {
     {
       post.image && setImagePreview(`https://zing.com/uploads/${post.image}`);
     }
-
     setIsInputVisible(true);
   };
+
   const handleClick = async () => {
     const formData = new FormData();
     formData.append("title", title);
@@ -265,7 +261,6 @@ const HomePage = () => {
         },
       });
 
-      console.log("Résultat de la requête POST :", res);
       getPosts();
       setIsInputVisible(false);
       setTitle("");
@@ -298,7 +293,6 @@ const HomePage = () => {
       );
 
       setFollowing(detailedFollowing);
-      console.log("Utilisateurs suivis :", detailedFollowing);
     } catch (error) {
       console.error("Erreur lors du chargement des followers :", error);
     }
@@ -307,18 +301,14 @@ const HomePage = () => {
   const postNotification = async ({ userId, type }) => {
     try {
       const userInfo = await getUserInfo({ id: userId });
-
       if (!userInfo) return;
-
       let data;
-
       if (type === "like") {
         data = {
           userId: userId,
           type: type,
           message: `${user.username} a liké votre post`,
         };
-        console.log(data);
       } else if (type === "comment") {
         data = {
           userId: userId,
@@ -332,12 +322,9 @@ const HomePage = () => {
           message: `${user.username} a fait une action`,
         };
       }
-
-      const res = await axios.post(`https://zing.com/notification/`, data, {
+      await axios.post(`https://zing.com/notification/`, data, {
         withCredentials: true,
       });
-
-      console.log("Résultat de la requête POST :", res);
     } catch (error) {
       console.error("Erreur lors de la notification du post :", error.message);
     }
@@ -350,17 +337,15 @@ const HomePage = () => {
       });
       return response.data.user;
     } catch (error) {
-      console.log("Pas d'utilisateur", error);
       return null;
     }
   };
 
   const deletePost = async (id) => {
     try {
-      const res = await axios.delete(`https://zing.com/posts/delete/${id}`, {
+      await axios.delete(`https://zing.com/posts/delete/${id}`, {
         withCredentials: true,
       });
-      console.log("Résultat de la requête DELETE :", res);
       getPosts();
     } catch (error) {
       console.error("Erreur lors de la suppression du post :", error.message);
@@ -378,7 +363,7 @@ const HomePage = () => {
       formData.append("deleteImage", true);
     }
     try {
-      const res = await axios.put(
+      await axios.put(
         `https://zing.com/posts/modify/${id}`,
         formData,
         {
@@ -388,8 +373,6 @@ const HomePage = () => {
           },
         }
       );
-      console.log("Données envoyées dans le PUT :", formData);
-      console.log("Résultat de la requête PUT :", res);
       getPosts();
       setIsInputVisible(false);
       setTitle("");
@@ -405,10 +388,9 @@ const HomePage = () => {
       const response = await axios.get("https://zing.com/auth/auth", {
         withCredentials: true,
       });
-      console.log("Utilisateur connecté :", response.data.user);
       setUser(response.data.user);
     } catch (error) {
-      console.log("Pas connecté", error);
+      // Not connected
     }
   };
 
@@ -448,7 +430,6 @@ const HomePage = () => {
         withCredentials: true,
       }
     );
-
     if (response.data.user) {
       navigate("/profil/" + PostUserID);
     } else {
@@ -510,7 +491,6 @@ const HomePage = () => {
                       <div className="flex items-center space-x-3">
                         <button
                           onClick={() => VerifyUser(post.userId)}
-                          // onClick={() => navigate("/profil/" + post.userId)}
                         >
                           <img
                             src={
@@ -542,12 +522,13 @@ const HomePage = () => {
                                   <path
                                     d="M362.7 19.3L314.3 67.7 444.3 197.7l48.4-48.4c25-25 25-65.5 0-90.5L453.3 19.3c-25-25-65.5-25-90.5 0zm-71 71L58.6 323.5c-10.4 10.4-18 23.3-22.2 37.4L1 481.2C-1.5 489.7 .8 498.8 7 505s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L421.7 220.3 291.7 90.3z"
                                     stroke="rgb(191, 191, 199)"
-                                    stroke-width="40"
+                                    strokeWidth="40"
                                   />
                                 </svg>
                               )}
                             </div>
-                            {selfId === post.userId && (
+                            {(selfId === post.userId ||
+                              (user?.roles && user.roles.includes("admin"))) && (
                               <div>
                                 <svg
                                   onClick={() => deletePost(post._id)}
@@ -559,7 +540,7 @@ const HomePage = () => {
                                   <path
                                     d="M135.2 17.7L128 32 32 32C14.3 32 0 46.3 0 64S14.3 96 32 96l384 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0-7.2-14.3C307.4 6.8 296.3 0 284.2 0L163.8 0c-12.1 0-23.2 6.8-28.6 17.7zM416 128L32 128 53.2 467c1.6 25.3 22.6 45 47.9 45l245.8 0c25.3 0 46.3-19.7 47.9-45L416 128z"
                                     stroke="rgb(191, 191, 199)"
-                                    stroke-width="40"
+                                    strokeWidth="40"
                                   />
                                 </svg>
                               </div>
@@ -695,6 +676,7 @@ const HomePage = () => {
                                 addReply={addReply}
                                 deleteComment={deleteComment}
                                 getReplies={getReplies}
+                                user={user}
                               />
                             ))}
                         </div>
@@ -789,9 +771,6 @@ const HomePage = () => {
                           setImage(file);
                           setImagePreview(URL.createObjectURL(file));
                         }
-                        // else {
-                        //   alert("Please select an image or video file.");
-                        // }
                       }}
                     />
                   </label>
@@ -807,7 +786,6 @@ const HomePage = () => {
                   </button>
                 </div>
 
-                {/* Prévisualisation de l'image */}
                 {imagePreview && (
                   <div className="relative w-fit">
                     {isVideo(image) ? (
