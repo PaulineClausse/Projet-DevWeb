@@ -132,7 +132,7 @@ const NewAccount = () => {
         <p className="text-sm text-center text-gray-600 mt-4">
           J'ai déjà un compte !{" "}
           <a
-            href="/auth"
+            href="/authentication"
             className="text-blue-600 hover:underline font-semibold"
           >
             Se connecter

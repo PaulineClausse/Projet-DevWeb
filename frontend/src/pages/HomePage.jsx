@@ -242,6 +242,7 @@ const HomePage = () => {
     if (image) {
       formData.append("image", image);
     }
+
     if (!title || !content) {
       return alert("Title and content are required");
     }
@@ -256,6 +257,7 @@ const HomePage = () => {
         setIsInputVisible(false);
         return;
       }
+
       const res = await axios.post("https://zing.com/posts/create", formData, {
         withCredentials: true,
         headers: {
@@ -314,20 +316,20 @@ const HomePage = () => {
         data = {
           userId: userId,
           type: type,
-          message: `${userInfo.username} a liké votre post`,
+          message: `${user.username} a liké votre post`,
         };
         console.log(data);
       } else if (type === "comment") {
         data = {
           userId: userId,
           type: type,
-          message: `${userInfo.username} a commenté votre post`,
+          message: `${user.username} a commenté votre post`,
         };
       } else {
         data = {
           userId: userId,
           type: type,
-          message: `${userInfo.username} a fait une action`,
+          message: `${user.username} a fait une action`,
         };
       }
 
@@ -439,18 +441,19 @@ const HomePage = () => {
     });
   }, [posts]);
 
-  
-
-  const VerifyUser = async(PostUserID) => {
-      const response = await axios.get(`https://zing.com/auth/user/${PostUserID}`, {
+  const VerifyUser = async (PostUserID) => {
+    const response = await axios.get(
+      `https://zing.com/auth/user/${PostUserID}`,
+      {
         withCredentials: true,
-      });
-      
-      if (response.data.user) {
-        navigate("/profil/" + PostUserID);
-      } else {
-      alert("Utilisateur supprimé !");
       }
+    );
+
+    if (response.data.user) {
+      navigate("/profil/" + PostUserID);
+    } else {
+      alert("Utilisateur supprimé !");
+    }
   };
 
   return (
@@ -575,7 +578,10 @@ const HomePage = () => {
                     <p className="text-gray-200 text-base leading-relaxed mb-4">
                       {post.content}
                     </p>
-                    {post.image?.trim() !== "" &&
+
+                    {post.image &&
+                      post.image.trim() !== "" &&
+                      !post.image.trim().toLowerCase().endsWith("undefined") &&
                       (post.image.endsWith(".mp4") ? (
                         <video
                           controls
@@ -652,14 +658,15 @@ const HomePage = () => {
                               <img
                                 src={
                                   user?.image
-                                    ? `https://zing.com/posts/uploads/${user.image}`
+                                    ? `https://zing.com/auth/uploads/${user.image}`
                                     : "../public/images/pdp_basique.jpeg"
                                 }
                                 alt="Avatar"
                                 className="w-6 h-6 rounded-full border"
                               />
                               <span>
-                                {users[userId]?.username || "Utilisateur inconnu"}
+                                {users[userId]?.username ||
+                                  "Utilisateur inconnu"}
                               </span>
                             </li>
                           ))}
@@ -782,6 +789,9 @@ const HomePage = () => {
                           setImage(file);
                           setImagePreview(URL.createObjectURL(file));
                         }
+                        // else {
+                        //   alert("Please select an image or video file.");
+                        // }
                       }}
                     />
                   </label>

@@ -8,7 +8,6 @@ const { User, Role } = require("../models");
 const PORT = 5000;
 
 exports.login = async (req, res) => {
-  
   const { email, password } = req.body;
   if (!email || !password) {
     return res.status(400).json({ message: "Champs manquants" });
@@ -17,11 +16,13 @@ exports.login = async (req, res) => {
   try {
     const user = await User.findOne({
       where: { email: req.body.email },
-      include: [{
-        model: Role,
-        attributes: ['role_name'],
-        through: { attributes: [] } // n'affiche pas les infos de la table pivot
-      }]
+      include: [
+        {
+          model: Role,
+          attributes: ["role_name"],
+          through: { attributes: [] }, // n'affiche pas les infos de la table pivot
+        },
+      ],
     });
 
     if (!user) {
@@ -33,7 +34,7 @@ exports.login = async (req, res) => {
       return res.status(401).json({ message: "Mot de passe incorrect" });
     }
 
-    const roleNames = user.Roles.map(role => role.role_name);
+    const roleNames = user.Roles.map((role) => role.role_name);
 
     const payload = {
       user_id: user.user_id,
@@ -125,22 +126,24 @@ exports.authenticate = async (req, res) => {
     const decoded = jwt.verify(token, process.env.ACCESS_JWT_KEY);
 
     const user = await User.findOne({
-    where: { email: decoded.email },
-    attributes: [
-      "email",
-      "username",
-      "user_id",
-      "name",
-      "first_name",
-      "biography",
-      "image",
-    ],
-    include: [{
-      model: Role,
-      attributes: ["role_name"],
-      through: { attributes: [] },
-    }],
-  });
+      where: { email: decoded.email },
+      attributes: [
+        "email",
+        "username",
+        "user_id",
+        "name",
+        "first_name",
+        "biography",
+        "image",
+      ],
+      include: [
+        {
+          model: Role,
+          attributes: ["role_name"],
+          through: { attributes: [] },
+        },
+      ],
+    });
 
     if (!user) {
       return res.status(404).json({ message: "Utilisateur non trouvé" });
@@ -148,7 +151,7 @@ exports.authenticate = async (req, res) => {
 
     // Authentification réussie
     req.user = user;
-    const roleNames = user.Roles.map(role => role.role_name);
+    const roleNames = user.Roles.map((role) => role.role_name);
     return res.status(200).json({
       message: "Authentification réussie",
       user: {
@@ -209,14 +212,14 @@ exports.getUser = async (req, res) => {
   try {
     const { id } = req.params;
     const user = await User.findByPk(id);
-    
+
     res.status(200).json({ user });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
-const axios = require('axios');
+const axios = require("axios");
 
 exports.deleteUser = async (req, res) => {
   try {
@@ -235,19 +238,12 @@ exports.deleteUser = async (req, res) => {
     // Supprimer les associations user <-> roles dans SQL
     await user.setRoles([]);
 
-    // Appeler le service followers pour supprimer les followers liés
-    try {
-      await axios.delete(`https://zing.com/followers/followers/deleteAll/${user_id}`);
-    } catch (err) {
-      console.error("Erreur suppression followers:", err.message);
-      // tu peux choisir d'ignorer cette erreur ou la propager
-    }
-
     // Supprimer l'utilisateur SQL
     await user.destroy();
 
     return res.status(200).json({
-      message: "Utilisateur et associations rôles + followers supprimés avec succès.",
+      message:
+        "Utilisateur et associations rôles + followers supprimés avec succès.",
     });
   } catch (error) {
     console.error("Erreur suppression :", error);
@@ -256,7 +252,6 @@ exports.deleteUser = async (req, res) => {
       .json({ message: "Erreur serveur", error: error.message });
   }
 };
-
 
 exports.getAllUsers = async (req, res) => {
   const token = req.cookies.accessToken;
@@ -270,12 +265,14 @@ exports.getAllUsers = async (req, res) => {
     console.log("decoded", decoded);
 
     const users = await User.findAll({
-      attributes: ['user_id', 'email', 'username', 'name', 'first_name'],
-      include: [{
-        model: Role,
-        attributes: ['role_name'],
-        through: { attributes: [] } // si relation many-to-many via table intermédiaire
-      }]
+      attributes: ["user_id", "email", "username", "name", "first_name"],
+      include: [
+        {
+          model: Role,
+          attributes: ["role_name"],
+          through: { attributes: [] }, // si relation many-to-many via table intermédiaire
+        },
+      ],
     });
 
     if (users.length === 0) {
@@ -285,6 +282,8 @@ exports.getAllUsers = async (req, res) => {
     return res.status(200).json({ users });
   } catch (err) {
     console.error(err);
-    return res.status(401).json({ message: "Token invalide ou expiré", error: err.message });
+    return res
+      .status(401)
+      .json({ message: "Token invalide ou expiré", error: err.message });
   }
 };

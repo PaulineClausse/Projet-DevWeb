@@ -31,6 +31,7 @@ const ProfilPage = () => {
   const [replyTarget, setReplyTarget] = useState(null);
   const [isModifyingVisible, setIsModifyingVisible] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
+
   const fetchUser = async (userId) => {
     if (!userId || users[userId]) return;
     try {
@@ -46,15 +47,23 @@ const ProfilPage = () => {
 
   const handleClose = () => setIsInputVisible(false);
 
-
   const DeleteUser = async () => {
     try {
+      const response = await axios.delete(
+        `https://zing.com/followers/followers/deleteAll/${id}`,
+        { withCredentials: true }
+      );
+
       const res = await axios.delete(
         `https://zing.com/auth/delete/${userActual.user_id}`,
         { withCredentials: true }
       );
+
+      console.log("Résultat de la requête DELETE follower :", response);
+      console.log("Résultat de la requête DELETE user:", res);
     } catch (e) {
       // ignore error
+      console.log(e);
     }
     navigate("/authentication");
   };
@@ -266,6 +275,57 @@ const ProfilPage = () => {
     }
   };
 
+  const postNotification = async ({ userId, type }) => {
+    try {
+      const userInfo = await getUserInfoNotif({ id: userId });
+
+      if (!userInfo) return;
+
+      let data;
+
+      if (type === "like") {
+        data = {
+          userId: userId,
+          type: type,
+          message: `${user.username} a liké votre post`,
+        };
+        console.log(data);
+      } else if (type === "comment") {
+        data = {
+          userId: userId,
+          type: type,
+          message: `${user.username} a commenté votre post`,
+        };
+      } else {
+        data = {
+          userId: userId,
+          type: type,
+          message: `${user.username} a fait une action`,
+        };
+      }
+
+      const res = await axios.post(`https://zing.com/notification/`, data, {
+        withCredentials: true,
+      });
+
+      console.log("Résultat de la requête POST :", res);
+    } catch (error) {
+      console.error("Erreur lors de la notification du post :", error.message);
+    }
+  };
+
+  const getUserInfoNotif = async ({ id }) => {
+    try {
+      const response = await axios.get(`https://zing.com/auth/user/${id}`, {
+        withCredentials: true,
+      });
+      return response.data.user;
+    } catch (error) {
+      console.log("Pas d'utilisateur", error);
+      return null;
+    }
+  };
+
   const handlefollow = async () => {
     if (isFollowing === true) {
       setIsFollowing(false);
@@ -289,7 +349,7 @@ const ProfilPage = () => {
     }
   };
 
-  const toggleLike = async (postId) => {
+  const toggleLike = async (postId, post_user_id) => {
     try {
       await axios.post(
         "https://zing.com/likes/",
@@ -299,6 +359,9 @@ const ProfilPage = () => {
         { withCredentials: true }
       );
       getLikes(postId);
+      if (res.data.message === "Post liké") {
+        postNotification({ userId: post_user_id, type: "like" });
+      }
     } catch (error) {
       console.error("Erreur lors du like :", error);
     }
@@ -332,12 +395,13 @@ const ProfilPage = () => {
     }
   };
 
-  const toggleComments = (postId) => {
+  const toggleComments = (postId, post_user_id) => {
     if (activePostId === postId) {
       setActivePostId(null);
     } else {
       setActivePostId(postId);
       getComments(postId);
+      postNotification({ userId: post_user_id, type: "comment" });
     }
   };
   const addComment = async (postId) => {
@@ -417,7 +481,6 @@ const ProfilPage = () => {
     }
   }, [posts]);
 
-
   useEffect(() => {
     getUserPosts();
     getUserInfo();
@@ -443,20 +506,23 @@ const ProfilPage = () => {
             </h1>
             {userActual.user_id == user.user_id && (
               <>
-              <button
-                onClick={() => setIsModifyingVisible(!isModifyingVisible)}
-                className="absolute -top-9 left-24"
-              >
-                <img src="../public/icons/modify.png" className="w-7 h-7"></img>
-              </button>
-               {/* Bouton supprimer le compte */} 
-                   <button
-                    onClick={DeleteUser}
-                    className="absolute top-0 right-4 text-red-500 font-semibold bg-red-100 bg-opacity-10 px-4 py-2 rounded hover:bg-opacity-20 transition"
-                  >
-                    Supprimer le compte
-                  </button> 
-                  </>
+                <button
+                  onClick={() => setIsModifyingVisible(!isModifyingVisible)}
+                  className="absolute -top-9 left-24"
+                >
+                  <img
+                    src="../public/icons/modify.png"
+                    className="w-7 h-7"
+                  ></img>
+                </button>
+                {/* Bouton supprimer le compte */}
+                <button
+                  onClick={DeleteUser}
+                  className="absolute top-0 right-4 text-red-500 font-semibold bg-red-100 bg-opacity-10 px-4 py-2 rounded hover:bg-opacity-20 transition"
+                >
+                  Supprimer le compte
+                </button>
+              </>
             )}
             <input
               type="file"
@@ -654,7 +720,7 @@ const ProfilPage = () => {
                     </p>
 
                     {post.image?.trim() !== "" &&
-                      (post.image.endsWith(".mp4") ? (
+                      (post.image?.endsWith(".mp4") ? (
                         <video
                           controls
                           className="max-w-full max-h-80 rounded-lg mb-4 object-contain"
@@ -679,7 +745,7 @@ const ProfilPage = () => {
                             className="w-6 h-6"
                             src="/icons/like.png"
                             alt="Like"
-                            onClick={() => toggleLike(post._id)}
+                            onClick={() => toggleLike(post._id, post.userId)}
                           />
                           <span>Like</span>
                           <span
@@ -696,7 +762,7 @@ const ProfilPage = () => {
                         </button>
 
                         <button
-                          onClick={() => toggleComments(post._id)}
+                          onClick={() => toggleComments(post._id, post.userId)}
                           className="flex items-center space-x-1 hover:text-green-400 transition-colors duration-200"
                         >
                           <img
@@ -729,7 +795,8 @@ const ProfilPage = () => {
                             >
                               <img
                                 src={
-                                  users[userId]?.image || "../public/images/pdp_basique.jpeg"
+                                  users[userId]?.image ||
+                                  "../public/images/pdp_basique.jpeg"
                                 }
                                 alt="Avatar"
                                 className="w-6 h-6 rounded-full border"

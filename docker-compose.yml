@@ -4,9 +4,6 @@ services:
     volumes:
       - ./auth-service/uploads:/app/uploads
     container_name: auth-service
-    volumes:
-      - ./auth-service/uploads:/app/uploads
-
     ports:
       - "5000:5000"
     environment:
@@ -21,9 +18,7 @@ services:
       - mysql
     networks:
       - microservices-network
-    # volumes:
-    #   - ./auth-service:/app
-
+  
   mysql:
     image: mysql:latest
     container_name: mysql

@@ -22,6 +22,10 @@ const AllUsersPage = () => {
 
   const deleteUser = async (userId) => {
     try {
+      await axios.delete(
+        `https://zing.com/followers/followers/deleteAll/${userId}`,
+        { withCredentials: true }
+      );
       await axios.delete(`https://zing.com/auth/delete/${userId}`, {
         withCredentials: true,
       });
@@ -56,10 +60,18 @@ const AllUsersPage = () => {
               max-w-md mx-auto text-white
             "
           >
-            <p><strong>Nom :</strong> {user.first_name} {user.name}</p>
-            <p><strong>Email :</strong> {user.email}</p>
-            <p><strong>Username :</strong> {user.username}</p>
-            <p><strong>Rôle :</strong> {user.Roles?.[0]?.role_name || "N/A"}</p>
+            <p>
+              <strong>Nom :</strong> {user.first_name} {user.name}
+            </p>
+            <p>
+              <strong>Email :</strong> {user.email}
+            </p>
+            <p>
+              <strong>Username :</strong> {user.username}
+            </p>
+            <p>
+              <strong>Rôle :</strong> {user.Roles?.[0]?.role_name || "N/A"}
+            </p>
 
             <button
               onClick={() => deleteUser(user.user_id)}
@@ -77,7 +89,6 @@ const AllUsersPage = () => {
           </li>
         ))}
       </ul>
-
     </div>
   );
 };
