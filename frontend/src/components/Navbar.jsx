@@ -91,10 +91,10 @@ const Navbar = () => {
       </div>
 
       {switchervisible && (
-        <div className="fixed absolute right-0 top-24">
+        <div className="absolute right-0 top-24 flex flex-col items-end space-y-2 z-50">
           <ThemeSwitcher />
           <button
-            className="top-32 text-red-500 font-bold md:hidden z-50"
+            className="text-red-500 font-bold md:hidden"
             onClick={handleLogout}
           >
             Déconnexion
@@ -103,13 +103,14 @@ const Navbar = () => {
             user?.roles?.includes("moderateur")) && (
             <button
               onClick={() => navigate("/allUsers")}
-              className="top-52 text-red-500 md:hidden font-bold"
+              className="text-red-500 md:hidden font-bold"
             >
               Centre d'administration
             </button>
           )}
         </div>
       )}
+
 
       {/* Mobile Bottom Navigation */}
       <div className="fixed bottom-5 left-1/2 transform -translate-x-1/2 flex gap-8 bg-[rgba(38,38,38,0.5)] p-4 rounded-2xl shadow-lg md:hidden">
