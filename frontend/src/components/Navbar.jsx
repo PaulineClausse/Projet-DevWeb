@@ -42,7 +42,6 @@ const Navbar = () => {
     if (!user) return;
     const profilePath = "/profil/" + user.user_id;
     if (location.pathname === profilePath) {
-      // Force le reload si déjà sur la page profil
       window.location.reload();
     } else {
       navigate(profilePath);
@@ -91,10 +90,10 @@ const Navbar = () => {
       </div>
 
       {switchervisible && (
-        <div className="fixed absolute right-0 top-24">
+        <div className="absolute right-0 top-24 flex flex-col items-end gap-3 z-50 bg-[rgba(38,38,38,0.95)] p-4 rounded-xl shadow-lg min-w-[180px]">
           <ThemeSwitcher />
           <button
-            className="top-32 text-red-500 font-bold md:hidden z-50"
+            className="text-red-500 font-bold md:hidden w-full text-right"
             onClick={handleLogout}
           >
             Déconnexion
@@ -103,7 +102,7 @@ const Navbar = () => {
             user?.roles?.includes("moderateur")) && (
             <button
               onClick={() => navigate("/allUsers")}
-              className="top-52 text-red-500 md:hidden font-bold"
+              className="text-red-500 md:hidden font-bold w-full text-right"
             >
               Centre d'administration
             </button>
